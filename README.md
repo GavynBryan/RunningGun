@@ -10,4 +10,5 @@ The code was put together in about 8 days for a GameJam challenge and is current
 
 - Tidy up the collision loop to use std::pairs and simultaneously call OnCollide() for both objects
 - Create an input manager class that runs outside of the player's controller, allowing for more fluid control of keyboard inputs (And would increase the difficulty by removing an exploit)
+- Remove "garbage classes" that either aren't being used or don't need to be their own classes
 - Maybe expand on it a little bit? I have a decent codebase to work with now. :)
