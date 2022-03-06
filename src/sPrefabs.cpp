@@ -31,8 +31,8 @@ std::unique_ptr<Entity> sPrefabs::getPlayer()
 	AnimPtr _damageleft(new Animation(4, sf::Vector2f(64, 64), 1, false, true));
 	AnimPtr _shootright(new Animation(7, sf::Vector2f(64, 64), 0, false));
 	AnimPtr _shootleft(new Animation(8, sf::Vector2f(64, 64), 0, false));
-	_anim->addAnimation("left", std::move(_left));
 	_anim->addAnimation("right", std::move(_right));
+	_anim->addAnimation("left", std::move(_left));
 	_anim->addAnimation("walkright", std::move(_walkright));
 	_anim->addAnimation("walkleft", std::move(_walkleft));
 	_anim->addAnimation("shootleft", std::move(_shootleft));
