@@ -3,93 +3,93 @@
 
 
 PlayerState::PlayerState(PlayerComponent& _player)
-	:mPlayer(_player){}
+	:PlayerRef(_player){}
 PlayerState::~PlayerState(){}
-void PlayerState::enterState() {}
-void PlayerState::update(){}
-void PlayerState::postUpdate(){}
-void PlayerState::exitState() {}
-void PlayerState::damage() {}
+void PlayerState::EnterState() {}
+void PlayerState::Update(){}
+void PlayerState::PostUpdate(){}
+void PlayerState::ExitState() {}
+void PlayerState::Damage() {}
 
 // -- DEFAULT STATE --
 
-defaultPlayerState::defaultPlayerState(PlayerComponent& _player)
+DefaultPlayerState::DefaultPlayerState(PlayerComponent& _player)
 	:PlayerState(_player){}
-defaultPlayerState::~defaultPlayerState() {}
+DefaultPlayerState::~DefaultPlayerState() {}
 
-void defaultPlayerState::enterState() 
+void DefaultPlayerState::EnterState() 
 {
 	//enter default animation
 }
 
-void defaultPlayerState::update()
+void DefaultPlayerState::Update()
 {
-	mPlayer.handleInput();
+	PlayerRef.HandleInput();
 }
 
-void defaultPlayerState::postUpdate()
-{
-
-}
-
-void defaultPlayerState::exitState()
+void DefaultPlayerState::PostUpdate()
 {
 
 }
 
-void defaultPlayerState::damage()
+void DefaultPlayerState::ExitState()
 {
-	mPlayer.switchState("DamageState");
+
+}
+
+void DefaultPlayerState::Damage()
+{
+	PlayerRef.SwitchState("DamageState");
 }
 
 // -- Damaged State --
 
-damagePlayerState::damagePlayerState(PlayerComponent& _player)
+DamagePlayerState::DamagePlayerState(PlayerComponent& _player)
 	:PlayerState(_player) {}
-damagePlayerState::~damagePlayerState() {}
+DamagePlayerState::~DamagePlayerState() {}
 
-void damagePlayerState::enterState()
+void DamagePlayerState::EnterState()
 {
-	timestamp = sEnvironment::Instance().getElapsedTime();
-	mPlayer.damage();
+	Timestamp = Environment::Instance().GetElapsedTime();
+	PlayerRef.Damage();
 }
 
-void damagePlayerState::update()
+void DamagePlayerState::Update()
 {
-	mPlayer.handleInput();
-	if (sEnvironment::Instance().getElapsedTime() >= stateLength + timestamp) {
-		mPlayer.switchState("DefaultState");
+	PlayerRef.HandleInput();
+	if (Environment::Instance().GetElapsedTime() >= StateLength + Timestamp) {
+		PlayerRef.SwitchState("DefaultState");
 	}
 }
 
 // -- Dead State --
 
-deadPlayerState::deadPlayerState(PlayerComponent& _player)
+DeadPlayerState::DeadPlayerState(PlayerComponent& _player)
 	:PlayerState(_player) {}
-deadPlayerState::~deadPlayerState() {}
+DeadPlayerState::~DeadPlayerState() {}
 
-void deadPlayerState::enterState()
+void DeadPlayerState::EnterState()
 {
-	timestamp = sEnvironment::Instance().getElapsedTime();
-	mPlayer.freeze();
-	sEnvironment::Instance().Reset();
+	Timestamp = Environment::Instance().GetElapsedTime();
+	PlayerRef.Freeze();
+	Environment::Instance().Reset();
 }
 
-void deadPlayerState::update()
+void DeadPlayerState::Update()
 {
-	if (sEnvironment::Instance().getElapsedTime() >= stateLength) {
+	if (Environment::Instance().GetElapsedTime() >= StateLength) {
 		//-tell the game to start over
 	}
 }
 
 // --Victory State--
 
-victoryPlayerState::victoryPlayerState(PlayerComponent& _player)
+VictoryPlayerState::VictoryPlayerState(PlayerComponent& _player)
 	:PlayerState(_player) {}
-victoryPlayerState::~victoryPlayerState() {}
+VictoryPlayerState::~VictoryPlayerState() {}
 
-void victoryPlayerState::enterState()
+void VictoryPlayerState::EnterState()
 {
-	mPlayer.freeze();
+	PlayerRef.Freeze();
 	//tell listeners
 }

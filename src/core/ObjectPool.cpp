@@ -11,25 +11,25 @@ ObjectPool::~ObjectPool()
 {
 }
 
-void ObjectPool::feedObject(Entity::Ptr _obj)
+void ObjectPool::FeedObject(Entity::Ptr _obj)
 {
-	_obj->disable();
-	mPool.push_back(_obj.get());
-	sEnvironment::Instance().Instantiate(std::move(_obj));
+	_obj->Disable();
+	Pool.push_back(_obj.get());
+	Environment::Instance().Instantiate(std::move(_obj));
 }
 
-void ObjectPool::clear()
+void ObjectPool::Clear()
 {
-	mPool.clear();
+	Pool.clear();
 }
 
 
-Entity* ObjectPool::borrowObject() 
+Entity* ObjectPool::BorrowObject() 
 {
-	for (auto& e : mPool) {
-		if (!e->isEnabled()) {
-			e->enable();
-			return e;
+	for (auto& _entity : Pool) {
+		if (!_entity->IsEnabled()) {
+			_entity->Enable();
+			return _entity;
 		}
 	}
 	return nullptr;

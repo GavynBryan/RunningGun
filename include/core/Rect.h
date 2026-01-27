@@ -9,29 +9,29 @@ struct Rect {
     T height;
 
     Rect() : x(0), y(0), width(0), height(0) {}
-    Rect(T x, T y, T width, T height) : x(x), y(y), width(width), height(height) {}
+    Rect(T _x, T _y, T _width, T _height) : x(_x), y(_y), width(_width), height(_height) {}
 
-    T left() const { return x; }
-    T top() const { return y; }
-    T right() const { return x + width; }
-    T bottom() const { return y + height; }
+    T Left() const { return x; }
+    T Top() const { return y; }
+    T Right() const { return x + width; }
+    T Bottom() const { return y + height; }
 
-    Vec2<T> position() const { return Vec2<T>(x, y); }
-    Vec2<T> size() const { return Vec2<T>(width, height); }
+    Vec2<T> Position() const { return Vec2<T>(x, y); }
+    Vec2<T> Size() const { return Vec2<T>(width, height); }
 
-    bool contains(T px, T py) const {
-        return px >= x && px < x + width && py >= y && py < y + height;
+    bool Contains(T _x, T _y) const {
+        return _x >= x && _x < x + width && _y >= y && _y < y + height;
     }
 
-    bool contains(const Vec2<T>& point) const {
-        return contains(point.x, point.y);
+    bool Contains(const Vec2<T>& _point) const {
+        return Contains(_point.x, _point.y);
     }
 
-    bool intersects(const Rect& other) const {
-        return !(right() <= other.left() ||
-                 left() >= other.right() ||
-                 bottom() <= other.top() ||
-                 top() >= other.bottom());
+    bool Intersects(const Rect& _other) const {
+        return !(Right() <= _other.Left() ||
+                 Left() >= _other.Right() ||
+                 Bottom() <= _other.Top() ||
+                 Top() >= _other.Bottom());
     }
 };
 

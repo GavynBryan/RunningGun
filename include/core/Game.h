@@ -1,27 +1,27 @@
 #pragma once
 #include <SDL3/SDL.h>
-#include "sEnvironment.h"
-#include "sPhysics.h"
+#include "Environment.h"
+#include "Physics.h"
 #include "InputManager.h"
 
 class Game
 {
 private:
-	SDL_Window*								mWindow;
-	SDL_Renderer*							mRenderer;
-	bool									quit;
+	SDL_Window*								Window;
+	SDL_Renderer*							Renderer;
+	bool									Quit;
 
-	World*									mWorld;
+	World*									WorldContext;
 
 private:
-	sEnvironment							mEnvironment;
-	InputManager							mInputManager;
+	Environment								EnvironmentContext;
+	InputManager							InputManagerContext;
 
 public:
-	void	run();
-	void	quitGame() { quit = true; }
+	void	Run();
+	void	QuitGame() { Quit = true; }
 
-	SDL_Renderer* getRenderer() { return mRenderer; }
+	SDL_Renderer* GetRenderer() { return Renderer; }
 
 	Game();
 	~Game();

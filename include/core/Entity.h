@@ -19,19 +19,19 @@ enum ENTITY_TAG {
 class Entity
 {
 protected:
-	Vec2				mPosition;
-	Vec2				mVelocity;
-	Vec2				mDirection;
+	Vec2				Position;
+	Vec2				Velocity;
+	Vec2				Direction;
 
-	Sprite				mSprite;
+	Sprite				Sprite;
 
-	std::vector<std::unique_ptr<Component>> mComponents;
+	std::vector<std::unique_ptr<Component>> Components;
 
-	ENTITY_TAG			mTag;
-	bool				activated;
-	bool				markedForDeath;
+	ENTITY_TAG			Tag;
+	bool				Activated;
+	bool				MarkedForDeath;
 
-	std::unique_ptr<AnimationListener>	mAnimator;
+	std::unique_ptr<AnimationListener>	Animator;
 
 public:
 	Entity(std::string _texture, float _width, float _height);
@@ -39,55 +39,55 @@ public:
 
 	typedef std::unique_ptr<Entity> Ptr;
 
-	void			attachComponent(std::unique_ptr<Component> _comp);
+	void			AttachComponent(std::unique_ptr<Component> _comp);
 
 	template <typename Comp>
-	Comp*	getComponent();
+	Comp*	GetComponent();
 
-	virtual void		start();
-	virtual void		update();
-	virtual void		postUpdate();
-	void				render(SDL_Renderer* renderer);
+	virtual void		Start();
+	virtual void		Update();
+	virtual void		PostUpdate();
+	void				Render(SDL_Renderer* _renderer);
 
-	void				startComponents();
-	void				updateComponents();
-	void				postUpdateComponents();
+	void				StartComponents();
+	void				UpdateComponents();
+	void				PostUpdateComponents();
 
-	void				setTag(ENTITY_TAG _tag) { mTag = _tag; }
-	void				enable() { activated = true; start(); }
-	void				disable() { activated = false; }
+	void				SetTag(ENTITY_TAG _tag) { Tag = _tag; }
+	void				Enable() { Activated = true; Start(); }
+	void				Disable() { Activated = false; }
 
-	void				setPosition(float x, float y);
-	void				setPosition(Vec2 _pos);
-	void				setVelocity(float x, float y);
-	void				setVelocity(Vec2 _vel);
-	void				setDirection(Vec2 _dir);
-	void				setDirection(float x, float y);
+	void				SetPosition(float _x, float _y);
+	void				SetPosition(Vec2 _pos);
+	void				SetVelocity(float _x, float _y);
+	void				SetVelocity(Vec2 _vel);
+	void				SetDirection(Vec2 _dir);
+	void				SetDirection(float _x, float _y);
 
-	void				assignAnimator(std::unique_ptr<AnimationListener> _animator);
+	void				AssignAnimator(std::unique_ptr<AnimationListener> _animator);
 
-	ENTITY_TAG			getTag() { return mTag; }
-	AnimationListener*	getAnimator(){ return mAnimator.get(); }
-	bool				isEnabled() { return activated; }
-	bool				isMarkedForDeath() { return markedForDeath; }
-	bool				isGrounded();
-	void				onCollide(Entity& _other);
+	ENTITY_TAG			GetTag() { return Tag; }
+	AnimationListener*	GetAnimator(){ return Animator.get(); }
+	bool				IsEnabled() { return Activated; }
+	bool				IsMarkedForDeath() { return MarkedForDeath; }
+	bool				IsGrounded();
+	void				OnCollide(Entity& _other);
 
-	Vec2				getPosition() { return mPosition; }
-	Vec2				getVelocity() { return mVelocity; }
-	Vec2				getDirection() { return mDirection; }
-	Rectf				getBoundingRect() { return mSprite.getGlobalBounds(); }
-	bool				collision(Entity* _entity) { return _entity->getBoundingRect().intersects(getBoundingRect()); }
+	Vec2				GetPosition() { return Position; }
+	Vec2				GetVelocity() { return Velocity; }
+	Vec2				GetDirection() { return Direction; }
+	Rectf				GetBoundingRect() { return Sprite.GetGlobalBounds(); }
+	bool				Collision(Entity* _entity) { return _entity->GetBoundingRect().Intersects(GetBoundingRect()); }
 
-	Sprite&				getSprite() { return mSprite; }
+	Sprite&				GetSprite() { return Sprite; }
 };
 
 template<typename Comp>
-Comp* Entity::getComponent() {
-	Comp* result = nullptr;
-	for (auto& c : mComponents) {
-		result = dynamic_cast<Comp*>(c.get());
-		if (result) break;
+Comp* Entity::GetComponent() {
+	Comp* _result = nullptr;
+	for (auto& _component : Components) {
+		_result = dynamic_cast<Comp*>(_component.get());
+		if (_result) break;
 	}
-	return result;
+	return _result;
 }

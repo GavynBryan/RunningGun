@@ -1,11 +1,11 @@
 #include <PatrolAIComponent.h>
 #include <core/Entity.h>
-#include <core/sEnvironment.h>
+#include <core/Environment.h>
 #include <core/AnimationListener.h>
 
 PatrolAIComponent::PatrolAIComponent(Entity& _entity, float _speed)
 	:Component(_entity),
-	moveSpeed(_speed)
+	MoveSpeed(_speed)
 {
 }
 
@@ -14,74 +14,74 @@ PatrolAIComponent::~PatrolAIComponent()
 {
 }
 
-void PatrolAIComponent::start()
+void PatrolAIComponent::Start()
 {
-	markedForDeath = false;
-	lives = 2;
-	mAnimator = mEntity.getAnimator();
-	lastTurnAround = sEnvironment::Instance().getElapsedTime();
+	MarkedForDeath = false;
+	Lives = 2;
+	Animator = ParentEntity.GetAnimator();
+	LastTurnAround = Environment::Instance().GetElapsedTime();
 }
 
-void PatrolAIComponent::update()
+void PatrolAIComponent::Update()
 {
-	if (mEntity.isGrounded()) {
-		Vec2 patrolVelocity = mEntity.getDirection();
-		patrolVelocity.y = mEntity.getVelocity().y;
-		patrolVelocity.x *= moveSpeed;
-		mEntity.setVelocity(patrolVelocity);
-		float currentTime = sEnvironment::Instance().getElapsedTime();
+	if (ParentEntity.IsGrounded()) {
+		Vec2 _patrolVelocity = ParentEntity.GetDirection();
+		_patrolVelocity.y = ParentEntity.GetVelocity().y;
+		_patrolVelocity.x *= MoveSpeed;
+		ParentEntity.SetVelocity(_patrolVelocity);
+		float _currentTime = Environment::Instance().GetElapsedTime();
 
-		if (currentTime - interval > lastTurnAround) {
-			changeDirection();
-			lastTurnAround = currentTime;
+		if (_currentTime - Interval > LastTurnAround) {
+			ChangeDirection();
+			LastTurnAround = _currentTime;
 		}
 	}
-	else { mEntity.setVelocity(0, mEntity.getVelocity().y); }
+	else { ParentEntity.SetVelocity(0, ParentEntity.GetVelocity().y); }
 }
 
-void PatrolAIComponent::postUpdate()
+void PatrolAIComponent::PostUpdate()
 {
-	if (markedForDeath) {
-		mEntity.disable();
+	if (MarkedForDeath) {
+		ParentEntity.Disable();
 		return;
 	}
-	if (mEntity.getDirection().x == 1) {
-		mAnimator->playAnimation("left");
+	if (ParentEntity.GetDirection().x == 1) {
+		Animator->PlayAnimation("left");
 	}
 	else {
-		mAnimator->playAnimation("right");
+		Animator->PlayAnimation("right");
 	}
 }
 
-void PatrolAIComponent::changeDirection()
+void PatrolAIComponent::ChangeDirection()
 {
-	mEntity.setDirection(mEntity.getDirection() * -1.0f);
+	ParentEntity.SetDirection(ParentEntity.GetDirection() * -1.0f);
 }
 
-void PatrolAIComponent::onCollide(Entity& _other)
+void PatrolAIComponent::OnCollide(Entity& _other)
 {
-	if (_other.getTag() == bullet) {
-		damage();
+	if (_other.GetTag() == bullet) {
+		Damage();
 	}
 }
 
-void PatrolAIComponent::damage()
+void PatrolAIComponent::Damage()
 {
-	lives--;
-	if (lives <= 0) {
-		markedForDeath = true;
+	Lives--;
+	if (Lives <= 0) {
+		MarkedForDeath = true;
 		return;
 	}
-	if (mEntity.getDirection().x == 1) {
-		mAnimator->playAnimation("damageleft");
+	if (ParentEntity.GetDirection().x == 1) {
+		Animator->PlayAnimation("damageleft");
 	}
 	else {
-		mAnimator->playAnimation("damageright");
+		Animator->PlayAnimation("damageright");
 	}
 }
 
 //absolutely useless
-void PatrolAIComponent::die()
+void PatrolAIComponent::Die()
 {
-	mEntity.disable();
+	ParentEntity.Disable();
 }

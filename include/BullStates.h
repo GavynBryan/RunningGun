@@ -7,15 +7,15 @@ class BullState :
 	public State
 {
 protected:
-	BullComponent &mBull;
+	BullComponent &BullRef;
 public:
 	BullState(BullComponent& _bull);
 	~BullState();
 
-	virtual void enterState();
-	virtual void update();
-	virtual void postUpdate();
-	virtual void exitState();
+	virtual void EnterState();
+	virtual void Update();
+	virtual void PostUpdate();
+	virtual void ExitState();
 };
 
 //Default state: Can take 10 hits of damage, shouting at you.
@@ -26,29 +26,29 @@ class BullDefaultState
 {
 private:
 	//timestamp
-	float lastShot;
-	float shootFrequency = 1.3f;
+	float LastShot;
+	float ShootFrequency = 1.3f;
 public:
 	BullDefaultState(BullComponent& _bull);
 	~BullDefaultState();
-	void enterState();
-	void update();
-	void postUpdate();
-	void exitState();
+	void EnterState();
+	void Update();
+	void PostUpdate();
+	void ExitState();
 };
 
 class BullWave1State
 	:public BullState
 {
 private:
-	float timestamp;
+	float Timestamp;
 public:
 	BullWave1State(BullComponent& _bull);
 	~BullWave1State();
-	void enterState();
-	void update();
-	void postUpdate();
-	void exitState();
+	void EnterState();
+	void Update();
+	void PostUpdate();
+	void ExitState();
 
 	//void damage();
 };
@@ -58,14 +58,14 @@ class BullWave2State
 	:public BullState
 {
 private:
-	float timestamp;
+	float Timestamp;
 public:
 	BullWave2State(BullComponent& _bull);
 	~BullWave2State();
-	void enterState();
-	void update();
-	void postUpdate();
-	void exitState();
+	void EnterState();
+	void Update();
+	void PostUpdate();
+	void ExitState();
 
 	//void damage();
 };

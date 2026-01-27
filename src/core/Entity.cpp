@@ -5,15 +5,15 @@
 
 
 Entity::Entity(std::string _texture, float _width, float _height)
-	:mPosition(0,0),
-	mVelocity(0,0),
-	activated(true),
-	markedForDeath(false)
+	:Position(0,0),
+	Velocity(0,0),
+	Activated(true),
+	MarkedForDeath(false)
 {
 	//load resource handler from service
-	auto handler = sEnvironment::Instance().getTextureHandler();
-	mSprite.setTexture(handler->get(_texture));
-	mSprite.setTextureRect(Recti(0, 0, static_cast<int>(_width), static_cast<int>(_height)));
+	auto _handler = Environment::Instance().GetTextureHandler();
+	Sprite.SetTexture(_handler->Get(_texture));
+	Sprite.SetTextureRect(Recti(0, 0, static_cast<int>(_width), static_cast<int>(_height)));
 }
 
 
@@ -21,119 +21,119 @@ Entity::~Entity()
 {
 }
 
-void Entity::attachComponent(std::unique_ptr<Component> _comp)
+void Entity::AttachComponent(std::unique_ptr<Component> _comp)
 {
-	mComponents.push_back(std::move(_comp));
+	Components.push_back(std::move(_comp));
 }
 
-void Entity::startComponents()
+void Entity::StartComponents()
 {
-	if (activated) {
-		for (auto& c : mComponents) {
-			c->start();
+	if (Activated) {
+		for (auto& _component : Components) {
+			_component->Start();
 		}
 	}
 }
 
-void Entity::updateComponents()
+void Entity::UpdateComponents()
 {
-	if (activated) {
-		for (auto& c : mComponents) {
-			c->update();
+	if (Activated) {
+		for (auto& _component : Components) {
+			_component->Update();
 		}
 	}
 }
 
-void Entity::postUpdateComponents()
+void Entity::PostUpdateComponents()
 {
-	if (activated) {
-		for (auto& c : mComponents) {
-			c->postUpdate();
+	if (Activated) {
+		for (auto& _component : Components) {
+			_component->PostUpdate();
 		}
 	}
 }
 
-void Entity::start()
+void Entity::Start()
 {
-	startComponents();
+	StartComponents();
 	//so that collision isn't detected on the first frame
-	mSprite.setPosition(mPosition);
+	Sprite.SetPosition(Position);
 }
 
-void Entity::update()
+void Entity::Update()
 {
-	if (activated) {
-		updateComponents();
-		mPosition += (mVelocity * sEnvironment::Instance().deltaTime());
+	if (Activated) {
+		UpdateComponents();
+		Position += (Velocity * Environment::Instance().DeltaTime());
 	}
 }
 
-void Entity::postUpdate()
+void Entity::PostUpdate()
 {
-	if (activated) {
-		postUpdateComponents();
+	if (Activated) {
+		PostUpdateComponents();
 
-		if (mAnimator != nullptr) {
-			mAnimator->update(mSprite);
+		if (Animator != nullptr) {
+			Animator->Update(Sprite);
 		}
 	}
 }
 
-void Entity::render(SDL_Renderer* renderer)
+void Entity::Render(SDL_Renderer* _renderer)
 {
-	if (activated) {
-		mSprite.setPosition(mPosition);
-		mSprite.render(renderer);
+	if (Activated) {
+		Sprite.SetPosition(Position);
+		Sprite.Render(_renderer);
 	}
 }
 
-void Entity::setPosition(float x, float y)
+void Entity::SetPosition(float _x, float _y)
 {
-	mPosition.x = x; mPosition.y = y;
-	mSprite.setPosition(mPosition);
+	Position.x = _x; Position.y = _y;
+	Sprite.SetPosition(Position);
 }
 
-void Entity::setPosition(Vec2 _pos)
+void Entity::SetPosition(Vec2 _pos)
 {
-	mPosition = _pos;
-	mSprite.setPosition(mPosition);
+	Position = _pos;
+	Sprite.SetPosition(Position);
 }
 
-void Entity::setVelocity(float x, float y)
+void Entity::SetVelocity(float _x, float _y)
 {
-	mVelocity.x = x; mVelocity.y = y;
+	Velocity.x = _x; Velocity.y = _y;
 }
 
-void Entity::setVelocity(Vec2 _vel)
+void Entity::SetVelocity(Vec2 _vel)
 {
-	mVelocity = _vel;
+	Velocity = _vel;
 }
 
-void Entity::setDirection(Vec2 _dir)
+void Entity::SetDirection(Vec2 _dir)
 {
-	mDirection = _dir;
+	Direction = _dir;
 }
 
-void Entity::setDirection(float x, float y)
+void Entity::SetDirection(float _x, float _y)
 {
-	mDirection.x = x; mDirection.y = y;
+	Direction.x = _x; Direction.y = _y;
 }
 
-void Entity::assignAnimator(std::unique_ptr<AnimationListener> _animator)
+void Entity::AssignAnimator(std::unique_ptr<AnimationListener> _animator)
 {
-	mAnimator = std::move(_animator);
+	Animator = std::move(_animator);
 }
 
-bool Entity::isGrounded()
+bool Entity::IsGrounded()
 {
-	return (std::abs(mPosition.y - sEnvironment::Instance().getPhysics()->getGroundLevel())) <= 0.3f;
+	return (std::abs(Position.y - Environment::Instance().GetPhysics()->GetGroundLevel())) <= 0.3f;
 }
 
-void Entity::onCollide(Entity& _other)
+void Entity::OnCollide(Entity& _other)
 {
-	if (activated) {
-		for (auto& c : mComponents) {
-			c->onCollide(_other);
+	if (Activated) {
+		for (auto& _component : Components) {
+			_component->OnCollide(_other);
 		}
 	}
 }

@@ -3,24 +3,24 @@
 
 
 Animation::Animation(int _index, Vec2 _size, int _frames, bool _loop)
-	:frameIndex(_index),
-	frameSize(_size),
-	numFrames(_frames),
-	loop(_loop),
-	finished(false),
-	priority(false),
-	currentFrame(0)
+	:FrameIndex(_index),
+	FrameSize(_size),
+	NumFrames(_frames),
+	Loop(_loop),
+	Finished(false),
+	Priority(false),
+	CurrentFrame(0)
 {
 }
 
 Animation::Animation(int _index, Vec2 _size, int _frames, bool _loop, bool _priority)
-	:frameIndex(_index),
-	frameSize(_size),
-	numFrames(_frames),
-	loop(_loop),
-	finished(false),
-	priority(_priority),
-	currentFrame(0)
+	:FrameIndex(_index),
+	FrameSize(_size),
+	NumFrames(_frames),
+	Loop(_loop),
+	Finished(false),
+	Priority(_priority),
+	CurrentFrame(0)
 {
 }
 
@@ -28,21 +28,21 @@ Animation::~Animation()
 {
 }
 
-void Animation::update(Sprite& _sprite)
+void Animation::Update(Sprite& _sprite)
 {
-	_sprite.setTextureRect(Recti(
-		static_cast<int>(currentFrame * frameSize.x),
-		static_cast<int>(frameIndex * frameSize.y),
-		static_cast<int>(frameSize.x),
-		static_cast<int>(frameSize.y)
+	_sprite.SetTextureRect(Recti(
+		static_cast<int>(CurrentFrame * FrameSize.x),
+		static_cast<int>(FrameIndex * FrameSize.y),
+		static_cast<int>(FrameSize.x),
+		static_cast<int>(FrameSize.y)
 	));
-	currentFrame++;
-	if (currentFrame > numFrames) {
-		if (loop)
-			currentFrame = 0;
+	CurrentFrame++;
+	if (CurrentFrame > NumFrames) {
+		if (Loop)
+			CurrentFrame = 0;
 		else
-			currentFrame = numFrames;
-		finished = true;
+			CurrentFrame = NumFrames;
+		Finished = true;
 	}
-	else finished = false;
+	else Finished = false;
 }

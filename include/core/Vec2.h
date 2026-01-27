@@ -7,7 +7,7 @@ struct Vector2 {
     T y;
 
     Vector2() : x(0), y(0) {}
-    Vector2(T x, T y) : x(x), y(y) {}
+    Vector2(T _x, T _y) : x(_x), y(_y) {}
 
     Vector2 operator+(const Vector2& other) const {
         return Vector2(x + other.x, y + other.y);
@@ -51,23 +51,23 @@ struct Vector2 {
         return !(*this == other);
     }
 
-    T length() const {
+    T Length() const {
         return std::sqrt(x * x + y * y);
     }
 
-    Vector2 normalized() const {
-        T len = length();
-        if (len != 0) {
-            return Vector2(x / len, y / len);
+    Vector2 Normalized() const {
+        T _len = Length();
+        if (_len != 0) {
+            return Vector2(x / _len, y / _len);
         }
         return *this;
     }
 
-    void normalize() {
-        T len = length();
-        if (len != 0) {
-            x /= len;
-            y /= len;
+    void Normalize() {
+        T _len = Length();
+        if (_len != 0) {
+            x /= _len;
+            y /= _len;
         }
     }
 };

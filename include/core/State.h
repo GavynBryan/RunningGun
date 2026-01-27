@@ -2,14 +2,14 @@
 class State
 {
 private:
-	bool active;
+	bool Active;
 public:
 	State();
 	~State();
 
-	virtual void	enterState();
-	virtual void	update();
-	virtual void	postUpdate();
-	virtual void	exitState();
+	virtual void	EnterState();
+	virtual void	Update();
+	virtual void	PostUpdate();
+	virtual void	ExitState();
 };
 

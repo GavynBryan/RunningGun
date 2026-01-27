@@ -7,27 +7,27 @@
 
 PlayerComponent::PlayerComponent(Entity& _entity)
 	:Component(_entity),
-	playerSpeed(350),
-	lives(5),
-	bulletOffset(32, 18),
-	mAnimator(nullptr),
-	mCurrentState(nullptr),
-	lastShotTime(0)
+	PlayerSpeed(350),
+	Lives(5),
+	BulletOffset(32, 18),
+	Animator(nullptr),
+	CurrentState(nullptr),
+	LastShotTime(0)
 {
 	//initialize states
-	std::unique_ptr<defaultPlayerState>		_defaultState(new defaultPlayerState(*this));
-	std::unique_ptr<damagePlayerState>		_damageState(new damagePlayerState(*this));
-	std::unique_ptr<deadPlayerState>		_deadState(new deadPlayerState(*this));
-	std::unique_ptr<victoryPlayerState>		_victoryState(new victoryPlayerState(*this));
+	std::unique_ptr<DefaultPlayerState>		_defaultState(new DefaultPlayerState(*this));
+	std::unique_ptr<DamagePlayerState>		_damageState(new DamagePlayerState(*this));
+	std::unique_ptr<DeadPlayerState>		_deadState(new DeadPlayerState(*this));
+	std::unique_ptr<VictoryPlayerState>		_victoryState(new VictoryPlayerState(*this));
 
-	addState("DefaultState", std::move(_defaultState));
-	addState("DamageState", std::move(_damageState));
-	addState("DeadState", std::move(_deadState));
-	addState("VictoryState", std::move(_victoryState));
+	AddState("DefaultState", std::move(_defaultState));
+	AddState("DamageState", std::move(_damageState));
+	AddState("DeadState", std::move(_deadState));
+	AddState("VictoryState", std::move(_victoryState));
 
 	//set initial direction (right)
-	mEntity.setDirection(1, 0);
-	setupBullets();
+	ParentEntity.SetDirection(1, 0);
+	SetupBullets();
 }
 
 
@@ -35,155 +35,155 @@ PlayerComponent::~PlayerComponent()
 {
 }
 
-void PlayerComponent::start()
+void PlayerComponent::Start()
 {
-	switchState("DefaultState");
-	lastShotTime = 0;
+	SwitchState("DefaultState");
+	LastShotTime = 0;
 
-	mAnimator = mEntity.getAnimator();
+	Animator = ParentEntity.GetAnimator();
 }
 
-void PlayerComponent::update()
+void PlayerComponent::Update()
 {
-	mCurrentState->update();
-	handleAnimations();
+	CurrentState->Update();
+	HandleAnimations();
 }
 
-void PlayerComponent::postUpdate()
+void PlayerComponent::PostUpdate()
 {
-	mCurrentState->postUpdate();
-	orientDirection();
+	CurrentState->PostUpdate();
+	OrientDirection();
 }
 
-void PlayerComponent::handleAnimations()
+void PlayerComponent::HandleAnimations()
 {
-	if (mEntity.getDirection().x > 0) {
-		if (mEntity.getVelocity().x != 0)
-			mAnimator->playAnimation("walkright");
-		else mAnimator->playAnimation("right");
+	if (ParentEntity.GetDirection().x > 0) {
+		if (ParentEntity.GetVelocity().x != 0)
+			Animator->PlayAnimation("walkright");
+		else Animator->PlayAnimation("right");
 	} else{
-		if (mEntity.getVelocity().x != 0)
-			mAnimator->playAnimation("walkleft");
-		else mAnimator->playAnimation("left");
+		if (ParentEntity.GetVelocity().x != 0)
+			Animator->PlayAnimation("walkleft");
+		else Animator->PlayAnimation("left");
 	}
 
 }
 //load up the bullets into the object pool
-void PlayerComponent::setupBullets()
+void PlayerComponent::SetupBullets()
 {
-	for (int i = 0; i < 20; i++) {
+	for (int _index = 0; _index < 20; _index++) {
 		std::unique_ptr<Entity>_projectile(new Entity("sprites/bullet.png", 16, 16));
-		std::unique_ptr<ProjectileComponent> _projectileComponent(new ProjectileComponent(*_projectile, 400.0f, mEntity));
+		std::unique_ptr<ProjectileComponent> _projectileComponent(new ProjectileComponent(*_projectile, 400.0f, ParentEntity));
 
-		_projectile->attachComponent(std::move(_projectileComponent));
-		_projectile->setTag(bullet);
-		mBullets.feedObject(std::move(_projectile));
+		_projectile->AttachComponent(std::move(_projectileComponent));
+		_projectile->SetTag(bullet);
+		Bullets.FeedObject(std::move(_projectile));
 	}
 }
 
-void PlayerComponent::shootBullet()
+void PlayerComponent::ShootBullet()
 {
 	//update the shooting cooldown
-	auto currentTime = sEnvironment::Instance().getElapsedTime();
-	if (currentTime - bulletCoolDown > lastShotTime) {
-		lastShotTime = currentTime;
+	auto _currentTime = Environment::Instance().GetElapsedTime();
+	if (_currentTime - BulletCoolDown > LastShotTime) {
+		LastShotTime = _currentTime;
 		//borrow bullet from object pool
-		auto b = mBullets.borrowObject();
+		auto _bullet = Bullets.BorrowObject();
 
 		//set position based off of player's direction
-		auto position = mEntity.getPosition();
-		float xOrigin = position.x +(mEntity.getBoundingRect().width / 2);
-		position.x = xOrigin + (mEntity.getDirection().x * bulletOffset.x);
-		position.y += bulletOffset.y;
-		if (b != nullptr) {
-			b->setPosition(position);
+		auto _position = ParentEntity.GetPosition();
+		float _xOrigin = _position.x +(ParentEntity.GetBoundingRect().width / 2);
+		_position.x = _xOrigin + (ParentEntity.GetDirection().x * BulletOffset.x);
+		_position.y += BulletOffset.y;
+		if (_bullet != nullptr) {
+			_bullet->SetPosition(_position);
 		}
-		if (mEntity.getVelocity().x == 0) {
-			if(mEntity.getDirection().x > 0)
-				mAnimator->playAnimation("shootright");
+		if (ParentEntity.GetVelocity().x == 0) {
+			if(ParentEntity.GetDirection().x > 0)
+				Animator->PlayAnimation("shootright");
 			else
-				mAnimator->playAnimation("shootleft");
+				Animator->PlayAnimation("shootleft");
 		}
 	}
 }
 
-void PlayerComponent::addState(const std::string& _id, StatePtr _state)
+void PlayerComponent::AddState(const std::string& _id, StatePtr _state)
 {
-	mStates.insert(std::make_pair(_id, std::move(_state)));
+	States.insert(std::make_pair(_id, std::move(_state)));
 }
 
-void PlayerComponent::switchState(const std::string& _id)
+void PlayerComponent::SwitchState(const std::string& _id)
 {
-	auto nextState = mStates.find(_id);
+	auto _nextState = States.find(_id);
 	//if it can't access the state, we need to close it
-	assert(nextState != mStates.end());
-	if (nextState->second.get() == mCurrentState) { return; }
-	if (mCurrentState != nullptr) {
-		mCurrentState->exitState();
+	assert(_nextState != States.end());
+	if (_nextState->second.get() == CurrentState) { return; }
+	if (CurrentState != nullptr) {
+		CurrentState->ExitState();
 	}
-	mCurrentState = nextState->second.get();
-	mCurrentState->enterState();
+	CurrentState = _nextState->second.get();
+	CurrentState->EnterState();
 }
 
-void PlayerComponent::orientDirection()
+void PlayerComponent::OrientDirection()
 {
 	//the direction would just be a normalized version of the last non-zero x velocity
-	if (mEntity.getVelocity().x != 0) {
-		Vec2 direction = mEntity.getVelocity();
-		direction.y = 0;
-		mEntity.setDirection(VectorMath::Normalize(direction));
+	if (ParentEntity.GetVelocity().x != 0) {
+		Vec2 _direction = ParentEntity.GetVelocity();
+		_direction.y = 0;
+		ParentEntity.SetDirection(VectorMath::Normalize(_direction));
 	}
 }
 
-void PlayerComponent::handleInput()
+void PlayerComponent::HandleInput()
 {
-	auto& input = InputManager::Instance();
+	auto& _input = InputManager::Instance();
 
-	Vec2 _velocity = Vec2(0, mEntity.getVelocity().y);
+	Vec2 _velocity = Vec2(0, ParentEntity.GetVelocity().y);
 
 	// Movement - use held state for continuous movement
-	if (input.isKeyHeld(SDL_SCANCODE_LEFT)) {
-		_velocity = Vec2(-playerSpeed, mEntity.getVelocity().y);
+	if (_input.IsKeyHeld(SDL_SCANCODE_LEFT)) {
+		_velocity = Vec2(-PlayerSpeed, ParentEntity.GetVelocity().y);
 	}
-	if (input.isKeyHeld(SDL_SCANCODE_RIGHT)) {
-		_velocity = Vec2(playerSpeed, mEntity.getVelocity().y);
+	if (_input.IsKeyHeld(SDL_SCANCODE_RIGHT)) {
+		_velocity = Vec2(PlayerSpeed, ParentEntity.GetVelocity().y);
 	}
 
 	// Jump - use pressed state to only jump on initial press
-	if (input.isKeyPressed(SDL_SCANCODE_Z)) {
-		if (mEntity.isGrounded()) {
-			_velocity = Vec2(mEntity.getVelocity().x, -500);
+	if (_input.IsKeyPressed(SDL_SCANCODE_Z)) {
+		if (ParentEntity.IsGrounded()) {
+			_velocity = Vec2(ParentEntity.GetVelocity().x, -500);
 		}
 	}
 
 	// Fire - use pressed state to only fire on initial press (not held)
-	if (input.isKeyPressed(SDL_SCANCODE_X)) {
-		shootBullet();
+	if (_input.IsKeyPressed(SDL_SCANCODE_X)) {
+		ShootBullet();
 	}
 
-	mEntity.setVelocity(_velocity);
+	ParentEntity.SetVelocity(_velocity);
 }
 
-void PlayerComponent::freeze()
+void PlayerComponent::Freeze()
 {
-	mEntity.setVelocity(0, mEntity.getVelocity().y);
+	ParentEntity.SetVelocity(0, ParentEntity.GetVelocity().y);
 }
 
-void PlayerComponent::onCollide(Entity& _other)
+void PlayerComponent::OnCollide(Entity& _other)
 {
-	if (_other.getTag() == hazard || _other.getTag() == enemy_bullet) {
-		mCurrentState->damage();
+	if (_other.GetTag() == hazard || _other.GetTag() == enemy_bullet) {
+		CurrentState->Damage();
 	}
 }
 
-void PlayerComponent::damage()
+void PlayerComponent::Damage()
 {
-	lives--;
-	if (mEntity.getDirection().x > 0)
-		mAnimator->playAnimation("damageright");
+	Lives--;
+	if (ParentEntity.GetDirection().x > 0)
+		Animator->PlayAnimation("damageright");
 	else
-		mAnimator->playAnimation("damageleft");
-	if (lives <= 0) {
-		switchState("DeadState");
+		Animator->PlayAnimation("damageleft");
+	if (Lives <= 0) {
+		SwitchState("DeadState");
 	}
 }

@@ -7,26 +7,26 @@ class PatrolAIComponent :
 	public Component
 {
 private:
-	int lives;
+	int Lives;
 	//Timestamp
-	float lastTurnAround = 0; 
+	float LastTurnAround = 0; 
 
-	float interval = 1.5f;
-	float moveSpeed;
-	AnimationListener* mAnimator;
-	bool markedForDeath = false;
+	float Interval = 1.5f;
+	float MoveSpeed;
+	AnimationListener* Animator;
+	bool MarkedForDeath = false;
 public:
 	PatrolAIComponent(Entity& _entity, float _speed);
 	~PatrolAIComponent();
 
-	void start();
-	void update();
-	void postUpdate();
+	void Start();
+	void Update();
+	void PostUpdate();
 
-	void changeDirection();
-	void onCollide(Entity& _other);
+	void ChangeDirection();
+	void OnCollide(Entity& _other);
 
-	void damage();
-	void die();
+	void Damage();
+	void Die();
 };
 

@@ -5,23 +5,23 @@
 
 class Sprite {
 private:
-    SDL_Texture*    mTexture;
-    SDL_FRect       mDestRect;
-    Recti           mSrcRect;
-    bool            mHasSrcRect;
+    SDL_Texture*    Texture;
+    SDL_FRect       DestRect;
+    Recti           SrcRect;
+    bool            HasSrcRect;
 
 public:
     Sprite();
     ~Sprite();
 
-    void setTexture(SDL_Texture* texture);
-    void setTextureRect(const Recti& rect);
-    void setPosition(const Vec2& pos);
-    void setPosition(float x, float y);
+    void SetTexture(SDL_Texture* _texture);
+    void SetTextureRect(const Recti& _rect);
+    void SetPosition(const Vec2& _pos);
+    void SetPosition(float _x, float _y);
 
-    SDL_Texture* getTexture() const { return mTexture; }
-    const SDL_FRect& getDestRect() const { return mDestRect; }
-    Rectf getGlobalBounds() const;
+    SDL_Texture* GetTexture() const { return Texture; }
+    const SDL_FRect& GetDestRect() const { return DestRect; }
+    Rectf GetGlobalBounds() const;
 
-    void render(SDL_Renderer* renderer);
+    void Render(SDL_Renderer* _renderer);
 };

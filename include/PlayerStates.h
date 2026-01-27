@@ -7,71 +7,71 @@ class PlayerState :
 	public State
 {
 protected:
-	PlayerComponent& mPlayer;
+	PlayerComponent& PlayerRef;
 public:
 	PlayerState(PlayerComponent& _player);
 	~PlayerState();
 
-	virtual void enterState();
-	virtual void update();
-	virtual void postUpdate();
-	virtual void exitState();
+	virtual void EnterState();
+	virtual void Update();
+	virtual void PostUpdate();
+	virtual void ExitState();
 
-	virtual void damage();
+	virtual void Damage();
 };
 
-class defaultPlayerState
+class DefaultPlayerState
 	:public PlayerState
 {
 public:
-	defaultPlayerState(PlayerComponent& _player);
-	~defaultPlayerState();
+	DefaultPlayerState(PlayerComponent& _player);
+	~DefaultPlayerState();
 
-	void enterState();
-	void update();
-	void postUpdate();
-	void exitState();
+	void EnterState();
+	void Update();
+	void PostUpdate();
+	void ExitState();
 
-	void damage();
+	void Damage();
 };
 
-class damagePlayerState
-	:public PlayerState
-{
-private:
-	float	timestamp;
-	float	stateLength = 1.0f;
-public:
-	damagePlayerState(PlayerComponent& _player);
-	~damagePlayerState();
-
-	void enterState();
-	void update();
-
-};
-
-class deadPlayerState
+class DamagePlayerState
 	:public PlayerState
 {
 private:
-	float	timestamp;
-	float	stateLength = 5.0f;
+	float	Timestamp;
+	float	StateLength = 1.0f;
 public:
-	deadPlayerState(PlayerComponent& _player);
-	~deadPlayerState();
+	DamagePlayerState(PlayerComponent& _player);
+	~DamagePlayerState();
 
-	void enterState();
-	void update();
+	void EnterState();
+	void Update();
 
 };
 
-class victoryPlayerState
+class DeadPlayerState
+	:public PlayerState
+{
+private:
+	float	Timestamp;
+	float	StateLength = 5.0f;
+public:
+	DeadPlayerState(PlayerComponent& _player);
+	~DeadPlayerState();
+
+	void EnterState();
+	void Update();
+
+};
+
+class VictoryPlayerState
 	:public PlayerState
 {
 public:
-	victoryPlayerState(PlayerComponent& _player);
-	~victoryPlayerState();
+	VictoryPlayerState(PlayerComponent& _player);
+	~VictoryPlayerState();
 
-	void enterState();
+	void EnterState();
 
 };

@@ -11,22 +11,22 @@ State::~State()
 {
 }
 
-void State::enterState()
+void State::EnterState()
 {
 
 }
 
-void State::update()
+void State::Update()
 {
 
 }
 
-void State::postUpdate()
+void State::PostUpdate()
 {
 
 }
 
-void State::exitState()
+void State::ExitState()
 {
 
 }

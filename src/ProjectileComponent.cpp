@@ -1,13 +1,13 @@
 #include <iostream>
 #include <ProjectileComponent.h>
-#include <core/sEnvironment.h>
+#include <core/Environment.h>
 
 
 
 ProjectileComponent::ProjectileComponent(Entity& _entity, float _speed, Entity& _shooter)
 	:Component(_entity),
-	mSpeed(_speed),
-	mShooter(_shooter)
+	Speed(_speed),
+	Shooter(_shooter)
 {
 }
 
@@ -16,38 +16,38 @@ ProjectileComponent::~ProjectileComponent()
 {
 }
 
-void ProjectileComponent::start()
+void ProjectileComponent::Start()
 {
-	isBrandNew = true;
-	isMarkedForDeath = false;
-	spawnTime = sEnvironment::Instance().getElapsedTime();
-	mEntity.setDirection(mShooter.getDirection());
+	IsBrandNew = true;
+	IsMarkedForDeath = false;
+	SpawnTime = Environment::Instance().GetElapsedTime();
+	ParentEntity.SetDirection(Shooter.GetDirection());
 }
 
-void ProjectileComponent::update()
+void ProjectileComponent::Update()
 {
-	if (sEnvironment::Instance().getElapsedTime() > spawnTime + lifeSpan){
-		mEntity.disable();
+	if (Environment::Instance().GetElapsedTime() > SpawnTime + LifeSpan){
+		ParentEntity.Disable();
 		return;
 	}
-	mEntity.setVelocity((mEntity.getDirection() * mSpeed));
+	ParentEntity.SetVelocity((ParentEntity.GetDirection() * Speed));
 }
 
-void ProjectileComponent::postUpdate()
+void ProjectileComponent::PostUpdate()
 {
-	if (isMarkedForDeath) {
-		mEntity.disable();
+	if (IsMarkedForDeath) {
+		ParentEntity.Disable();
 	}
-	isBrandNew = false;
+	IsBrandNew = false;
 }
 
-void ProjectileComponent::onCollide(Entity& _other)
+void ProjectileComponent::OnCollide(Entity& _other)
 {
-	if (isBrandNew) return;
+	if (IsBrandNew) return;
 	//don't let scorpions block the bull from getting the player
-	if (mEntity.getTag() == enemy_bullet && _other.getTag() == hazard) return;
+	if (ParentEntity.GetTag() == enemy_bullet && _other.GetTag() == hazard) return;
 	//don't detect collsion with its own shooter or other projectiles
-	if (&_other != &mShooter && _other.getTag() != bullet && _other.getTag() != enemy_bullet) {
-		isMarkedForDeath = true;
+	if (&_other != &Shooter && _other.GetTag() != bullet && _other.GetTag() != enemy_bullet) {
+		IsMarkedForDeath = true;
 	}
 }

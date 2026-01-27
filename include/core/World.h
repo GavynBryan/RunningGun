@@ -11,56 +11,56 @@ class World
 private:
 	typedef std::pair<Entity*, Entity*> CollisionPair;
 private:
-	void						handleQueue();
+	void						HandleQueue();
 
 private:
-	SDL_Renderer*				mRenderer;
-	Sprite						mBackground;
+	SDL_Renderer*				Renderer;
+	Sprite						Background;
 
-	std::vector<Entity::Ptr>	mEntities;
-	std::vector<Entity::Ptr>	addQueue;
+	std::vector<Entity::Ptr>	Entities;
+	std::vector<Entity::Ptr>	AddQueue;
 
-	Uint64						gameStartTime;
-	Entity*						mPlayer;
-	PlayerComponent*			mPlayerComponent;
+	Uint64						GameStartTime;
+	Entity*						PlayerEntity;
+	PlayerComponent*			PlayerComponentRef;
 
-	bool						resetFlag;
+	bool						ResetFlag;
 
-	TTF_Font*					gameFont;
-	SDL_Texture*				statusTexture;
-	SDL_FRect					statusRect;
-	std::string					statusText;
-	std::vector<Entity::Ptr>	mHearts;
+	TTF_Font*					GameFont;
+	SDL_Texture*				StatusTexture;
+	SDL_FRect					StatusRect;
+	std::string					StatusText;
+	std::vector<Entity::Ptr>	Hearts;
 
-	std::unique_ptr<ObjectPool>	mObjectPool;
+	std::unique_ptr<ObjectPool>	ObjectPoolContext;
 
-	float						spawnScorpion1Interval;
-	float						lastSpawn1Time;
-	float						spawnScorpion2Interval;
-	float						lastSpawn2Time;
+	float						SpawnScorpion1Interval;
+	float						LastSpawn1Time;
+	float						SpawnScorpion2Interval;
+	float						LastSpawn2Time;
 
-	bool						win;
+	bool						Win;
 
-	void						updateStatusText(const std::string& text);
+	void						UpdateStatusText(const std::string& _text);
 
 public:
 								World(SDL_Renderer* renderer);
 								~World();
 
-	float						getElapsedTime();
-	void						addObject(std::unique_ptr<Entity> _entity);
-	void						winGame();
-	void						reset() { resetFlag = true; }
+	float						GetElapsedTime();
+	void						AddObject(std::unique_ptr<Entity> _entity);
+	void						WinGame();
+	void						Reset() { ResetFlag = true; }
 
-	void						init();
-	void						buildScene();
+	void						Init();
+	void						BuildScene();
 
-	void						handleCollisions(CollisionPair pairs);
+	void						HandleCollisions(CollisionPair _pairs);
 
-	void						start();
-	void						update();
-	void						postUpdate();
+	void						Start();
+	void						Update();
+	void						PostUpdate();
 
-	void						render();
-	void						drawHearts(int i);
+	void						Render();
+	void						DrawHearts(int _heartCount);
 };

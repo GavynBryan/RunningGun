@@ -4,15 +4,14 @@ class Entity;
 class Component
 {
 protected:
-	Entity&	mEntity;
-	bool		active;
+	Entity&	ParentEntity;
+	bool	Active;
 public:
 	Component(Entity& _entity);
 	~Component();
 
-	virtual void	start();
-	virtual void	update();
-	virtual void	postUpdate();
-	virtual void	onCollide(Entity& _other);
+	virtual void	Start();
+	virtual void	Update();
+	virtual void	PostUpdate();
+	virtual void	OnCollide(Entity& _other);
 };
-

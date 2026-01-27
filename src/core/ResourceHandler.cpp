@@ -2,43 +2,43 @@
 #include <stdexcept>
 
 ResourceHandler::ResourceHandler(SDL_Renderer* renderer)
-	: mRenderer(renderer)
+	: Renderer(renderer)
 {
 }
 
 ResourceHandler::~ResourceHandler()
 {
-	flush();
+	Flush();
 }
 
-void ResourceHandler::load(const std::string& _filename)
+void ResourceHandler::Load(const std::string& _filename)
 {
 	// Check if already loaded
-	if (mResources.find(_filename) != mResources.end()) {
+	if (Resources.find(_filename) != Resources.end()) {
 		return;
 	}
 
-	SDL_Texture* texture = IMG_LoadTexture(mRenderer, _filename.c_str());
-	if (!texture) {
+	SDL_Texture* _texture = IMG_LoadTexture(Renderer, _filename.c_str());
+	if (!_texture) {
 		throw std::runtime_error("Could not load " + _filename + ": " + SDL_GetError());
 	}
 
-	mResources[_filename] = texture;
+	Resources[_filename] = _texture;
 }
 
-SDL_Texture* ResourceHandler::get(const std::string& _filename)
+SDL_Texture* ResourceHandler::Get(const std::string& _filename)
 {
-	auto found = mResources.find(_filename);
-	assert(found != mResources.end());
-	return found->second;
+	auto _found = Resources.find(_filename);
+	assert(_found != Resources.end());
+	return _found->second;
 }
 
-void ResourceHandler::flush()
+void ResourceHandler::Flush()
 {
-	for (auto& pair : mResources) {
-		if (pair.second) {
-			SDL_DestroyTexture(pair.second);
+	for (auto& _pair : Resources) {
+		if (_pair.second) {
+			SDL_DestroyTexture(_pair.second);
 		}
 	}
-	mResources.clear();
+	Resources.clear();
 }
