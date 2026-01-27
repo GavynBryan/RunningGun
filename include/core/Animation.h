@@ -1,10 +1,12 @@
 #pragma once
 #include <memory>
-#include <SFML/Graphics/Sprite.hpp>
+#include "Vec2.h"
+#include "Sprite.h"
+
 class Animation
 {
 private:
-	sf::Vector2f	frameSize;
+	Vec2f			frameSize;
 	int				numFrames;
 	int				frameIndex;
 
@@ -15,11 +17,11 @@ private:
 	bool			finished;
 
 public:
-	Animation(int _index, sf::Vector2f _size, int _frames, bool _loop);
-	Animation(int _index, sf::Vector2f _size, int _frames, bool _loop, bool _priority);
+	Animation(int _index, Vec2f _size, int _frames, bool _loop);
+	Animation(int _index, Vec2f _size, int _frames, bool _loop, bool _priority);
 	~Animation();
-	
-	void update(sf::Sprite& _sprite);
+
+	void update(Sprite& _sprite);
 
 	bool isLoop() { return loop; }
 	bool isFinished() { return finished; }

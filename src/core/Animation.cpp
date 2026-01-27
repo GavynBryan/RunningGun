@@ -2,7 +2,7 @@
 
 
 
-Animation::Animation(int _index, sf::Vector2f _size, int _frames, bool _loop)
+Animation::Animation(int _index, Vec2f _size, int _frames, bool _loop)
 	:frameIndex(_index),
 	frameSize(_size),
 	numFrames(_frames),
@@ -13,7 +13,7 @@ Animation::Animation(int _index, sf::Vector2f _size, int _frames, bool _loop)
 {
 }
 
-Animation::Animation(int _index, sf::Vector2f _size, int _frames, bool _loop, bool _priority)
+Animation::Animation(int _index, Vec2f _size, int _frames, bool _loop, bool _priority)
 	:frameIndex(_index),
 	frameSize(_size),
 	numFrames(_frames),
@@ -28,12 +28,15 @@ Animation::~Animation()
 {
 }
 
-//Returns whether or not the animation is finished
-void Animation::update(sf::Sprite& _sprite)
+void Animation::update(Sprite& _sprite)
 {
-	_sprite.setTextureRect(sf::IntRect(currentFrame * frameSize.x,
-						frameIndex * frameSize.y, frameSize.x, frameSize.y));
-	currentFrame ++;
+	_sprite.setTextureRect(Recti(
+		static_cast<int>(currentFrame * frameSize.x),
+		static_cast<int>(frameIndex * frameSize.y),
+		static_cast<int>(frameSize.x),
+		static_cast<int>(frameSize.y)
+	));
+	currentFrame++;
 	if (currentFrame > numFrames) {
 		if (loop)
 			currentFrame = 0;

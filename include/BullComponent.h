@@ -3,6 +3,7 @@
 #include <core/Component.h>
 #include <core/AnimationListener.h>
 #include <core/ObjectPool.h>
+#include <core/Vec2.h>
 
 #include "BullStates.h"
 
@@ -20,10 +21,10 @@ private:
 	uint8_t							lives;
 	bool							isMarkedForDeath;
 
-	sf::Vector2f					offset1;
-	sf::Vector2f					offset2;
+	Vec2f							offset1;
+	Vec2f							offset2;
 
-	sf::Vector2f					projectileOffset;
+	Vec2f							projectileOffset;
 public:
 									BullComponent(Entity& _entity);
 									~BullComponent();
@@ -31,7 +32,7 @@ public:
 	void							start();
 	void							update();
 	void							postUpdate();
-	
+
 	void							setupProjectiles();
 	void							shoot();
 	void							switchShootPositions();
@@ -41,4 +42,3 @@ public:
 	void							damage();
 	void							onCollide(Entity& _other);
 };
-

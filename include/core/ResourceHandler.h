@@ -1,21 +1,23 @@
 #pragma once
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
 #include <map>
 #include <string>
 #include <memory>
 #include <stdexcept>
 #include <cassert>
 
-template<typename Resource>
 class ResourceHandler
 {
 public:
-	void					load(const std::string& _filename);
-	Resource&				get(const std::string& _filename);
+	ResourceHandler(SDL_Renderer* renderer);
+	~ResourceHandler();
 
+	void					load(const std::string& _filename);
+	SDL_Texture*			get(const std::string& _filename);
 	void					flush();
 
 private:
-	std::map<std::string, std::unique_ptr<Resource>> mResources;
+	SDL_Renderer* mRenderer;
+	std::map<std::string, SDL_Texture*> mResources;
 };
-
-#include "cResourceHandler.inl"

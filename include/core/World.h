@@ -1,5 +1,6 @@
 #pragma once
-#include <SFML/Graphics.hpp>
+#include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
 #include "Entity.h"
 
 class ObjectPool;
@@ -13,24 +14,22 @@ private:
 	void						handleQueue();
 
 private:
-	sf::RenderWindow&			mWindow;
-	sf::View					renderView;
-	sf::Sprite					mBackground;
+	SDL_Renderer*				mRenderer;
+	Sprite						mBackground;
 
-	//sf::Vector2f				worldSize;
-
-	
 	std::vector<Entity::Ptr>	mEntities;
 	std::vector<Entity::Ptr>	addQueue;
 
-	sf::Clock					gameClock;
+	Uint64						gameStartTime;
 	Entity*						mPlayer;
 	PlayerComponent*			mPlayerComponent;
 
 	bool						resetFlag;
 
-	sf::Font					gameFont;
-	sf::Text					statusText;
+	TTF_Font*					gameFont;
+	SDL_Texture*				statusTexture;
+	SDL_FRect					statusRect;
+	std::string					statusText;
 	std::vector<Entity::Ptr>	mHearts;
 
 	std::unique_ptr<ObjectPool>	mObjectPool;
@@ -42,19 +41,15 @@ private:
 
 	bool						win;
 
+	void						updateStatusText(const std::string& text);
+
 public:
-								World(sf::RenderWindow& _window);
+								World(SDL_Renderer* renderer);
 								~World();
 
 	float						getElapsedTime();
 	void						addObject(std::unique_ptr<Entity> _entity);
-	void						winGame() { 
-									win = true; 
-									mPlayer->disable(); 
-									statusText.setString ("You Win!");
-									statusText.setOrigin(statusText.getGlobalBounds().width / 2, 
-										statusText.getGlobalBounds().height / 2);
-									}
+	void						winGame();
 	void						reset() { resetFlag = true; }
 
 	void						init();
@@ -62,11 +57,10 @@ public:
 
 	void						handleCollisions(CollisionPair pairs);
 
-	void						start(); //post-init function
+	void						start();
 	void						update();
 	void						postUpdate();
 
 	void						render();
 	void						drawHearts(int i);
 };
-

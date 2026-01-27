@@ -5,13 +5,13 @@
 class sLocator
 {
 private:
-	static ResourceHandler<sf::Texture>* TextureHandler;
+	static ResourceHandler* TextureHandler;
 
 public:
-	static void provide(ResourceHandler<sf::Texture>* _textures) {
+	static void provide(ResourceHandler* _textures) {
 		TextureHandler = _textures;
 	}
 
-	static ResourceHandler<sf::Texture>* getTextureHandler() { return TextureHandler; }
+	static ResourceHandler* getTextureHandler() { return TextureHandler; }
 
 };

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cmath>
 #include <core/Entity.h>
 #include <core/Game.h>
 
@@ -6,12 +7,13 @@
 Entity::Entity(std::string _texture, float _width, float _height)
 	:mPosition(0,0),
 	mVelocity(0,0),
-	activated(true)
+	activated(true),
+	markedForDeath(false)
 {
 	//load resource handler from service
-	auto &handler = *sEnvironment::Instance().getTextureHandler();
-	mSprite.setTexture(handler.get(_texture));
-	mSprite.setTextureRect(sf::IntRect(0, 0, _width, _height));
+	auto handler = sEnvironment::Instance().getTextureHandler();
+	mSprite.setTexture(handler->get(_texture));
+	mSprite.setTextureRect(Recti(0, 0, static_cast<int>(_width), static_cast<int>(_height)));
 }
 
 
@@ -77,24 +79,21 @@ void Entity::postUpdate()
 	}
 }
 
-void Entity::render(sf::RenderTarget& _target)
+void Entity::render(SDL_Renderer* renderer)
 {
 	if (activated) {
 		mSprite.setPosition(mPosition);
-		_target.draw(mSprite);
+		mSprite.render(renderer);
 	}
 }
-/*
-When setPosition is called, call it on the Sprite as well,
-to avoid collision box issues in the game loop.
-*/
+
 void Entity::setPosition(float x, float y)
 {
 	mPosition.x = x; mPosition.y = y;
 	mSprite.setPosition(mPosition);
 }
 
-void Entity::setPosition(sf::Vector2f _pos)
+void Entity::setPosition(Vec2f _pos)
 {
 	mPosition = _pos;
 	mSprite.setPosition(mPosition);
@@ -105,12 +104,12 @@ void Entity::setVelocity(float x, float y)
 	mVelocity.x = x; mVelocity.y = y;
 }
 
-void Entity::setVelocity(sf::Vector2f _vel)
+void Entity::setVelocity(Vec2f _vel)
 {
 	mVelocity = _vel;
 }
 
-void Entity::setDirection(sf::Vector2f _dir) 
+void Entity::setDirection(Vec2f _dir)
 {
 	mDirection = _dir;
 }
@@ -127,7 +126,7 @@ void Entity::assignAnimator(std::unique_ptr<AnimationListener> _animator)
 
 bool Entity::isGrounded()
 {
-	return (abs(mPosition.y - sEnvironment::Instance().getPhysics()->getGroundLevel())) <= 0.3f;
+	return (std::abs(mPosition.y - sEnvironment::Instance().getPhysics()->getGroundLevel())) <= 0.3f;
 }
 
 void Entity::onCollide(Entity& _other)
