@@ -13,32 +13,32 @@ class BullComponent :
 	public Component
 {
 private:
-	std::map<std::string, BullStatePtr> mStates;
-	AnimationListener*				mAnimator;
-	BullState*						mCurrentState;
-	ObjectPool						mProjectiles;
+	std::map<std::string, BullStatePtr> States;
+	AnimationListener*				Animator;
+	BullState*						CurrentState;
+	ObjectPool						Projectiles;
 
-	uint8_t							lives;
-	bool							isMarkedForDeath;
+	uint8_t							Lives;
+	bool							IsMarkedForDeath;
 
-	Vec2							offset1;
-	Vec2							offset2;
+	Vec2							Offset1;
+	Vec2							Offset2;
 
-	Vec2							projectileOffset;
+	Vec2							ProjectileOffset;
 public:
 									BullComponent(Entity& _entity);
 									~BullComponent();
 
-	void							start();
-	void							update();
-	void							postUpdate();
+	void							Start();
+	void							Update();
+	void							PostUpdate();
 
-	void							setupProjectiles();
-	void							shoot();
-	void							switchShootPositions();
+	void							SetupProjectiles();
+	void							Shoot();
+	void							SwitchShootPositions();
 
-	void							addState(const std::string& _id, BullStatePtr _state);
-	void							switchState(const std::string& _id);
-	void							damage();
-	void							onCollide(Entity& _other);
+	void							AddState(const std::string& _id, BullStatePtr _state);
+	void							SwitchState(const std::string& _id);
+	void							Damage();
+	void							OnCollide(Entity& _other);
 };

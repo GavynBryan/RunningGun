@@ -3,9 +3,9 @@
 #include <iostream>
 
 AnimationListener::AnimationListener()
-	: mCurrentAnimation(nullptr)
-	, mNextAnimation(nullptr)
-	, lastAnimTime(SDL_GetTicks())
+	: CurrentAnimation(nullptr)
+	, NextAnimation(nullptr)
+	, LastAnimTime(SDL_GetTicks())
 {
 }
 
@@ -14,62 +14,62 @@ AnimationListener::~AnimationListener()
 {
 }
 
-void AnimationListener::update(Sprite& _sprite)
+void AnimationListener::Update(Sprite& _sprite)
 {
-	if (mCurrentAnimation) {
+	if (CurrentAnimation) {
 		//if it is a loop and there's another animation queued, then interrupt it
-		if (mCurrentAnimation->isLoop() && mNextAnimation) {
-			mCurrentAnimation = mNextAnimation;
-			mNextAnimation = nullptr;
-			mCurrentAnimation->update(_sprite);
+		if (CurrentAnimation->IsLoop() && NextAnimation) {
+			CurrentAnimation = NextAnimation;
+			NextAnimation = nullptr;
+			CurrentAnimation->Update(_sprite);
 			return;
 		}
-		Uint64 currentTime = SDL_GetTicks();
-		float elapsedSeconds = (currentTime - lastAnimTime) / 1000.0f;
-		if (elapsedSeconds >= 0.25f) {
-			mCurrentAnimation->update(_sprite);
+		Uint64 _currentTime = SDL_GetTicks();
+		float _elapsedSeconds = (_currentTime - LastAnimTime) / 1000.0f;
+		if (_elapsedSeconds >= 0.25f) {
+			CurrentAnimation->Update(_sprite);
 			//If it's NOT a loop and it HAS finished, then play the next queued anim
-			lastAnimTime = currentTime;
+			LastAnimTime = _currentTime;
 		}
-		if (!mCurrentAnimation->isLoop() && mNextAnimation) {
-			if (mNextAnimation->isPriority() || mCurrentAnimation->isFinished()) {
-				mCurrentAnimation = mNextAnimation;
-				mNextAnimation = nullptr;
-				lastAnimTime = SDL_GetTicks();
+		if (!CurrentAnimation->IsLoop() && NextAnimation) {
+			if (NextAnimation->IsPriority() || CurrentAnimation->IsFinished()) {
+				CurrentAnimation = NextAnimation;
+				NextAnimation = nullptr;
+				LastAnimTime = SDL_GetTicks();
 			}
 		}
 
 
 	//There is no current animation, but there is one queued up
-	} else if (mNextAnimation) {
-		mCurrentAnimation = mNextAnimation;
-		mNextAnimation = nullptr;
-		lastAnimTime = SDL_GetTicks();
+	} else if (NextAnimation) {
+		CurrentAnimation = NextAnimation;
+		NextAnimation = nullptr;
+		LastAnimTime = SDL_GetTicks();
 	}
 }
 
-void AnimationListener::addAnimation(const std::string& _name, AnimPtr _anim)
+void AnimationListener::AddAnimation(const std::string& _name, AnimPtr _anim)
 {
-	mAnimationMap.insert(std::make_pair(_name, std::move(_anim)));
+	AnimationMap.insert(std::make_pair(_name, std::move(_anim)));
 }
 
 //is the next animation a priority animation?
-bool AnimationListener::isNextPriority()
+bool AnimationListener::IsNextPriority()
 {
-	if (mNextAnimation && mNextAnimation->isPriority())
+	if (NextAnimation && NextAnimation->IsPriority())
 		return true;
 	return false;
 }
 
-void AnimationListener::playAnimation(const std::string& _anim)
+void AnimationListener::PlayAnimation(const std::string& _anim)
 {
-	auto found = mAnimationMap.find(_anim);
-	assert(found != mAnimationMap.end());
+	auto _found = AnimationMap.find(_anim);
+	assert(_found != AnimationMap.end());
 
-	auto anim = found->second.get();
+	auto _animTarget = _found->second.get();
 	//if (isNextPriority() && !anim->isPriority()) return;
-	if (anim != mCurrentAnimation) {
-		mNextAnimation = anim;
+	if (_animTarget != CurrentAnimation) {
+		NextAnimation = _animTarget;
 	}
 
 }

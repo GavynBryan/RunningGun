@@ -154,10 +154,10 @@
     <ClInclude Include="include\core\Game.h" />
     <ClInclude Include="include\core\ObjectPool.h" />
     <ClInclude Include="include\core\ResourceHandler.h" />
-    <ClInclude Include="include\core\sEnvironment.h" />
-    <ClInclude Include="include\core\sLocator.h" />
-    <ClInclude Include="include\core\sPhysics.h" />
-    <ClInclude Include="include\core\sPrefabs.h" />
+    <ClInclude Include="include\core\Environment.h" />
+    <ClInclude Include="include\core\Locator.h" />
+    <ClInclude Include="include\core\Physics.h" />
+    <ClInclude Include="include\core\Prefabs.h" />
     <ClInclude Include="include\core\State.h" />
     <ClInclude Include="include\core\World.h" />
     <ClInclude Include="include\DustComponent.h" />
@@ -181,7 +181,7 @@
     <ClCompile Include="src\core\Game.cpp" />
     <ClCompile Include="src\core\main.cpp" />
     <ClCompile Include="src\core\ObjectPool.cpp" />
-    <ClCompile Include="src\core\sEnvironment.cpp" />
+    <ClCompile Include="src\core\Environment.cpp" />
     <ClCompile Include="src\core\State.cpp" />
     <ClCompile Include="src\core\World.cpp" />
     <ClCompile Include="src\DustComponent.cpp" />
@@ -190,9 +190,9 @@
     <ClCompile Include="src\PlayerComponent.cpp" />
     <ClCompile Include="src\PlayerStates.cpp" />
     <ClCompile Include="src\ProjectileComponent.cpp" />
-    <ClCompile Include="src\sLocator.cpp" />
-    <ClCompile Include="src\sPhysics.cpp" />
-    <ClCompile Include="src\sPrefabs.cpp" />
+    <ClCompile Include="src\Locator.cpp" />
+    <ClCompile Include="src\Physics.cpp" />
+    <ClCompile Include="src\Prefabs.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

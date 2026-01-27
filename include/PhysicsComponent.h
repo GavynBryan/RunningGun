@@ -1,19 +1,19 @@
 #pragma once
 #include <core/Component.h>
-#include <core/sEnvironment.h>
+#include <core/Environment.h>
 
 class PhysicsComponent :
 	public Component
 {
 private:
-	sPhysics &physContext;
+	Physics &PhysContext;
 public:
 	PhysicsComponent(Entity& _entity);
 	~PhysicsComponent();
 
-	void update();
-	void postUpdate();
+	void Update();
+	void PostUpdate();
 
-	void onCollide(Entity& _other);
+	void OnCollide(Entity& _other);
 };
 

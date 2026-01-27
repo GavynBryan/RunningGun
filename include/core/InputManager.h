@@ -11,11 +11,11 @@ enum class KeyState {
 
 class InputManager {
 private:
-    static InputManager* instance;
+    static InputManager* InstancePtr;
 
-    std::unordered_map<SDL_Scancode, KeyState> keyStates;
-    std::unordered_map<SDL_Scancode, bool> currentKeys;
-    std::unordered_map<SDL_Scancode, bool> previousKeys;
+    std::unordered_map<SDL_Scancode, KeyState> KeyStates;
+    std::unordered_map<SDL_Scancode, bool> CurrentKeys;
+    std::unordered_map<SDL_Scancode, bool> PreviousKeys;
 
 public:
     InputManager();
@@ -24,19 +24,19 @@ public:
     static InputManager& Instance();
 
     // Call at the beginning of each frame before processing events
-    void beginFrame();
+    void BeginFrame();
 
     // Process an SDL event (call for each event in the event loop)
-    void processEvent(const SDL_Event& event);
+    void ProcessEvent(const SDL_Event& _event);
 
     // Call at the end of event processing to finalize states
-    void endFrame();
+    void EndFrame();
 
     // Query key states
-    bool isKeyPressed(SDL_Scancode key) const;   // True only on the frame key was pressed
-    bool isKeyHeld(SDL_Scancode key) const;      // True while key is down (including press frame)
-    bool isKeyReleased(SDL_Scancode key) const;  // True only on the frame key was released
-    bool isKeyDown(SDL_Scancode key) const;      // Alias for isKeyHeld
+    bool IsKeyPressed(SDL_Scancode _key) const;   // True only on the frame key was pressed
+    bool IsKeyHeld(SDL_Scancode _key) const;      // True while key is down (including press frame)
+    bool IsKeyReleased(SDL_Scancode _key) const;  // True only on the frame key was released
+    bool IsKeyDown(SDL_Scancode _key) const;      // Alias for IsKeyHeld
 
-    KeyState getKeyState(SDL_Scancode key) const;
+    KeyState GetKeyState(SDL_Scancode _key) const;
 };

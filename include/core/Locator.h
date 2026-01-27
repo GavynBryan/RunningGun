@@ -2,16 +2,16 @@
 #include "ResourceHandler.h"
 #include "World.h"
 
-class sLocator
+class Locator
 {
 private:
 	static ResourceHandler* TextureHandler;
 
 public:
-	static void provide(ResourceHandler* _textures) {
+	static void Provide(ResourceHandler* _textures) {
 		TextureHandler = _textures;
 	}
 
-	static ResourceHandler* getTextureHandler() { return TextureHandler; }
+	static ResourceHandler* GetTextureHandler() { return TextureHandler; }
 
 };

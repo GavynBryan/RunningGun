@@ -1,221 +1,221 @@
 #include <set>
 #include <core/World.h>
 #include <core/Game.h>
-#include <core/sPrefabs.h>
+#include <core/Prefabs.h>
 #include <core/AnimationListener.h>
 #include <core/ObjectPool.h>
 #include <PlayerComponent.h>
 
 World::World(SDL_Renderer* renderer)
-	:mRenderer(renderer),
-	resetFlag(false),
-	mObjectPool(new ObjectPool()),
-	spawnScorpion1Interval(10.0f),
-	lastSpawn1Time(0),
-	spawnScorpion2Interval(11.0f),
-	lastSpawn2Time(0),
-	win(false),
-	gameFont(nullptr),
-	statusTexture(nullptr),
-	statusText(""),
-	mPlayer(nullptr),
-	mPlayerComponent(nullptr),
-	gameStartTime(0)
+	:Renderer(renderer),
+	ResetFlag(false),
+	ObjectPoolContext(new ObjectPool()),
+	SpawnScorpion1Interval(10.0f),
+	LastSpawn1Time(0),
+	SpawnScorpion2Interval(11.0f),
+	LastSpawn2Time(0),
+	Win(false),
+	GameFont(nullptr),
+	StatusTexture(nullptr),
+	StatusText(""),
+	PlayerEntity(nullptr),
+	PlayerComponentRef(nullptr),
+	GameStartTime(0)
 {
-	statusRect = {0, 0, 0, 0};
+	StatusRect = {0, 0, 0, 0};
 }
 
 World::~World()
 {
-	if (statusTexture) {
-		SDL_DestroyTexture(statusTexture);
+	if (StatusTexture) {
+		SDL_DestroyTexture(StatusTexture);
 	}
-	if (gameFont) {
-		TTF_CloseFont(gameFont);
+	if (GameFont) {
+		TTF_CloseFont(GameFont);
 	}
 }
 
-float World::getElapsedTime()
+float World::GetElapsedTime()
 {
-	return (SDL_GetTicks() - gameStartTime) / 1000.0f;
+	return (SDL_GetTicks() - GameStartTime) / 1000.0f;
 }
 
-void World::addObject(std::unique_ptr<Entity> _entity)
+void World::AddObject(std::unique_ptr<Entity> _entity)
 {
-	addQueue.push_back(std::move(_entity));
+	AddQueue.push_back(std::move(_entity));
 }
 
-void World::updateStatusText(const std::string& text)
+void World::UpdateStatusText(const std::string& _text)
 {
-	statusText = text;
-	if (statusTexture) {
-		SDL_DestroyTexture(statusTexture);
-		statusTexture = nullptr;
+	StatusText = _text;
+	if (StatusTexture) {
+		SDL_DestroyTexture(StatusTexture);
+		StatusTexture = nullptr;
 	}
 
-	if (!text.empty() && gameFont) {
-		SDL_Color white = {255, 255, 255, 255};
-		SDL_Surface* surface = TTF_RenderText_Solid(gameFont, text.c_str(), 0, white);
-		if (surface) {
-			statusTexture = SDL_CreateTextureFromSurface(mRenderer, surface);
-			statusRect.w = static_cast<float>(surface->w);
-			statusRect.h = static_cast<float>(surface->h);
-			statusRect.x = 400 - statusRect.w / 2;
-			statusRect.y = 300 - statusRect.h / 2;
-			SDL_DestroySurface(surface);
+	if (!_text.empty() && GameFont) {
+		SDL_Color _white = {255, 255, 255, 255};
+		SDL_Surface* _surface = TTF_RenderText_Solid(GameFont, _text.c_str(), 0, _white);
+		if (_surface) {
+			StatusTexture = SDL_CreateTextureFromSurface(Renderer, _surface);
+			StatusRect.w = static_cast<float>(_surface->w);
+			StatusRect.h = static_cast<float>(_surface->h);
+			StatusRect.x = 400 - StatusRect.w / 2;
+			StatusRect.y = 300 - StatusRect.h / 2;
+			SDL_DestroySurface(_surface);
 		}
 	}
 }
 
-void World::winGame()
+void World::WinGame()
 {
-	win = true;
-	mPlayer->disable();
-	updateStatusText("You Win!");
+	Win = true;
+	PlayerEntity->Disable();
+	UpdateStatusText("You Win!");
 }
 
-void World::init()
+void World::Init()
 {
-	gameStartTime = SDL_GetTicks();
+	GameStartTime = SDL_GetTicks();
 
 	// Initialize SDL_ttf
 	if (!TTF_Init()) {
 		SDL_Log("Failed to initialize SDL_ttf: %s", SDL_GetError());
 	}
 
-	auto handler = sEnvironment::Instance().getTextureHandler();
-	handler->load("sprites/player.png");
-	handler->load("sprites/ball.png");
-	handler->load("sprites/bullet.png");
-	handler->load("sprites/bull.png");
-	handler->load("sprites/waves.png");
-	handler->load("sprites/scorpion.png");
-	handler->load("sprites/duststorm.png");
-	handler->load("sprites/background.png");
-	handler->load("sprites/health.png");
+	auto _handler = Environment::Instance().GetTextureHandler();
+	_handler->Load("sprites/player.png");
+	_handler->Load("sprites/ball.png");
+	_handler->Load("sprites/bullet.png");
+	_handler->Load("sprites/bull.png");
+	_handler->Load("sprites/waves.png");
+	_handler->Load("sprites/scorpion.png");
+	_handler->Load("sprites/duststorm.png");
+	_handler->Load("sprites/background.png");
+	_handler->Load("sprites/health.png");
 
-	gameFont = TTF_OpenFont("arial.ttf", 60);
-	if (!gameFont) {
+	GameFont = TTF_OpenFont("arial.ttf", 60);
+	if (!GameFont) {
 		SDL_Log("Failed to load font: %s", SDL_GetError());
 	}
 
-	mBackground.setTexture(handler->get("sprites/background.png"));
+	Background.SetTexture(_handler->Get("sprites/background.png"));
 
-	for (int i = 0; i < 5; i++) {
-		std::unique_ptr<Entity> heart(new Entity("sprites/health.png", 32, 32));
-		heart->setPosition(32.0f * i + 5, 0);
-		mHearts.push_back(std::move(heart));
+	for (int _index = 0; _index < 5; _index++) {
+		std::unique_ptr<Entity> _heart(new Entity("sprites/health.png", 32, 32));
+		_heart->SetPosition(32.0f * _index + 5, 0);
+		Hearts.push_back(std::move(_heart));
 	}
 }
 
-void World::buildScene()
+void World::BuildScene()
 {
-	auto _player = sPrefabs::getPlayer();
-	mPlayer = _player.get();
-	mPlayerComponent = mPlayer->getComponent<PlayerComponent>();
-	addObject(std::move(_player));
+	auto _player = Prefabs::GetPlayer();
+	PlayerEntity = _player.get();
+	PlayerComponentRef = PlayerEntity->GetComponent<PlayerComponent>();
+	AddObject(std::move(_player));
 
-	auto _bull = sPrefabs::getBull();
-	addObject(std::move(_bull));
+	auto _bull = Prefabs::GetBull();
+	AddObject(std::move(_bull));
 
-	for (int i = 0; i < 3; i++) {
-		auto _scorpion = sPrefabs::getScorpion();
-		mObjectPool->feedObject(std::move(_scorpion));
+	for (int _index = 0; _index < 3; _index++) {
+		auto _scorpion = Prefabs::GetScorpion();
+		ObjectPoolContext->FeedObject(std::move(_scorpion));
 	}
 
-	lastSpawn1Time = 0;
-	lastSpawn2Time = 0;
-	gameStartTime = SDL_GetTicks();
+	LastSpawn1Time = 0;
+	LastSpawn2Time = 0;
+	GameStartTime = SDL_GetTicks();
 
-	updateStatusText("");
+	UpdateStatusText("");
 }
 
-void World::handleCollisions(CollisionPair pairs)
+void World::HandleCollisions(CollisionPair _pairs)
 {
 
 }
 
-void World::start()
+void World::Start()
 {
-	for (auto& e : addQueue) {
-		e->start();
+	for (auto& _entity : AddQueue) {
+		_entity->Start();
 	}
 }
 
-void World::update()
+void World::Update()
 {
-	handleQueue();
+	HandleQueue();
 
-	std::set<CollisionPair> collisionPairs;
+	std::set<CollisionPair> _collisionPairs;
 
-	for (auto& e : mEntities) {
-		e->update();
-		for (auto& o : mEntities) {
-			if (o == e) continue;
-			if (e->isEnabled() && o->collision(e.get())) {
-				o->onCollide(*e.get());
+	for (auto& _entity : Entities) {
+		_entity->Update();
+		for (auto& _other : Entities) {
+			if (_other == _entity) continue;
+			if (_entity->IsEnabled() && _other->Collision(_entity.get())) {
+				_other->OnCollide(*_entity.get());
 			}
 		}
 	}
 }
 
-void World::postUpdate()
+void World::PostUpdate()
 {
-	for (auto& e : mEntities) {
-		e->postUpdate();
+	for (auto& _entity : Entities) {
+		_entity->PostUpdate();
 	}
 
-	if (!win) {
-		if (getElapsedTime() - lastSpawn1Time > spawnScorpion1Interval) {
-			auto scorpion1 = mObjectPool->borrowObject();
-			if (scorpion1 != nullptr) {
-				scorpion1->setPosition(50, 20);
-				scorpion1->setDirection(1, 0);
+	if (!Win) {
+		if (GetElapsedTime() - LastSpawn1Time > SpawnScorpion1Interval) {
+			auto _scorpion1 = ObjectPoolContext->BorrowObject();
+			if (_scorpion1 != nullptr) {
+				_scorpion1->SetPosition(50, 20);
+				_scorpion1->SetDirection(1, 0);
 			}
-			lastSpawn1Time = getElapsedTime();
+			LastSpawn1Time = GetElapsedTime();
 		}
 
-		if (getElapsedTime() - lastSpawn2Time > spawnScorpion2Interval) {
-			auto scorpion2 = mObjectPool->borrowObject();
-			if (scorpion2 != nullptr) {
-				scorpion2->setPosition(400, 20);
-				scorpion2->setDirection(-1, 0);
+		if (GetElapsedTime() - LastSpawn2Time > SpawnScorpion2Interval) {
+			auto _scorpion2 = ObjectPoolContext->BorrowObject();
+			if (_scorpion2 != nullptr) {
+				_scorpion2->SetPosition(400, 20);
+				_scorpion2->SetDirection(-1, 0);
 			}
-			lastSpawn2Time = getElapsedTime();
+			LastSpawn2Time = GetElapsedTime();
 		}
 	}
 
-	if (resetFlag) {
-		mEntities.clear();
-		mObjectPool->clear();
-		resetFlag = false;
-		buildScene();
+	if (ResetFlag) {
+		Entities.clear();
+		ObjectPoolContext->Clear();
+		ResetFlag = false;
+		BuildScene();
 	}
 }
 
-void World::render()
+void World::Render()
 {
-	mBackground.render(mRenderer);
-	for (auto& e : mEntities) {
-		e->render(mRenderer);
+	Background.Render(Renderer);
+	for (auto& _entity : Entities) {
+		_entity->Render(Renderer);
 	}
-	if (statusTexture) {
-		SDL_RenderTexture(mRenderer, statusTexture, nullptr, &statusRect);
+	if (StatusTexture) {
+		SDL_RenderTexture(Renderer, StatusTexture, nullptr, &StatusRect);
 	}
-	drawHearts(mPlayerComponent->getHealth());
+	DrawHearts(PlayerComponentRef->GetHealth());
 }
 
-void World::drawHearts(int i)
+void World::DrawHearts(int _heartCount)
 {
-	for(int j = 0; j < i; j++){
-		mHearts[j]->render(mRenderer);
+	for(int _index = 0; _index < _heartCount; _index++){
+		Hearts[_index]->Render(Renderer);
 	}
 }
 
-void World::handleQueue()
+void World::HandleQueue()
 {
-	for (auto& e : addQueue) {
-		mEntities.push_back(std::move(e));
+	for (auto& _entity : AddQueue) {
+		Entities.push_back(std::move(_entity));
 	}
-	addQueue.clear();
+	AddQueue.clear();
 }

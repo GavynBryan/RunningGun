@@ -3,7 +3,7 @@
 
 PhysicsComponent::PhysicsComponent(Entity& _entity)
 	:Component(_entity),
-	physContext(*sEnvironment::Instance().getPhysics())
+	PhysContext(*Environment::Instance().GetPhysics())
 {
 	
 }
@@ -13,30 +13,30 @@ PhysicsComponent::~PhysicsComponent()
 {
 }
 
-void PhysicsComponent::update()
+void PhysicsComponent::Update()
 {
-	float gravity = physContext.getGravity().y;
-	float currentVelocity = mEntity.getVelocity().y;
-	if (currentVelocity < gravity) {
-		float res = currentVelocity + gravity * (sEnvironment::Instance().deltaTime());
-		res = std::min(res, gravity);
-		mEntity.setVelocity(mEntity.getVelocity().x, res);
+	float _gravity = PhysContext.GetGravity().y;
+	float _currentVelocity = ParentEntity.GetVelocity().y;
+	if (_currentVelocity < _gravity) {
+		float _result = _currentVelocity + _gravity * (Environment::Instance().DeltaTime());
+		_result = std::min(_result, _gravity);
+		ParentEntity.SetVelocity(ParentEntity.GetVelocity().x, _result);
 	}
 	
 }
 
-void PhysicsComponent::postUpdate()
+void PhysicsComponent::PostUpdate()
 {
-	auto position = mEntity.getPosition();
+	auto _position = ParentEntity.GetPosition();
 
-	position.x = std::min(position.x, 600.0f);
-	position.x = std::max(position.x, 0.0f);
-	//position.y = std::max(position.y, 0.0f);
-	position.y = std::min(position.y, physContext.getGroundLevel());
-	mEntity.setPosition(position);
+	_position.x = std::min(_position.x, 600.0f);
+	_position.x = std::max(_position.x, 0.0f);
+	//_position.y = std::max(_position.y, 0.0f);
+	_position.y = std::min(_position.y, PhysContext.GetGroundLevel());
+	ParentEntity.SetPosition(_position);
 }
 
-void PhysicsComponent::onCollide(Entity& _other)
+void PhysicsComponent::OnCollide(Entity& _other)
 {
 
 }

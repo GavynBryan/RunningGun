@@ -6,26 +6,26 @@
 class Animation
 {
 private:
-	Vec2			frameSize;
-	int				numFrames;
-	int				frameIndex;
+	Vec2			FrameSize;
+	int				NumFrames;
+	int				FrameIndex;
 
-	int				currentFrame;
+	int				CurrentFrame;
 
-	bool			loop;
-	bool			priority;
-	bool			finished;
+	bool			Loop;
+	bool			Priority;
+	bool			Finished;
 
 public:
 	Animation(int _index, Vec2 _size, int _frames, bool _loop);
 	Animation(int _index, Vec2 _size, int _frames, bool _loop, bool _priority);
 	~Animation();
 
-	void update(Sprite& _sprite);
+	void Update(Sprite& _sprite);
 
-	bool isLoop() { return loop; }
-	bool isFinished() { return finished; }
-	bool isPriority() { return priority; }
+	bool IsLoop() { return Loop; }
+	bool IsFinished() { return Finished; }
+	bool IsPriority() { return Priority; }
 };
 
 typedef std::unique_ptr<Animation> AnimPtr;

@@ -5,25 +5,25 @@ class ProjectileComponent
 	:public Component
 {
 private:
-	float		mSpeed;
-	float		spawnTime = 0;
-	float		lifeSpan = 3.0;
+	float		Speed;
+	float		SpawnTime = 0;
+	float		LifeSpan = 3.0;
 
-	Entity&	mShooter;
-	bool		isMarkedForDeath = false;
+	Entity&	Shooter;
+	bool		IsMarkedForDeath = false;
 
 	//flag to prevent the bullet from being destroyed on the same frame it's created on
 	//THIS IS AN AWFUL WAY OF DOING THIS
 	//But I'm on a 9-day time constraint and I already screwed up by having a bad collision loop, so yay spaghetti
-	bool		isBrandNew = true;
+	bool		IsBrandNew = true;
 public:
 	ProjectileComponent(Entity& _entity, float _speed, Entity& _shooter);
 	~ProjectileComponent();
 
-	void start();
-	void update();
-	void postUpdate();
+	void Start();
+	void Update();
+	void PostUpdate();
 
-	void onCollide(Entity& _other);
+	void OnCollide(Entity& _other);
 };
 

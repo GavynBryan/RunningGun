@@ -3,8 +3,8 @@
 
 
 Component::Component(Entity& _entity)
-	:mEntity(_entity),
-	active(true)
+	:ParentEntity(_entity),
+	Active(true)
 {
 }
 
@@ -13,22 +13,22 @@ Component::~Component()
 {
 }
 
-void Component::start()
+void Component::Start()
 {
 
 }
 
-void Component::update()
+void Component::Update()
 {
 
 }
 
-void Component::postUpdate()
+void Component::PostUpdate()
 {
 
 }
 
-void Component::onCollide(Entity& _other)
+void Component::OnCollide(Entity& _other)
 {
 
 }

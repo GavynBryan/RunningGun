@@ -4,48 +4,48 @@
 
 
 BullState::BullState(BullComponent& _bull)
-	:mBull(_bull)
+	:BullRef(_bull)
 {
 }
 
 BullState::~BullState()
 {}
 
-void BullState::enterState(){}
-void BullState::update(){}
-void BullState::postUpdate(){}
-void BullState::exitState(){}
+void BullState::EnterState(){}
+void BullState::Update(){}
+void BullState::PostUpdate(){}
+void BullState::ExitState(){}
 
 
 //Default State
 BullDefaultState::BullDefaultState(BullComponent& _bull)
 	:BullState(_bull),
-	lastShot(0)
+	LastShot(0)
 {
 }
 BullDefaultState::~BullDefaultState()
 {}
 
-void BullDefaultState::enterState() 
+void BullDefaultState::EnterState() 
 {
-	lastShot = 0;
+	LastShot = 0;
 }
 
-void BullDefaultState::update() 
+void BullDefaultState::Update() 
 {
-	float currentTime = sEnvironment::Instance().getElapsedTime();
-	if (currentTime - lastShot > shootFrequency) {
-		mBull.shoot();
-		lastShot = currentTime;
+	float _currentTime = Environment::Instance().GetElapsedTime();
+	if (_currentTime - LastShot > ShootFrequency) {
+		BullRef.Shoot();
+		LastShot = _currentTime;
 	}
 }
 
-void BullDefaultState::postUpdate() 
+void BullDefaultState::PostUpdate() 
 {
 
 }
 
-void BullDefaultState::exitState() 
+void BullDefaultState::ExitState() 
 {
 
 }
@@ -58,18 +58,18 @@ BullWave1State::BullWave1State(BullComponent& _bull)
 BullWave1State::~BullWave1State()
 {}
 
-void BullWave1State::enterState() {
+void BullWave1State::EnterState() {
 
 }
-void BullWave1State::update() {
-
-}
-
-void BullWave1State::postUpdate() {
+void BullWave1State::Update() {
 
 }
 
-void BullWave1State::exitState() {
+void BullWave1State::PostUpdate() {
+
+}
+
+void BullWave1State::ExitState() {
 
 }
 
@@ -81,17 +81,17 @@ BullWave2State::BullWave2State(BullComponent& _bull)
 BullWave2State::~BullWave2State()
 {}
 
-void BullWave2State::enterState() {
+void BullWave2State::EnterState() {
 
 }
-void BullWave2State::update() {
-
-}
-
-void BullWave2State::postUpdate() {
+void BullWave2State::Update() {
 
 }
 
-void BullWave2State::exitState() {
+void BullWave2State::PostUpdate() {
+
+}
+
+void BullWave2State::ExitState() {
 
 }

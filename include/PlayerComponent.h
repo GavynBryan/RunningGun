@@ -7,46 +7,46 @@
 
 typedef std::unique_ptr<PlayerState> StatePtr;
 
-constexpr auto bulletCoolDown = .3f;
+constexpr auto BulletCoolDown = .3f;
 
 
 class PlayerComponent :
 	public Component
 {
 private:
-	uint8_t lives;
-	float playerSpeed;
+	uint8_t Lives;
+	float PlayerSpeed;
 
-	std::map<std::string, StatePtr> mStates;
-	AnimationListener*				mAnimator;
-	PlayerState*					mCurrentState;
-	ObjectPool						mBullets;
+	std::map<std::string, StatePtr> States;
+	AnimationListener*				Animator;
+	PlayerState*					CurrentState;
+	ObjectPool						Bullets;
 
-	Vec2							bulletOffset;
-	float							lastShotTime;
+	Vec2							BulletOffset;
+	float							LastShotTime;
 
 public:
 									PlayerComponent(Entity& _entity);
 									~PlayerComponent();
 
 
-	void							start();
-	void							update();
-	void							postUpdate();
+	void							Start();
+	void							Update();
+	void							PostUpdate();
 
-	void							handleAnimations();
+	void							HandleAnimations();
 
-	void							setupBullets();
-	void							shootBullet();
-	int								getHealth() { return lives; }
+	void							SetupBullets();
+	void							ShootBullet();
+	int								GetHealth() { return Lives; }
 
-	void							addState(const std::string& _id, StatePtr _state);
-	void							switchState(const std::string& _id);
+	void							AddState(const std::string& _id, StatePtr _state);
+	void							SwitchState(const std::string& _id);
 
-	void							orientDirection();
-	void							handleInput();
-	void							freeze();
-	void							damage();
+	void							OrientDirection();
+	void							HandleInput();
+	void							Freeze();
+	void							Damage();
 
-	void							onCollide(Entity& _other);
+	void							OnCollide(Entity& _other);
 };

@@ -1,16 +1,15 @@
 #pragma once
-#include "sEnvironment.h"
+#include "Environment.h"
 class ObjectPool
 {
 private:
-	std::vector<Entity*> mPool;
+	std::vector<Entity*> Pool;
 public:
 	ObjectPool();
 	~ObjectPool();
 
-	void feedObject(Entity::Ptr _obj);
-	void clear();
+	void FeedObject(Entity::Ptr _obj);
+	void Clear();
 
-	Entity* borrowObject();
+	Entity* BorrowObject();
 };
-

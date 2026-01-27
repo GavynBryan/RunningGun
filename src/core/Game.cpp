@@ -2,92 +2,92 @@
 #include <string.h>
 
 Game::Game()
-	:mWindow(nullptr),
-	mRenderer(nullptr),
-	mWorld(nullptr),
-	quit(false)
+	:Window(nullptr),
+	Renderer(nullptr),
+	WorldContext(nullptr),
+	Quit(false)
 {
 	if (!SDL_Init(SDL_INIT_VIDEO)) {
 		SDL_Log("Failed to initialize SDL: %s", SDL_GetError());
 		return;
 	}
 
-	mWindow = SDL_CreateWindow("Running Gun", 800, 600, 0);
-	if (!mWindow) {
+	Window = SDL_CreateWindow("Running Gun", 800, 600, 0);
+	if (!Window) {
 		SDL_Log("Failed to create window: %s", SDL_GetError());
 		return;
 	}
 
-	mRenderer = SDL_CreateRenderer(mWindow, nullptr);
-	if (!mRenderer) {
+	Renderer = SDL_CreateRenderer(Window, nullptr);
+	if (!Renderer) {
 		SDL_Log("Failed to create renderer: %s", SDL_GetError());
 		return;
 	}
 
-	mWorld = new World(mRenderer);
+	WorldContext = new World(Renderer);
 
-	std::unique_ptr<ResourceHandler>	_TextureHandler(new ResourceHandler(mRenderer));
-	std::unique_ptr<sPhysics>			_PhysicsManager(new sPhysics());
-	mEnvironment.setTextureHandler(std::move(_TextureHandler));
-	mEnvironment.setPhysics(std::move(_PhysicsManager));
-	mEnvironment.setWorld(mWorld);
+	std::unique_ptr<ResourceHandler> _textureHandler(new ResourceHandler(Renderer));
+	std::unique_ptr<Physics> _physicsManager(new Physics());
+	EnvironmentContext.SetTextureHandler(std::move(_textureHandler));
+	EnvironmentContext.SetPhysics(std::move(_physicsManager));
+	EnvironmentContext.SetWorld(WorldContext);
 }
 
 Game::~Game()
 {
-	delete mWorld;
-	if (mRenderer) {
-		SDL_DestroyRenderer(mRenderer);
+	delete WorldContext;
+	if (Renderer) {
+		SDL_DestroyRenderer(Renderer);
 	}
-	if (mWindow) {
-		SDL_DestroyWindow(mWindow);
+	if (Window) {
+		SDL_DestroyWindow(Window);
 	}
 	SDL_Quit();
 }
 
-void Game::run()
+void Game::Run()
 {
-	Uint64 lastTime = SDL_GetPerformanceCounter();
-	Uint64 frequency = SDL_GetPerformanceFrequency();
+	Uint64 _lastTime = SDL_GetPerformanceCounter();
+	Uint64 _frequency = SDL_GetPerformanceFrequency();
 
-	mWorld->init();
-	mWorld->buildScene();
+	WorldContext->Init();
+	WorldContext->BuildScene();
 
-	while (!quit) {
+	while (!Quit) {
 		// Calculate delta time
-		Uint64 currentTime = SDL_GetPerformanceCounter();
-		float dt = (float)(currentTime - lastTime) / (float)frequency;
-		lastTime = currentTime;
+		Uint64 _currentTime = SDL_GetPerformanceCounter();
+		float _deltaTime = static_cast<float>(_currentTime - _lastTime) / static_cast<float>(_frequency);
+		_lastTime = _currentTime;
 
 		// Begin input frame
-		mInputManager.beginFrame();
+		InputManagerContext.BeginFrame();
 
 		// Process events
-		SDL_Event event;
-		while (SDL_PollEvent(&event)) {
-			if (event.type == SDL_EVENT_QUIT) {
-				quit = true;
+		SDL_Event _event;
+		while (SDL_PollEvent(&_event)) {
+			if (_event.type == SDL_EVENT_QUIT) {
+				Quit = true;
 			}
-			mInputManager.processEvent(event);
+			InputManagerContext.ProcessEvent(_event);
 		}
 
 		// End input frame
-		mInputManager.endFrame();
+		InputManagerContext.EndFrame();
 
-		mEnvironment.setDeltaTime(dt);
+		EnvironmentContext.SetDeltaTime(_deltaTime);
 
 		// Clear screen
-		SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 255);
-		SDL_RenderClear(mRenderer);
+		SDL_SetRenderDrawColor(Renderer, 0, 0, 0, 255);
+		SDL_RenderClear(Renderer);
 
 		// Update and render
-		mWorld->start();
-		mWorld->update();
-		mWorld->postUpdate();
-		mWorld->render();
+		WorldContext->Start();
+		WorldContext->Update();
+		WorldContext->PostUpdate();
+		WorldContext->Render();
 
 		// Present
-		SDL_RenderPresent(mRenderer);
+		SDL_RenderPresent(Renderer);
 
 		// Frame rate limiting (approximately 120 FPS)
 		SDL_Delay(8);
