@@ -3,7 +3,6 @@
 #include <core/Prefabs.h>
 #include <core/AnimationListener.h>
 #include <core/ObjectPool.h>
-#include <core/QuadTree.h>
 #include <PlayerComponent.h>
 
 World::World(SDL_Renderer* renderer)
@@ -20,7 +19,8 @@ World::World(SDL_Renderer* renderer)
 	StatusText(""),
 	PlayerEntity(nullptr),
 	PlayerComponentRef(nullptr),
-	GameStartTime(0)
+	GameStartTime(0),
+	CollisionTree(Rectf(0.0f, 0.0f, 800.0f, 600.0f))
 {
 	StatusRect = {0, 0, 0, 0};
 }
@@ -144,21 +144,20 @@ void World::Update()
 		_entity->Update();
 	}
 
-	QuadTree _quadTree(Rectf(0.0f, 0.0f, 800.0f, 600.0f));
+	CollisionTree.Clear();
 	for (auto& _entity : Entities) {
 		if (_entity->IsEnabled()) {
-			_quadTree.Insert(_entity.get());
+			CollisionTree.Insert(_entity.get());
 		}
 	}
 
-	std::vector<Entity*> _candidates;
 	for (auto& _entity : Entities) {
 		if (!_entity->IsEnabled()) {
 			continue;
 		}
-		_candidates.clear();
-		_quadTree.Query(_entity->GetBoundingRect(), _candidates);
-		for (auto* _other : _candidates) {
+		CollisionCandidates.clear();
+		CollisionTree.Query(_entity->GetBoundingRect(), CollisionCandidates);
+		for (auto* _other : CollisionCandidates) {
 			if (_other == _entity.get()) {
 				continue;
 			}

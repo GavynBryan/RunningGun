@@ -2,6 +2,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include "Entity.h"
+#include "QuadTree.h"
 
 class ObjectPool;
 class PlayerComponent;
@@ -38,6 +39,8 @@ private:
 	float						LastSpawn2Time;
 
 	bool						Win;
+	QuadTree					CollisionTree;
+	std::vector<Entity*>		CollisionCandidates;
 
 	void						UpdateStatusText(const std::string& _text);
 
