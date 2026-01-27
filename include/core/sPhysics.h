@@ -1,9 +1,10 @@
 #pragma once
-#include <SFML/Graphics/Shape.hpp>
+#include "Vec2.h"
+
 class sPhysics
 {
 private:
-	sf::Vector2f		gGravity;
+	Vec2				gGravity;
 	float				gGroundY;
 
 public:
@@ -11,6 +12,5 @@ public:
 	~sPhysics();
 
 	float				getGroundLevel() { return gGroundY; }
-	sf::Vector2f		getGravity() { return gGravity; }
+	Vec2				getGravity() { return gGravity; }
 };
-

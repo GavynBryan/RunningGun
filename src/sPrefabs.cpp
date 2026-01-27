@@ -14,7 +14,7 @@ sPrefabs::~sPrefabs()
 {
 }
 
-std::unique_ptr<Entity> sPrefabs::getPlayer() 
+std::unique_ptr<Entity> sPrefabs::getPlayer()
 {
 	std::unique_ptr<Entity> _player(new Entity("sprites/player.png", 64, 64));
 
@@ -23,14 +23,14 @@ std::unique_ptr<Entity> sPrefabs::getPlayer()
 	std::unique_ptr<AnimationListener> _anim(new AnimationListener());
 
 	//set up animations
-	AnimPtr _right(new Animation(0, sf::Vector2f(64, 64), 1, true));
-	AnimPtr _left(new Animation(1, sf::Vector2f(64, 64), 1, true));
-	AnimPtr _walkright(new Animation(6, sf::Vector2f(64, 64), 1, true));
-	AnimPtr _walkleft(new Animation(5, sf::Vector2f(64, 64), 1, true));
-	AnimPtr _damageright(new Animation(3, sf::Vector2f(64, 64), 1, false, true));
-	AnimPtr _damageleft(new Animation(4, sf::Vector2f(64, 64), 1, false, true));
-	AnimPtr _shootright(new Animation(7, sf::Vector2f(64, 64), 0, false));
-	AnimPtr _shootleft(new Animation(8, sf::Vector2f(64, 64), 0, false));
+	AnimPtr _right(new Animation(0, Vec2(64, 64), 1, true));
+	AnimPtr _left(new Animation(1, Vec2(64, 64), 1, true));
+	AnimPtr _walkright(new Animation(6, Vec2(64, 64), 1, true));
+	AnimPtr _walkleft(new Animation(5, Vec2(64, 64), 1, true));
+	AnimPtr _damageright(new Animation(3, Vec2(64, 64), 1, false, true));
+	AnimPtr _damageleft(new Animation(4, Vec2(64, 64), 1, false, true));
+	AnimPtr _shootright(new Animation(7, Vec2(64, 64), 0, false));
+	AnimPtr _shootleft(new Animation(8, Vec2(64, 64), 0, false));
 	_anim->addAnimation("right", std::move(_right));
 	_anim->addAnimation("left", std::move(_left));
 	_anim->addAnimation("walkright", std::move(_walkright));
@@ -49,7 +49,7 @@ std::unique_ptr<Entity> sPrefabs::getPlayer()
 	return _player;
 }
 
-std::unique_ptr<Entity> sPrefabs::getBull() 
+std::unique_ptr<Entity> sPrefabs::getBull()
 {
 	std::unique_ptr<Entity> _bull(new Entity("sprites/bull.png", 256, 128));
 
@@ -57,15 +57,15 @@ std::unique_ptr<Entity> sPrefabs::getBull()
 	std::unique_ptr<AnimationListener> _anim(new AnimationListener());
 
 	//setup animations
-	AnimPtr _default(new Animation(0, sf::Vector2f(256, 128), 0, true));
-	AnimPtr _shoot(new Animation(1, sf::Vector2f(256, 128), 0, false, true));
-	AnimPtr _damage(new Animation(2, sf::Vector2f(256, 128), 0, false, true));
-	AnimPtr _die(new Animation(3, sf::Vector2f(256, 128), 2, false, true));
+	AnimPtr _default(new Animation(0, Vec2(256, 128), 0, true));
+	AnimPtr _shoot(new Animation(1, Vec2(256, 128), 0, false, true));
+	AnimPtr _damage(new Animation(2, Vec2(256, 128), 0, false, true));
+	AnimPtr _die(new Animation(3, Vec2(256, 128), 2, false, true));
 	_anim->addAnimation("default", std::move(_default));
 	_anim->addAnimation("shoot", std::move(_shoot));
 	_anim->addAnimation("damage", std::move(_damage));
 	_anim->addAnimation("die", std::move(_die));
-	
+
 	_bull->setTag(hazard);
 	_bull->assignAnimator(std::move(_anim));
 
@@ -75,7 +75,7 @@ std::unique_ptr<Entity> sPrefabs::getBull()
 	return _bull;
 }
 
-std::unique_ptr<Entity> sPrefabs::getScorpion() 
+std::unique_ptr<Entity> sPrefabs::getScorpion()
 {
 	std::unique_ptr<Entity> _scorpion(new Entity("sprites/scorpion.png", 64, 64));
 
@@ -84,10 +84,10 @@ std::unique_ptr<Entity> sPrefabs::getScorpion()
 	std::unique_ptr<AnimationListener> _anim(new AnimationListener());
 
 	//setup animations
-	AnimPtr _left(new Animation(0, sf::Vector2f(64, 64), 1, true));
-	AnimPtr _right(new Animation(1, sf::Vector2f(64, 64), 1, true));
-	AnimPtr _damageleft(new Animation(2, sf::Vector2f(64, 64), 0, false));
-	AnimPtr _damageright(new Animation(3, sf::Vector2f(64, 64), 0, false));
+	AnimPtr _left(new Animation(0, Vec2(64, 64), 1, true));
+	AnimPtr _right(new Animation(1, Vec2(64, 64), 1, true));
+	AnimPtr _damageleft(new Animation(2, Vec2(64, 64), 0, false));
+	AnimPtr _damageright(new Animation(3, Vec2(64, 64), 0, false));
 	_anim->addAnimation("left", std::move(_left));
 	_anim->addAnimation("right", std::move(_right));
 	_anim->addAnimation("damageleft", std::move(_damageleft));

@@ -3,8 +3,10 @@
 #include <iostream>
 
 AnimationListener::AnimationListener()
+	: mCurrentAnimation(nullptr)
+	, mNextAnimation(nullptr)
+	, lastAnimTime(SDL_GetTicks())
 {
-	animClock.restart();
 }
 
 
@@ -12,7 +14,7 @@ AnimationListener::~AnimationListener()
 {
 }
 
-void AnimationListener::update(sf::Sprite& _sprite)
+void AnimationListener::update(Sprite& _sprite)
 {
 	if (mCurrentAnimation) {
 		//if it is a loop and there's another animation queued, then interrupt it
@@ -22,25 +24,27 @@ void AnimationListener::update(sf::Sprite& _sprite)
 			mCurrentAnimation->update(_sprite);
 			return;
 		}
-		if (animClock.getElapsedTime().asSeconds() >= 0.25f) {
+		Uint64 currentTime = SDL_GetTicks();
+		float elapsedSeconds = (currentTime - lastAnimTime) / 1000.0f;
+		if (elapsedSeconds >= 0.25f) {
 			mCurrentAnimation->update(_sprite);
 			//If it's NOT a loop and it HAS finished, then play the next queued anim
-			animClock.restart();
+			lastAnimTime = currentTime;
 		}
 		if (!mCurrentAnimation->isLoop() && mNextAnimation) {
 			if (mNextAnimation->isPriority() || mCurrentAnimation->isFinished()) {
 				mCurrentAnimation = mNextAnimation;
 				mNextAnimation = nullptr;
-				animClock.restart();
+				lastAnimTime = SDL_GetTicks();
 			}
 		}
 
-		
+
 	//There is no current animation, but there is one queued up
 	} else if (mNextAnimation) {
 		mCurrentAnimation = mNextAnimation;
 		mNextAnimation = nullptr;
-		animClock.restart();
+		lastAnimTime = SDL_GetTicks();
 	}
 }
 

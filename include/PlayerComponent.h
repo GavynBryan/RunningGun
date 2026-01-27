@@ -1,7 +1,7 @@
 #pragma once
-#include<SFML/System/Clock.hpp>
 #include <core/ObjectPool.h>
 #include <core/Component.h>
+#include <core/Vec2.h>
 
 #include "PlayerStates.h"
 
@@ -16,13 +16,13 @@ class PlayerComponent :
 private:
 	uint8_t lives;
 	float playerSpeed;
-	
+
 	std::map<std::string, StatePtr> mStates;
 	AnimationListener*				mAnimator;
 	PlayerState*					mCurrentState;
 	ObjectPool						mBullets;
 
-	sf::Vector2f					bulletOffset;
+	Vec2							bulletOffset;
 	float							lastShotTime;
 
 public:
@@ -50,4 +50,3 @@ public:
 
 	void							onCollide(Entity& _other);
 };
-

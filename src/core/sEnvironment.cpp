@@ -1,8 +1,10 @@
 #include <core/sEnvironment.h>
 
-sEnvironment *sEnvironment::instance = 0;
+sEnvironment *sEnvironment::instance = nullptr;
 
 sEnvironment::sEnvironment()
+	: world(nullptr)
+	, mDeltaTime(0)
 {
 	instance = this;
 }
@@ -12,7 +14,7 @@ sEnvironment::~sEnvironment()
 {
 }
 
-void sEnvironment::setTextureHandler(std::unique_ptr<ResourceHandler<sf::Texture>> _handler)
+void sEnvironment::setTextureHandler(std::unique_ptr<ResourceHandler> _handler)
 {
 	TextureHandler = std::move(_handler);
 }
@@ -32,7 +34,7 @@ void sEnvironment::setDeltaTime(float _dt)
 	mDeltaTime = _dt;
 }
 
-ResourceHandler<sf::Texture>* sEnvironment::getTextureHandler() const
+ResourceHandler* sEnvironment::getTextureHandler() const
 {
 	assert(TextureHandler);
 	return TextureHandler.get();

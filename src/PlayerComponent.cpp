@@ -1,15 +1,18 @@
-#include <SFML/Window/Keyboard.hpp>
 #include <PlayerComponent.h>
 #include <PhysicsComponent.h>
 #include <ProjectileComponent.h>
 #include <utility.h>
 #include <core/Entity.h>
+#include <core/InputManager.h>
 
 PlayerComponent::PlayerComponent(Entity& _entity)
 	:Component(_entity),
 	playerSpeed(350),
 	lives(5),
-	bulletOffset(32, 18)
+	bulletOffset(32, 18),
+	mAnimator(nullptr),
+	mCurrentState(nullptr),
+	lastShotTime(0)
 {
 	//initialize states
 	std::unique_ptr<defaultPlayerState>		_defaultState(new defaultPlayerState(*this));
@@ -104,7 +107,7 @@ void PlayerComponent::shootBullet()
 	}
 }
 
-void PlayerComponent::addState(const std::string& _id, StatePtr _state) 
+void PlayerComponent::addState(const std::string& _id, StatePtr _state)
 {
 	mStates.insert(std::make_pair(_id, std::move(_state)));
 }
@@ -126,7 +129,7 @@ void PlayerComponent::orientDirection()
 {
 	//the direction would just be a normalized version of the last non-zero x velocity
 	if (mEntity.getVelocity().x != 0) {
-		sf::Vector2f direction = mEntity.getVelocity();
+		Vec2 direction = mEntity.getVelocity();
 		direction.y = 0;
 		mEntity.setDirection(VectorMath::Normalize(direction));
 	}
@@ -134,19 +137,27 @@ void PlayerComponent::orientDirection()
 
 void PlayerComponent::handleInput()
 {
-	sf::Vector2f _velocity = sf::Vector2f(0, mEntity.getVelocity().y);
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-		_velocity = sf::Vector2f(-playerSpeed, mEntity.getVelocity().y);
+	auto& input = InputManager::Instance();
+
+	Vec2 _velocity = Vec2(0, mEntity.getVelocity().y);
+
+	// Movement - use held state for continuous movement
+	if (input.isKeyHeld(SDL_SCANCODE_LEFT)) {
+		_velocity = Vec2(-playerSpeed, mEntity.getVelocity().y);
 	}
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-		_velocity = sf::Vector2f(playerSpeed, mEntity.getVelocity().y);
+	if (input.isKeyHeld(SDL_SCANCODE_RIGHT)) {
+		_velocity = Vec2(playerSpeed, mEntity.getVelocity().y);
 	}
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
+
+	// Jump - use pressed state to only jump on initial press
+	if (input.isKeyPressed(SDL_SCANCODE_Z)) {
 		if (mEntity.isGrounded()) {
-			_velocity = sf::Vector2f(mEntity.getVelocity().x, -500);
+			_velocity = Vec2(mEntity.getVelocity().x, -500);
 		}
 	}
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
+
+	// Fire - use pressed state to only fire on initial press (not held)
+	if (input.isKeyPressed(SDL_SCANCODE_X)) {
 		shootBullet();
 	}
 

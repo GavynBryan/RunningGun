@@ -1,6 +1,10 @@
 #pragma once
+#include <SDL3/SDL.h>
 #include <string>
 #include <vector>
+#include "Vec2.h"
+#include "Rect.h"
+#include "Sprite.h"
 #include "AnimationListener.h"
 #include "Component.h"
 
@@ -15,11 +19,11 @@ enum ENTITY_TAG {
 class Entity
 {
 protected:
-	sf::Vector2f		mPosition;
-	sf::Vector2f		mVelocity;
-	sf::Vector2f		mDirection;
+	Vec2				mPosition;
+	Vec2				mVelocity;
+	Vec2				mDirection;
 
-	sf::Sprite			mSprite;
+	Sprite				mSprite;
 
 	std::vector<std::unique_ptr<Component>> mComponents;
 
@@ -39,11 +43,11 @@ public:
 
 	template <typename Comp>
 	Comp*	getComponent();
-	
+
 	virtual void		start();
 	virtual void		update();
 	virtual void		postUpdate();
-	void				render(sf::RenderTarget& _target);
+	void				render(SDL_Renderer* renderer);
 
 	void				startComponents();
 	void				updateComponents();
@@ -52,12 +56,12 @@ public:
 	void				setTag(ENTITY_TAG _tag) { mTag = _tag; }
 	void				enable() { activated = true; start(); }
 	void				disable() { activated = false; }
-	
+
 	void				setPosition(float x, float y);
-	void				setPosition(sf::Vector2f _pos);
+	void				setPosition(Vec2 _pos);
 	void				setVelocity(float x, float y);
-	void				setVelocity(sf::Vector2f _vel);
-	void				setDirection(sf::Vector2f _dir);
+	void				setVelocity(Vec2 _vel);
+	void				setDirection(Vec2 _dir);
 	void				setDirection(float x, float y);
 
 	void				assignAnimator(std::unique_ptr<AnimationListener> _animator);
@@ -68,12 +72,14 @@ public:
 	bool				isMarkedForDeath() { return markedForDeath; }
 	bool				isGrounded();
 	void				onCollide(Entity& _other);
-	
-	sf::Vector2f		getPosition() { return mPosition; }
-	sf::Vector2f		getVelocity() { return mVelocity; }
-	sf::Vector2f		getDirection() { return mDirection; }
-	sf::FloatRect		getBoundingRect() { return mSprite.getGlobalBounds(); }
+
+	Vec2				getPosition() { return mPosition; }
+	Vec2				getVelocity() { return mVelocity; }
+	Vec2				getDirection() { return mDirection; }
+	Rectf				getBoundingRect() { return mSprite.getGlobalBounds(); }
 	bool				collision(Entity* _entity) { return _entity->getBoundingRect().intersects(getBoundingRect()); }
+
+	Sprite&				getSprite() { return mSprite; }
 };
 
 template<typename Comp>
