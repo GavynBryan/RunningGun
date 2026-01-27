@@ -2,14 +2,13 @@
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include "Entity.h"
+#include "QuadTree.h"
 
 class ObjectPool;
 class PlayerComponent;
 
 class World
 {
-private:
-	typedef std::pair<Entity*, Entity*> CollisionPair;
 private:
 	void						HandleQueue();
 
@@ -40,6 +39,8 @@ private:
 	float						LastSpawn2Time;
 
 	bool						Win;
+	QuadTree					CollisionTree;
+	std::vector<Entity*>		CollisionCandidates;
 
 	void						UpdateStatusText(const std::string& _text);
 
@@ -54,8 +55,6 @@ public:
 
 	void						Init();
 	void						BuildScene();
-
-	void						HandleCollisions(CollisionPair _pairs);
 
 	void						Start();
 	void						Update();

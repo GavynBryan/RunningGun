@@ -18,8 +18,6 @@ ProjectileComponent::~ProjectileComponent()
 
 void ProjectileComponent::Start()
 {
-	IsBrandNew = true;
-	IsMarkedForDeath = false;
 	SpawnTime = Environment::Instance().GetElapsedTime();
 	ParentEntity.SetDirection(Shooter.GetDirection());
 }
@@ -35,19 +33,14 @@ void ProjectileComponent::Update()
 
 void ProjectileComponent::PostUpdate()
 {
-	if (IsMarkedForDeath) {
-		ParentEntity.Disable();
-	}
-	IsBrandNew = false;
 }
 
 void ProjectileComponent::OnCollide(Entity& _other)
 {
-	if (IsBrandNew) return;
 	//don't let scorpions block the bull from getting the player
 	if (ParentEntity.GetTag() == enemy_bullet && _other.GetTag() == hazard) return;
 	//don't detect collsion with its own shooter or other projectiles
 	if (&_other != &Shooter && _other.GetTag() != bullet && _other.GetTag() != enemy_bullet) {
-		IsMarkedForDeath = true;
+		ParentEntity.Disable();
 	}
 }

@@ -19,7 +19,6 @@ private:
 	ObjectPool						Projectiles;
 
 	uint8_t							Lives;
-	bool							IsMarkedForDeath;
 
 	Vec2							Offset1;
 	Vec2							Offset2;

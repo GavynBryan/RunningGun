@@ -29,7 +29,6 @@ protected:
 
 	ENTITY_TAG			Tag;
 	bool				Activated;
-	bool				MarkedForDeath;
 
 	std::unique_ptr<AnimationListener>	Animator;
 
@@ -69,7 +68,6 @@ public:
 	ENTITY_TAG			GetTag() { return Tag; }
 	AnimationListener*	GetAnimator(){ return Animator.get(); }
 	bool				IsEnabled() { return Activated; }
-	bool				IsMarkedForDeath() { return MarkedForDeath; }
 	bool				IsGrounded();
 	void				OnCollide(Entity& _other);
 

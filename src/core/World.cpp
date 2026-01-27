@@ -1,4 +1,3 @@
-#include <set>
 #include <core/World.h>
 #include <core/Game.h>
 #include <core/Prefabs.h>
@@ -20,7 +19,8 @@ World::World(SDL_Renderer* renderer)
 	StatusText(""),
 	PlayerEntity(nullptr),
 	PlayerComponentRef(nullptr),
-	GameStartTime(0)
+	GameStartTime(0),
+	CollisionTree(Rectf(0.0f, 0.0f, 800.0f, 600.0f))
 {
 	StatusRect = {0, 0, 0, 0};
 }
@@ -130,11 +130,6 @@ void World::BuildScene()
 	UpdateStatusText("");
 }
 
-void World::HandleCollisions(CollisionPair _pairs)
-{
-
-}
-
 void World::Start()
 {
 	for (auto& _entity : AddQueue) {
@@ -145,14 +140,32 @@ void World::Start()
 void World::Update()
 {
 	HandleQueue();
-
-	std::set<CollisionPair> _collisionPairs;
-
 	for (auto& _entity : Entities) {
 		_entity->Update();
-		for (auto& _other : Entities) {
-			if (_other == _entity) continue;
-			if (_entity->IsEnabled() && _other->Collision(_entity.get())) {
+	}
+
+	CollisionTree.Clear();
+	for (auto& _entity : Entities) {
+		if (_entity->IsEnabled()) {
+			CollisionTree.Insert(_entity.get());
+		}
+	}
+
+	for (auto& _entity : Entities) {
+		if (!_entity->IsEnabled()) {
+			continue;
+		}
+		CollisionCandidates.clear();
+		CollisionTree.Query(_entity->GetBoundingRect(), CollisionCandidates);
+		for (auto* _other : CollisionCandidates) {
+			if (_other == _entity.get()) {
+				continue;
+			}
+			if (!_other->IsEnabled()) {
+				continue;
+			}
+			if (_entity.get() < _other && _entity->Collision(_other)) {
+				_entity->OnCollide(*_other);
 				_other->OnCollide(*_entity.get());
 			}
 		}

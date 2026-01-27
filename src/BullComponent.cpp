@@ -8,8 +8,7 @@ BullComponent::BullComponent(Entity& _entity)
 	Offset1(0,32),
 	Offset2(0,55),
 	ProjectileOffset(Offset1),
-	Lives(45),
-	IsMarkedForDeath(false)
+	Lives(45)
 {
 	std::unique_ptr<BullDefaultState> _defaultState(new BullDefaultState(*this));
 
@@ -33,18 +32,12 @@ void BullComponent::Start()
 
 void BullComponent::Update()
 {
-	if (!IsMarkedForDeath) { 
-		CurrentState->Update(); 
-		Animator->PlayAnimation("default");
-	}
+	CurrentState->Update(); 
+	Animator->PlayAnimation("default");
 }
 
 void BullComponent::PostUpdate()
 {
-	if (IsMarkedForDeath) {
-		//ParentEntity.disable();
-	}
-
 }
 
 void BullComponent::SetupProjectiles()
@@ -100,13 +93,11 @@ void BullComponent::OnCollide(Entity& _other)
 }
 
 void BullComponent::Damage() {
-	if (!IsMarkedForDeath) {
-		Animator->PlayAnimation("damage");
-		Lives--;
-		if (Lives <= 0) {
-			IsMarkedForDeath = true;
-			Environment::Instance().Win();
-			Animator->PlayAnimation("die");
-		}
+	Animator->PlayAnimation("damage");
+	Lives--;
+	if (Lives <= 0) {
+		Environment::Instance().Win();
+		Animator->PlayAnimation("die");
+		ParentEntity.Disable();
 	}
 }

@@ -14,7 +14,6 @@ private:
 	float Interval = 1.5f;
 	float MoveSpeed;
 	AnimationListener* Animator;
-	bool MarkedForDeath = false;
 public:
 	PatrolAIComponent(Entity& _entity, float _speed);
 	~PatrolAIComponent();
@@ -29,4 +28,3 @@ public:
 	void Damage();
 	void Die();
 };
-
