@@ -22,7 +22,7 @@ private:
 	PlayerState*					mCurrentState;
 	ObjectPool						mBullets;
 
-	Vec2f							bulletOffset;
+	Vec2							bulletOffset;
 	float							lastShotTime;
 
 public:

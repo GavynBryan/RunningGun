@@ -129,7 +129,7 @@ void PlayerComponent::orientDirection()
 {
 	//the direction would just be a normalized version of the last non-zero x velocity
 	if (mEntity.getVelocity().x != 0) {
-		Vec2f direction = mEntity.getVelocity();
+		Vec2 direction = mEntity.getVelocity();
 		direction.y = 0;
 		mEntity.setDirection(VectorMath::Normalize(direction));
 	}
@@ -139,20 +139,20 @@ void PlayerComponent::handleInput()
 {
 	auto& input = InputManager::Instance();
 
-	Vec2f _velocity = Vec2f(0, mEntity.getVelocity().y);
+	Vec2 _velocity = Vec2(0, mEntity.getVelocity().y);
 
 	// Movement - use held state for continuous movement
 	if (input.isKeyHeld(SDL_SCANCODE_LEFT)) {
-		_velocity = Vec2f(-playerSpeed, mEntity.getVelocity().y);
+		_velocity = Vec2(-playerSpeed, mEntity.getVelocity().y);
 	}
 	if (input.isKeyHeld(SDL_SCANCODE_RIGHT)) {
-		_velocity = Vec2f(playerSpeed, mEntity.getVelocity().y);
+		_velocity = Vec2(playerSpeed, mEntity.getVelocity().y);
 	}
 
 	// Jump - use pressed state to only jump on initial press
 	if (input.isKeyPressed(SDL_SCANCODE_Z)) {
 		if (mEntity.isGrounded()) {
-			_velocity = Vec2f(mEntity.getVelocity().x, -500);
+			_velocity = Vec2(mEntity.getVelocity().x, -500);
 		}
 	}
 

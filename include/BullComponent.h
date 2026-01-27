@@ -21,10 +21,10 @@ private:
 	uint8_t							lives;
 	bool							isMarkedForDeath;
 
-	Vec2f							offset1;
-	Vec2f							offset2;
+	Vec2							offset1;
+	Vec2							offset2;
 
-	Vec2f							projectileOffset;
+	Vec2							projectileOffset;
 public:
 									BullComponent(Entity& _entity);
 									~BullComponent();

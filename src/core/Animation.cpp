@@ -2,7 +2,7 @@
 
 
 
-Animation::Animation(int _index, Vec2f _size, int _frames, bool _loop)
+Animation::Animation(int _index, Vec2 _size, int _frames, bool _loop)
 	:frameIndex(_index),
 	frameSize(_size),
 	numFrames(_frames),
@@ -13,7 +13,7 @@ Animation::Animation(int _index, Vec2f _size, int _frames, bool _loop)
 {
 }
 
-Animation::Animation(int _index, Vec2f _size, int _frames, bool _loop, bool _priority)
+Animation::Animation(int _index, Vec2 _size, int _frames, bool _loop, bool _priority)
 	:frameIndex(_index),
 	frameSize(_size),
 	numFrames(_frames),

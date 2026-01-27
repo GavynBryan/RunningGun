@@ -25,7 +25,7 @@ void PatrolAIComponent::start()
 void PatrolAIComponent::update()
 {
 	if (mEntity.isGrounded()) {
-		Vec2f patrolVelocity = mEntity.getDirection();
+		Vec2 patrolVelocity = mEntity.getDirection();
 		patrolVelocity.y = mEntity.getVelocity().y;
 		patrolVelocity.x *= moveSpeed;
 		mEntity.setVelocity(patrolVelocity);

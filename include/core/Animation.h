@@ -6,7 +6,7 @@
 class Animation
 {
 private:
-	Vec2f			frameSize;
+	Vec2			frameSize;
 	int				numFrames;
 	int				frameIndex;
 
@@ -17,8 +17,8 @@ private:
 	bool			finished;
 
 public:
-	Animation(int _index, Vec2f _size, int _frames, bool _loop);
-	Animation(int _index, Vec2f _size, int _frames, bool _loop, bool _priority);
+	Animation(int _index, Vec2 _size, int _frames, bool _loop);
+	Animation(int _index, Vec2 _size, int _frames, bool _loop, bool _priority);
 	~Animation();
 
 	void update(Sprite& _sprite);

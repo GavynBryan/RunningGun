@@ -93,7 +93,7 @@ void Entity::setPosition(float x, float y)
 	mSprite.setPosition(mPosition);
 }
 
-void Entity::setPosition(Vec2f _pos)
+void Entity::setPosition(Vec2 _pos)
 {
 	mPosition = _pos;
 	mSprite.setPosition(mPosition);
@@ -104,12 +104,12 @@ void Entity::setVelocity(float x, float y)
 	mVelocity.x = x; mVelocity.y = y;
 }
 
-void Entity::setVelocity(Vec2f _vel)
+void Entity::setVelocity(Vec2 _vel)
 {
 	mVelocity = _vel;
 }
 
-void Entity::setDirection(Vec2f _dir)
+void Entity::setDirection(Vec2 _dir)
 {
 	mDirection = _dir;
 }

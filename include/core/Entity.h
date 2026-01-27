@@ -19,9 +19,9 @@ enum ENTITY_TAG {
 class Entity
 {
 protected:
-	Vec2f				mPosition;
-	Vec2f				mVelocity;
-	Vec2f				mDirection;
+	Vec2				mPosition;
+	Vec2				mVelocity;
+	Vec2				mDirection;
 
 	Sprite				mSprite;
 
@@ -58,10 +58,10 @@ public:
 	void				disable() { activated = false; }
 
 	void				setPosition(float x, float y);
-	void				setPosition(Vec2f _pos);
+	void				setPosition(Vec2 _pos);
 	void				setVelocity(float x, float y);
-	void				setVelocity(Vec2f _vel);
-	void				setDirection(Vec2f _dir);
+	void				setVelocity(Vec2 _vel);
+	void				setDirection(Vec2 _dir);
 	void				setDirection(float x, float y);
 
 	void				assignAnimator(std::unique_ptr<AnimationListener> _animator);
@@ -73,9 +73,9 @@ public:
 	bool				isGrounded();
 	void				onCollide(Entity& _other);
 
-	Vec2f				getPosition() { return mPosition; }
-	Vec2f				getVelocity() { return mVelocity; }
-	Vec2f				getDirection() { return mDirection; }
+	Vec2				getPosition() { return mPosition; }
+	Vec2				getVelocity() { return mVelocity; }
+	Vec2				getDirection() { return mDirection; }
 	Rectf				getBoundingRect() { return mSprite.getGlobalBounds(); }
 	bool				collision(Entity* _entity) { return _entity->getBoundingRect().intersects(getBoundingRect()); }
 

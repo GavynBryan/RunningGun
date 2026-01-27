@@ -4,7 +4,7 @@
 class sPhysics
 {
 private:
-	Vec2f				gGravity;
+	Vec2				gGravity;
 	float				gGroundY;
 
 public:
@@ -12,5 +12,5 @@ public:
 	~sPhysics();
 
 	float				getGroundLevel() { return gGroundY; }
-	Vec2f				getGravity() { return gGravity; }
+	Vec2				getGravity() { return gGravity; }
 };

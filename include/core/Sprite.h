@@ -16,7 +16,7 @@ public:
 
     void setTexture(SDL_Texture* texture);
     void setTextureRect(const Recti& rect);
-    void setPosition(const Vec2f& pos);
+    void setPosition(const Vec2& pos);
     void setPosition(float x, float y);
 
     SDL_Texture* getTexture() const { return mTexture; }

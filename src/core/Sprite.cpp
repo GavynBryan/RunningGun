@@ -32,7 +32,7 @@ void Sprite::setTextureRect(const Recti& rect)
     mDestRect.h = static_cast<float>(rect.height);
 }
 
-void Sprite::setPosition(const Vec2f& pos)
+void Sprite::setPosition(const Vec2& pos)
 {
     mDestRect.x = pos.x;
     mDestRect.y = pos.y;
