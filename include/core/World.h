@@ -9,8 +9,6 @@ class PlayerComponent;
 class World
 {
 private:
-	typedef std::pair<Entity*, Entity*> CollisionPair;
-private:
 	void						HandleQueue();
 
 private:
@@ -54,8 +52,6 @@ public:
 
 	void						Init();
 	void						BuildScene();
-
-	void						HandleCollisions(CollisionPair _pairs);
 
 	void						Start();
 	void						Update();

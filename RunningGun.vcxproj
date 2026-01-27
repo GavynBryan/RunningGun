@@ -153,6 +153,7 @@
     <ClInclude Include="include\core\Entity.h" />
     <ClInclude Include="include\core\Game.h" />
     <ClInclude Include="include\core\ObjectPool.h" />
+    <ClInclude Include="include\core\QuadTree.h" />
     <ClInclude Include="include\core\ResourceHandler.h" />
     <ClInclude Include="include\core\Environment.h" />
     <ClInclude Include="include\core\Locator.h" />
@@ -181,6 +182,7 @@
     <ClCompile Include="src\core\Game.cpp" />
     <ClCompile Include="src\core\main.cpp" />
     <ClCompile Include="src\core\ObjectPool.cpp" />
+    <ClCompile Include="src\core\QuadTree.cpp" />
     <ClCompile Include="src\core\Environment.cpp" />
     <ClCompile Include="src\core\State.cpp" />
     <ClCompile Include="src\core\World.cpp" />

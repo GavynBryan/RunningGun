@@ -1,9 +1,9 @@
-#include <set>
 #include <core/World.h>
 #include <core/Game.h>
 #include <core/Prefabs.h>
 #include <core/AnimationListener.h>
 #include <core/ObjectPool.h>
+#include <core/QuadTree.h>
 #include <PlayerComponent.h>
 
 World::World(SDL_Renderer* renderer)
@@ -130,11 +130,6 @@ void World::BuildScene()
 	UpdateStatusText("");
 }
 
-void World::HandleCollisions(CollisionPair _pairs)
-{
-
-}
-
 void World::Start()
 {
 	for (auto& _entity : AddQueue) {
@@ -145,14 +140,33 @@ void World::Start()
 void World::Update()
 {
 	HandleQueue();
-
-	std::set<CollisionPair> _collisionPairs;
-
 	for (auto& _entity : Entities) {
 		_entity->Update();
-		for (auto& _other : Entities) {
-			if (_other == _entity) continue;
-			if (_entity->IsEnabled() && _other->Collision(_entity.get())) {
+	}
+
+	QuadTree _quadTree(Rectf(0.0f, 0.0f, 800.0f, 600.0f));
+	for (auto& _entity : Entities) {
+		if (_entity->IsEnabled()) {
+			_quadTree.Insert(_entity.get());
+		}
+	}
+
+	std::vector<Entity*> _candidates;
+	for (auto& _entity : Entities) {
+		if (!_entity->IsEnabled()) {
+			continue;
+		}
+		_candidates.clear();
+		_quadTree.Query(_entity->GetBoundingRect(), _candidates);
+		for (auto* _other : _candidates) {
+			if (_other == _entity.get()) {
+				continue;
+			}
+			if (!_other->IsEnabled()) {
+				continue;
+			}
+			if (_entity.get() < _other && _entity->Collision(_other)) {
+				_entity->OnCollide(*_other);
 				_other->OnCollide(*_entity.get());
 			}
 		}

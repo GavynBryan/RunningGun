@@ -16,7 +16,6 @@ PatrolAIComponent::~PatrolAIComponent()
 
 void PatrolAIComponent::Start()
 {
-	MarkedForDeath = false;
 	Lives = 2;
 	Animator = ParentEntity.GetAnimator();
 	LastTurnAround = Environment::Instance().GetElapsedTime();
@@ -41,10 +40,6 @@ void PatrolAIComponent::Update()
 
 void PatrolAIComponent::PostUpdate()
 {
-	if (MarkedForDeath) {
-		ParentEntity.Disable();
-		return;
-	}
 	if (ParentEntity.GetDirection().x == 1) {
 		Animator->PlayAnimation("left");
 	}
@@ -69,7 +64,7 @@ void PatrolAIComponent::Damage()
 {
 	Lives--;
 	if (Lives <= 0) {
-		MarkedForDeath = true;
+		ParentEntity.Disable();
 		return;
 	}
 	if (ParentEntity.GetDirection().x == 1) {

@@ -7,8 +7,7 @@
 Entity::Entity(std::string _texture, float _width, float _height)
 	:Position(0,0),
 	Velocity(0,0),
-	Activated(true),
-	MarkedForDeath(false)
+	Activated(true)
 {
 	//load resource handler from service
 	auto _handler = Environment::Instance().GetTextureHandler();
