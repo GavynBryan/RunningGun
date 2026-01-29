@@ -165,7 +165,6 @@
     <ClInclude Include="include\PatrolAIComponent.h" />
     <ClInclude Include="include\PhysicsComponent.h" />
     <ClInclude Include="include\PlayerComponent.h" />
-    <ClInclude Include="include\PlayerStates.h" />
     <ClInclude Include="include\ProjectileComponent.h" />
     <ClInclude Include="include\utility.h" />
   </ItemGroup>
@@ -190,7 +189,6 @@
     <ClCompile Include="src\PatrolAIComponent.cpp" />
     <ClCompile Include="src\PhysicsComponent.cpp" />
     <ClCompile Include="src\PlayerComponent.cpp" />
-    <ClCompile Include="src\PlayerStates.cpp" />
     <ClCompile Include="src\ProjectileComponent.cpp" />
     <ClCompile Include="src\Locator.cpp" />
     <ClCompile Include="src\Physics.cpp" />
