@@ -1,14 +1,17 @@
 # RunningGun
-Arcade-style game made in SFML
+Arcade game that I made for a Game Jam back in 2020. Maintaining and expanding upon the codebase now.
 
-Download the SFML library at
-https://www.sfml-dev.org/download/sfml/2.5.1/
-The intended build target is Visual Studio 2017. Has not been tested on anything else.
+## Dependencies
+- SDL3
+- SDL_image
+- SDL_ttf
+- RapidJSON
+- Visual Studio 2017 toolchain (project targets VS2017)
 
-# ToDo
-The code was put together in about 8 days for a GameJam challenge and is currently in the process of being "cleaned up". Lots of decisions were made without me really knowing what the scope of some of these structures were going to be.
-
-- Tidy up the collision loop to use std::pairs and simultaneously call OnCollide() for both objects
-- Create an input manager class that runs outside of the player's controller, allowing for more fluid control of keyboard inputs (And would increase the difficulty by removing an exploit)
-- Remove "garbage classes" that either aren't being used or don't need to be their own classes
-- Maybe expand on it a little bit? I have a decent codebase to work with now. :)
+## Engine Structure
+- **Core loop**: `Game` owns the main loop and frame timing, and `GameMode` drives game-specific setup.
+- **World/entities**: `World` stores active `Entity` instances; entities are composed from `Component` types.
+- **Components**: behavior is built from modular components, registered via the prefab/component registry.
+- **Prefabs**: prefab factories assemble entities with their component sets for quick spawning.
+- **Input**: `InputManager` wraps SDL events and maps them to game actions.
+- **Rendering**: `Sprite` and `UIText` wrap SDL rendering; `ResourceHandler` loads textures and fonts.
