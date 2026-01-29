@@ -84,14 +84,14 @@ void GameContext::CancelTimer(TimerHandle _handle) const
 	WorldContext->CancelTimer(_handle);
 }
 
-void GameContext::Win() const
-{
-	assert(WorldContext);
-	WorldContext->WinGame();
-}
-
 void GameContext::Reset() const
 {
 	assert(WorldContext);
 	WorldContext->Reset();
+}
+
+GameMode* GameContext::GetGameMode() const
+{
+	assert(WorldContext);
+	return WorldContext->GetGameMode();
 }
