@@ -1,6 +1,7 @@
 #include <PlayerComponent.h>
 #include <PhysicsComponent.h>
 #include <ProjectileComponent.h>
+#include <PlayerActions.h>
 #include <utility.h>
 #include <core/Entity.h>
 #include <core/InputManager.h>
@@ -15,7 +16,11 @@ PlayerComponent::PlayerComponent(Entity& _entity, GameContext& _context)
 	LastShotTime(0),
 	IsInvulnerable(false),
 	InvulnerabilityEndTime(0),
-	IsInputEnabled(true)
+	IsInputEnabled(true),
+	MoveLeftActionHandle(std::make_unique<MoveLeftAction>()),
+	MoveRightActionHandle(std::make_unique<MoveRightAction>()),
+	JumpActionHandle(std::make_unique<JumpAction>()),
+	ShootActionHandle(std::make_unique<ShootAction>())
 {
 	//set initial direction (right)
 	ParentEntity.SetDirection(1, 0);
@@ -119,33 +124,39 @@ void PlayerComponent::OrientDirection()
 	}
 }
 
+void PlayerComponent::SetHorizontalVelocity(float x)
+{
+	ParentEntity.SetVelocity(x, ParentEntity.GetVelocity().y);
+}
+
+void PlayerComponent::SetVerticalVelocity(float y)
+{
+	ParentEntity.SetVelocity(ParentEntity.GetVelocity().x, y);
+}
+
 void PlayerComponent::HandleInput()
 {
 	auto& _input = InputManager::Instance();
 
-	Vec2 _velocity = Vec2(0, ParentEntity.GetVelocity().y);
+	SetHorizontalVelocity(0);
 
 	// Movement - use held state for continuous movement
-	if (_input.IsKeyHeld(SDL_SCANCODE_LEFT)) {
-		_velocity = Vec2(-PlayerSpeed, ParentEntity.GetVelocity().y);
+	if (_input.IsActionHeld(InputAction::MoveLeft)) {
+		MoveLeftActionHandle->Execute(*this);
 	}
-	if (_input.IsKeyHeld(SDL_SCANCODE_RIGHT)) {
-		_velocity = Vec2(PlayerSpeed, ParentEntity.GetVelocity().y);
+	if (_input.IsActionHeld(InputAction::MoveRight)) {
+		MoveRightActionHandle->Execute(*this);
 	}
 
 	// Jump - use pressed state to only jump on initial press
-	if (_input.IsKeyPressed(SDL_SCANCODE_Z)) {
-		if (ParentEntity.IsGrounded()) {
-			_velocity = Vec2(ParentEntity.GetVelocity().x, -500);
-		}
+	if (_input.IsActionPressed(InputAction::Jump)) {
+		JumpActionHandle->Execute(*this);
 	}
 
 	// Fire - use pressed state to only fire on initial press (not held)
-	if (_input.IsKeyPressed(SDL_SCANCODE_X)) {
-		ShootBullet();
+	if (_input.IsActionPressed(InputAction::Shoot)) {
+		ShootActionHandle->Execute(*this);
 	}
-
-	ParentEntity.SetVelocity(_velocity);
 }
 
 void PlayerComponent::Freeze()

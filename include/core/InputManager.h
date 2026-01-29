@@ -1,21 +1,32 @@
 #pragma once
 #include <SDL3/SDL.h>
-#include <unordered_map>
+#include <array>
 
-enum class KeyState {
+enum class ActionState {
     None,
     Pressed,   // Key was just pressed this frame
     Held,      // Key is being held down
     Released   // Key was just released this frame
 };
 
+enum class InputAction {
+    MoveLeft,
+    MoveRight,
+    Jump,
+    Shoot,
+    Count
+};
+
 class InputManager {
 private:
     static InputManager* InstancePtr;
 
-    std::unordered_map<SDL_Scancode, KeyState> KeyStates;
-    std::unordered_map<SDL_Scancode, bool> CurrentKeys;
-    std::unordered_map<SDL_Scancode, bool> PreviousKeys;
+    std::array<ActionState, static_cast<size_t>(InputAction::Count)> ActionStates;
+    std::array<bool, static_cast<size_t>(InputAction::Count)> CurrentActions;
+    std::array<SDL_Scancode, static_cast<size_t>(InputAction::Count)> ActionBindings;
+
+    bool TryGetAction(SDL_Scancode _key, InputAction& _action) const;
+    size_t GetActionIndex(InputAction _action) const;
 
 public:
     InputManager();
@@ -32,11 +43,14 @@ public:
     // Call at the end of event processing to finalize states
     void EndFrame();
 
-    // Query key states
-    bool IsKeyPressed(SDL_Scancode _key) const;   // True only on the frame key was pressed
-    bool IsKeyHeld(SDL_Scancode _key) const;      // True while key is down (including press frame)
-    bool IsKeyReleased(SDL_Scancode _key) const;  // True only on the frame key was released
-    bool IsKeyDown(SDL_Scancode _key) const;      // Alias for IsKeyHeld
+    // Action bindings
+    void BindAction(InputAction _action, SDL_Scancode _key);
 
-    KeyState GetKeyState(SDL_Scancode _key) const;
+    // Query action states
+    bool IsActionPressed(InputAction _action) const;   // True only on the frame action was pressed
+    bool IsActionHeld(InputAction _action) const;      // True while action is down (including press frame)
+    bool IsActionReleased(InputAction _action) const;  // True only on the frame action was released
+    bool IsActionDown(InputAction _action) const;      // Alias for IsActionHeld
+
+    ActionState GetActionState(InputAction _action) const;
 };

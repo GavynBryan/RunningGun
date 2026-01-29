@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 #include <core/ObjectPool.h>
 #include <core/Component.h>
 #include <core/Vec2.h>
@@ -6,7 +7,9 @@
 constexpr auto BulletCoolDown = .3f;
 constexpr auto InvulnerabilityDuration = 1.0f;
 constexpr auto DeathResetDelay = 3.0f;
+constexpr auto JumpSpeed = 500.0f;
 
+class PlayerAction;
 
 class PlayerComponent :
 	public Component
@@ -26,6 +29,11 @@ private:
 	float							InvulnerabilityEndTime;
 	bool							IsInputEnabled;
 
+	std::unique_ptr<PlayerAction>	MoveLeftActionHandle;
+	std::unique_ptr<PlayerAction>	MoveRightActionHandle;
+	std::unique_ptr<PlayerAction>	JumpActionHandle;
+	std::unique_ptr<PlayerAction>	ShootActionHandle;
+
 public:
 									PlayerComponent(Entity& _entity, GameContext& _context);
 									~PlayerComponent();
@@ -40,6 +48,10 @@ public:
 	void							SetupBullets();
 	void							ShootBullet();
 	int								GetHealth() { return Lives; }
+	float							GetPlayerSpeed() const { return PlayerSpeed; }
+	bool							IsGrounded() const { return ParentEntity.IsGrounded(); }
+	void							SetHorizontalVelocity(float x);
+	void							SetVerticalVelocity(float y);
 
 	void							OrientDirection();
 	void							HandleInput();
