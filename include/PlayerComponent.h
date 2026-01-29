@@ -23,8 +23,7 @@ private:
 	// Event-based flags and timers
 	bool							IsInvulnerable;
 	float							InvulnerabilityEndTime;
-	bool							IsDead;
-	bool							IsVictorious;
+	bool							IsInputEnabled;
 
 public:
 									PlayerComponent(Entity& _entity);

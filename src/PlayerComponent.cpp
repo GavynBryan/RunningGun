@@ -14,8 +14,7 @@ PlayerComponent::PlayerComponent(Entity& _entity)
 	LastShotTime(0),
 	IsInvulnerable(false),
 	InvulnerabilityEndTime(0),
-	IsDead(false),
-	IsVictorious(false)
+	IsInputEnabled(true)
 {
 	//set initial direction (right)
 	ParentEntity.SetDirection(1, 0);
@@ -31,8 +30,7 @@ void PlayerComponent::Start()
 {
 	LastShotTime = 0;
 	IsInvulnerable = false;
-	IsDead = false;
-	IsVictorious = false;
+	IsInputEnabled = true;
 
 	Animator = ParentEntity.GetAnimator();
 }
@@ -46,8 +44,7 @@ void PlayerComponent::Update()
 		}
 	}
 
-	// Handle input unless dead or victorious
-	if (!IsDead && !IsVictorious) {
+	if (IsInputEnabled) {
 		HandleInput();
 	}
 
@@ -157,8 +154,7 @@ void PlayerComponent::Freeze()
 
 void PlayerComponent::OnDamage()
 {
-	// Ignore damage if already invulnerable or dead
-	if (IsInvulnerable || IsDead) {
+	if (IsInvulnerable) {
 		return;
 	}
 
@@ -181,14 +177,14 @@ void PlayerComponent::OnDamage()
 
 void PlayerComponent::OnDeath()
 {
-	IsDead = true;
+	IsInputEnabled = false;
 	Freeze();
 	Environment::Instance().Reset();
 }
 
 void PlayerComponent::OnVictory()
 {
-	IsVictorious = true;
+	IsInputEnabled = false;
 	Freeze();
 }
 
