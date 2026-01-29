@@ -3,6 +3,8 @@
 #include "Vec2.h"
 #include "Rect.h"
 
+class Camera;
+
 class Sprite {
 private:
     SDL_Texture*    Texture;
@@ -23,5 +25,5 @@ public:
     const SDL_FRect& GetDestRect() const { return DestRect; }
     Rectf GetGlobalBounds() const;
 
-    void Render(SDL_Renderer* _renderer);
+    void Render(SDL_Renderer* _renderer, Camera* _camera = nullptr);
 };

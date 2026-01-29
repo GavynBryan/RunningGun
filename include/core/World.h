@@ -5,6 +5,9 @@
 #include "GameContext.h"
 #include "QuadTree.h"
 #include "Timer.h"
+#include "UIManager.h"
+#include "UIHealthBar.h"
+#include "UIText.h"
 #include <memory>
 
 class ObjectPool;
@@ -30,10 +33,9 @@ private:
 	bool						ResetFlag;
 
 	TTF_Font*					GameFont;
-	SDL_Texture*				StatusTexture;
-	SDL_FRect					StatusRect;
-	std::string					StatusText;
-	std::vector<Entity::Ptr>	Hearts;
+	std::unique_ptr<UIManager>	UI;
+	UIHealthBar*				HealthBar;
+	UIText*						StatusTextUI;
 
 	std::unique_ptr<ObjectPool>	ObjectPoolContext;
 
@@ -49,8 +51,9 @@ private:
 	std::vector<std::unique_ptr<Timer>>	Timers;
 	TimerHandle					NextTimerHandle;
 
-	void						UpdateStatusText(const std::string& _text);
+	void						SetStatusText(const std::string& _text);
 	void						UpdateTimers();
+	void						UpdateCamera();
 
 public:
 								World(SDL_Renderer* renderer, GameContext& _context);
@@ -71,5 +74,4 @@ public:
 	void						PostUpdate();
 
 	void						Render();
-	void						DrawHearts(int _heartCount);
 };

@@ -1,4 +1,5 @@
 #include <core/Sprite.h>
+#include <core/Camera.h>
 
 Sprite::Sprite()
     : Texture(nullptr)
@@ -49,9 +50,19 @@ Rectf Sprite::GetGlobalBounds() const
     return Rectf(DestRect.x, DestRect.y, DestRect.w, DestRect.h);
 }
 
-void Sprite::Render(SDL_Renderer* _renderer)
+void Sprite::Render(SDL_Renderer* _renderer, Camera* _camera)
 {
     if (!Texture) return;
+
+    SDL_FRect _destRect = DestRect;
+    if (_camera) {
+        Vec2 _screenPos = _camera->WorldToScreen(Vec2(DestRect.x, DestRect.y));
+        float _zoom = _camera->GetZoom();
+        _destRect.x = _screenPos.x;
+        _destRect.y = _screenPos.y;
+        _destRect.w = DestRect.w * _zoom;
+        _destRect.h = DestRect.h * _zoom;
+    }
 
     if (HasSrcRect) {
         SDL_FRect _srcRect = {
@@ -60,8 +71,8 @@ void Sprite::Render(SDL_Renderer* _renderer)
             static_cast<float>(SrcRect.width),
             static_cast<float>(SrcRect.height)
         };
-        SDL_RenderTexture(_renderer, Texture, &_srcRect, &DestRect);
+        SDL_RenderTexture(_renderer, Texture, &_srcRect, &_destRect);
     } else {
-        SDL_RenderTexture(_renderer, Texture, nullptr, &DestRect);
+        SDL_RenderTexture(_renderer, Texture, nullptr, &_destRect);
     }
 }
