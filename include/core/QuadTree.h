@@ -2,8 +2,8 @@
 #include <array>
 #include <memory>
 #include <vector>
-#include "Rect.h"
-#include "Entity.h"
+#include <core/Rect.h>
+#include <core/Entity.h>
 
 class QuadTree
 {

@@ -148,7 +148,7 @@
     <ClInclude Include="include\BullComponent.h" />
     <ClInclude Include="include\BullStates.h" />
     <ClInclude Include="include\core\Animation.h" />
-    <ClInclude Include="include\core\AnimationListener.h" />
+    <ClInclude Include="include\core\animation\AnimationStateMachine.h" />
     <ClInclude Include="include\core\Component.h" />
     <ClInclude Include="include\core\Entity.h" />
     <ClInclude Include="include\core\Game.h" />
@@ -182,7 +182,7 @@
     <ClCompile Include="src\BullComponent.cpp" />
     <ClCompile Include="src\BullStates.cpp" />
     <ClCompile Include="src\core\Animation.cpp" />
-    <ClCompile Include="src\core\AnimationListener.cpp" />
+    <ClCompile Include="src\core\animation\AnimationStateMachine.cpp" />
     <ClCompile Include="src\core\Component.cpp" />
     <ClCompile Include="src\core\Entity.cpp" />
     <ClCompile Include="src\core\Game.cpp" />

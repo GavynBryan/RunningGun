@@ -1,4 +1,4 @@
-#include <core/GameContext.h>
+#include <core/engine/GameContext.h>
 #include <core/World.h>
 #include <cassert>
 

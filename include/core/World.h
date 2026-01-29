@@ -1,11 +1,11 @@
 #pragma once
 #include <SDL3/SDL.h>
-#include "Entity.h"
-#include "GameContext.h"
-#include "QuadTree.h"
-#include "Sprite.h"
-#include "Timer.h"
-#include "UIManager.h"
+#include <core/Entity.h>
+#include <core/engine/GameContext.h>
+#include <core/QuadTree.h>
+#include <core/Sprite.h>
+#include <core/Timer.h>
+#include <core/UI/UIManager.h>
 #include <memory>
 
 class GameMode;

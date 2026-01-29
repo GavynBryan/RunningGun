@@ -1,7 +1,7 @@
-#include <PatrolAIComponent.h>
+#include <game/components/PatrolAIComponent.h>
 #include <core/Entity.h>
-#include <core/GameContext.h>
-#include <core/AnimationListener.h>
+#include <core/engine/GameContext.h>
+#include <core/animation/AnimationStateMachine.h>
 
 PatrolAIComponent::PatrolAIComponent(Entity& _entity, GameContext& _context, float _speed)
 	:Component(_entity, _context),

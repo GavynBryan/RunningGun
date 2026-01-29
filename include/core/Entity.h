@@ -2,11 +2,11 @@
 #include <SDL3/SDL.h>
 #include <string>
 #include <vector>
-#include "Vec2.h"
-#include "Rect.h"
-#include "Sprite.h"
-#include "AnimationListener.h"
-#include "Component.h"
+#include <core/Vec2.h>
+#include <core/Rect.h>
+#include <core/Sprite.h>
+#include <core/animation/AnimationStateMachine.h>
+#include <core/Component.h>
 
 class GameContext;
 class Camera;

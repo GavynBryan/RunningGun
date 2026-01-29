@@ -1,5 +1,5 @@
 #include <BullStates.h>
-#include <BullComponent.h>
+#include <game/components/BullComponent.h>
 
 
 

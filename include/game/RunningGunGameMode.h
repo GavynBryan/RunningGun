@@ -1,10 +1,10 @@
 #pragma once
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
-#include "GameMode.h"
-#include "GameContext.h"
-#include "UIHealthBar.h"
-#include "UIText.h"
+#include <core/GameMode.h>
+#include <core/engine/GameContext.h>
+#include <core/UIHealthBar.h>
+#include <core/UIText.h>
 #include <memory>
 #include <string>
 

@@ -1,7 +1,7 @@
 #pragma once
 #include <SDL3/SDL.h>
-#include "Vec2.h"
-#include "Rect.h"
+#include <core/Vec2.h>
+#include <core/Rect.h>
 
 class Camera;
 

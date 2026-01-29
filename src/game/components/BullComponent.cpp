@@ -1,6 +1,6 @@
-#include <BullComponent.h>
-#include <ProjectileComponent.h>
-#include <core/RunningGunGameMode.h>
+#include <game/components/BullComponent.h>
+#include <game/components/ProjectileComponent.h>
+#include <game/RunningGunGameMode.h>
 
 
 

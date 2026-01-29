@@ -1,6 +1,6 @@
 #include <iostream>
-#include <ProjectileComponent.h>
-#include <core/GameContext.h>
+#include <game/components/ProjectileComponent.h>
+#include <core/engine/GameContext.h>
 
 
 

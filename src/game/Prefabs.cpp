@@ -1,13 +1,13 @@
 #include <core/Prefabs.h>
-#include <core/GameContext.h>
+#include <core/engine/GameContext.h>
 #include <core/PrefabComponentRegistry.h>
 #include <core/PrefabFactory.h>
 #include <core/PrefabLibrary.h>
 #include <core/PrefabLoader.h>
-#include <BullComponent.h>
-#include <PatrolAIComponent.h>
-#include <PhysicsComponent.h>
-#include <PlayerComponent.h>
+#include <game/components/BullComponent.h>
+#include <game/components/PatrolAIComponent.h>
+#include <game/components/PhysicsComponent.h>
+#include <game/components/PlayerComponent.h>
 #include <cassert>
 
 namespace {

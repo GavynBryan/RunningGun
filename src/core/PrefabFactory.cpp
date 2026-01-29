@@ -1,5 +1,5 @@
 #include <core/PrefabFactory.h>
-#include <core/Animation.h>
+#include <core/animation/Animation.h>
 #include <core/Entity.h>
 #include <core/PrefabComponentRegistry.h>
 #include <core/PrefabLibrary.h>

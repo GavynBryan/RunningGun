@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <core/Entity.h>
-#include <core/GameContext.h>
+#include <core/engine/GameContext.h>
 #include <core/Camera.h>
 
 
