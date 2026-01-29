@@ -63,6 +63,18 @@ void Environment::Instantiate(std::unique_ptr<Entity> _entity) const
 	WorldContext->AddObject(std::move(_entity));
 }
 
+TimerHandle Environment::ScheduleTimer(float _delay, std::function<void()> _callback) const
+{
+	assert(WorldContext);
+	return WorldContext->ScheduleTimer(_delay, _callback);
+}
+
+void Environment::CancelTimer(TimerHandle _handle) const
+{
+	assert(WorldContext);
+	WorldContext->CancelTimer(_handle);
+}
+
 const Environment& Environment::Instance()
 {
 	assert(InstancePtr);

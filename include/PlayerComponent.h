@@ -3,11 +3,9 @@
 #include <core/Component.h>
 #include <core/Vec2.h>
 
-#include "PlayerStates.h"
-
-typedef std::unique_ptr<PlayerState> StatePtr;
-
 constexpr auto BulletCoolDown = .3f;
+constexpr auto InvulnerabilityDuration = 1.0f;
+constexpr auto DeathResetDelay = 3.0f;
 
 
 class PlayerComponent :
@@ -17,13 +15,16 @@ private:
 	uint8_t Lives;
 	float PlayerSpeed;
 
-	std::map<std::string, StatePtr> States;
 	AnimationListener*				Animator;
-	PlayerState*					CurrentState;
 	ObjectPool						Bullets;
 
 	Vec2							BulletOffset;
 	float							LastShotTime;
+
+	// Event-based flags and timers
+	bool							IsInvulnerable;
+	float							InvulnerabilityEndTime;
+	bool							IsInputEnabled;
 
 public:
 									PlayerComponent(Entity& _entity);
@@ -40,13 +41,14 @@ public:
 	void							ShootBullet();
 	int								GetHealth() { return Lives; }
 
-	void							AddState(const std::string& _id, StatePtr _state);
-	void							SwitchState(const std::string& _id);
-
 	void							OrientDirection();
 	void							HandleInput();
 	void							Freeze();
-	void							Damage();
+
+	// Event handlers
+	void							OnDamage();
+	void							OnDeath();
+	void							OnVictory();
 
 	void							OnCollide(Entity& _other);
 };

@@ -4,6 +4,7 @@
 #include <core/AnimationListener.h>
 #include <core/ObjectPool.h>
 #include <PlayerComponent.h>
+#include <algorithm>
 
 World::World(SDL_Renderer* renderer)
 	:Renderer(renderer),
@@ -20,7 +21,8 @@ World::World(SDL_Renderer* renderer)
 	PlayerEntity(nullptr),
 	PlayerComponentRef(nullptr),
 	GameStartTime(0),
-	CollisionTree(Rectf(0.0f, 0.0f, 800.0f, 600.0f))
+	CollisionTree(Rectf(0.0f, 0.0f, 800.0f, 600.0f)),
+	NextTimerHandle(1)
 {
 	StatusRect = {0, 0, 0, 0};
 }
@@ -43,6 +45,35 @@ float World::GetElapsedTime()
 void World::AddObject(std::unique_ptr<Entity> _entity)
 {
 	AddQueue.push_back(std::move(_entity));
+}
+
+TimerHandle World::ScheduleTimer(float _delay, std::function<void()> _callback)
+{
+	TimerHandle _handle = NextTimerHandle++;
+	float _endTime = GetElapsedTime() + _delay;
+	Timers.push_back(std::make_unique<Timer>(_handle, _endTime, _callback));
+	return _handle;
+}
+
+void World::CancelTimer(TimerHandle _handle)
+{
+	Timers.erase(
+		std::remove_if(Timers.begin(), Timers.end(),
+			[_handle](const std::unique_ptr<Timer>& _t) { return _t->GetHandle() == _handle; }),
+		Timers.end());
+}
+
+void World::UpdateTimers()
+{
+	float _currentTime = GetElapsedTime();
+	for (auto _it = Timers.begin(); _it != Timers.end(); ) {
+		if ((*_it)->IsExpired(_currentTime)) {
+			(*_it)->Fire();
+			_it = Timers.erase(_it);
+		} else {
+			++_it;
+		}
+	}
 }
 
 void World::UpdateStatusText(const std::string& _text)
@@ -140,6 +171,7 @@ void World::Start()
 void World::Update()
 {
 	HandleQueue();
+	UpdateTimers();
 	for (auto& _entity : Entities) {
 		_entity->Update();
 	}

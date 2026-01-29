@@ -11,20 +11,11 @@ PlayerComponent::PlayerComponent(Entity& _entity)
 	Lives(5),
 	BulletOffset(32, 18),
 	Animator(nullptr),
-	CurrentState(nullptr),
-	LastShotTime(0)
+	LastShotTime(0),
+	IsInvulnerable(false),
+	InvulnerabilityEndTime(0),
+	IsInputEnabled(true)
 {
-	//initialize states
-	std::unique_ptr<DefaultPlayerState>		_defaultState(new DefaultPlayerState(*this));
-	std::unique_ptr<DamagePlayerState>		_damageState(new DamagePlayerState(*this));
-	std::unique_ptr<DeadPlayerState>		_deadState(new DeadPlayerState(*this));
-	std::unique_ptr<VictoryPlayerState>		_victoryState(new VictoryPlayerState(*this));
-
-	AddState("DefaultState", std::move(_defaultState));
-	AddState("DamageState", std::move(_damageState));
-	AddState("DeadState", std::move(_deadState));
-	AddState("VictoryState", std::move(_victoryState));
-
 	//set initial direction (right)
 	ParentEntity.SetDirection(1, 0);
 	SetupBullets();
@@ -37,21 +28,31 @@ PlayerComponent::~PlayerComponent()
 
 void PlayerComponent::Start()
 {
-	SwitchState("DefaultState");
 	LastShotTime = 0;
+	IsInvulnerable = false;
+	IsInputEnabled = true;
 
 	Animator = ParentEntity.GetAnimator();
 }
 
 void PlayerComponent::Update()
 {
-	CurrentState->Update();
+	// Check invulnerability cooldown
+	if (IsInvulnerable) {
+		if (Environment::Instance().GetElapsedTime() >= InvulnerabilityEndTime) {
+			IsInvulnerable = false;
+		}
+	}
+
+	if (IsInputEnabled) {
+		HandleInput();
+	}
+
 	HandleAnimations();
 }
 
 void PlayerComponent::PostUpdate()
 {
-	CurrentState->PostUpdate();
 	OrientDirection();
 }
 
@@ -107,24 +108,6 @@ void PlayerComponent::ShootBullet()
 	}
 }
 
-void PlayerComponent::AddState(const std::string& _id, StatePtr _state)
-{
-	States.insert(std::make_pair(_id, std::move(_state)));
-}
-
-void PlayerComponent::SwitchState(const std::string& _id)
-{
-	auto _nextState = States.find(_id);
-	//if it can't access the state, we need to close it
-	assert(_nextState != States.end());
-	if (_nextState->second.get() == CurrentState) { return; }
-	if (CurrentState != nullptr) {
-		CurrentState->ExitState();
-	}
-	CurrentState = _nextState->second.get();
-	CurrentState->EnterState();
-}
-
 void PlayerComponent::OrientDirection()
 {
 	//the direction would just be a normalized version of the last non-zero x velocity
@@ -169,21 +152,46 @@ void PlayerComponent::Freeze()
 	ParentEntity.SetVelocity(0, ParentEntity.GetVelocity().y);
 }
 
-void PlayerComponent::OnCollide(Entity& _other)
+void PlayerComponent::OnDamage()
 {
-	if (_other.GetTag() == hazard || _other.GetTag() == enemy_bullet) {
-		CurrentState->Damage();
+	if (IsInvulnerable) {
+		return;
 	}
-}
 
-void PlayerComponent::Damage()
-{
 	Lives--;
+
+	// Play damage animation
 	if (ParentEntity.GetDirection().x > 0)
 		Animator->PlayAnimation("damageright");
 	else
 		Animator->PlayAnimation("damageleft");
+
 	if (Lives <= 0) {
-		SwitchState("DeadState");
+		OnDeath();
+	} else {
+		IsInvulnerable = true;
+		InvulnerabilityEndTime = Environment::Instance().GetElapsedTime() + InvulnerabilityDuration;
+	}
+}
+
+void PlayerComponent::OnDeath()
+{
+	IsInputEnabled = false;
+	Freeze();
+	Environment::Instance().ScheduleTimer(DeathResetDelay, []() {
+		Environment::Instance().Reset();
+	});
+}
+
+void PlayerComponent::OnVictory()
+{
+	IsInputEnabled = false;
+	Freeze();
+}
+
+void PlayerComponent::OnCollide(Entity& _other)
+{
+	if (_other.GetTag() == hazard || _other.GetTag() == enemy_bullet) {
+		OnDamage();
 	}
 }
