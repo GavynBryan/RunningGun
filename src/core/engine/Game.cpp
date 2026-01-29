@@ -1,6 +1,6 @@
-#include <core/Game.h>
+#include <core/engine/Game.h>
 #include <core/GameMode.h>
-#include <core/RunningGunGameMode.h>
+#include <game/RunningGunGameMode.h>
 #include <core/World.h>
 #include <core/Camera.h>
 #include <core/Prefabs.h>

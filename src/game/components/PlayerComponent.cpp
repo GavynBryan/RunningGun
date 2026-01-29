@@ -1,8 +1,7 @@
-#include <PlayerComponent.h>
-#include <PhysicsComponent.h>
-#include <ProjectileComponent.h>
-#include <PlayerActions.h>
-#include <utility.h>
+#include <game/components/PlayerComponent.h>
+#include <game/components/PhysicsComponent.h>
+#include <game/components/ProjectileComponent.h>
+#include <game/actions/PlayerActions.h>
 #include <core/Entity.h>
 #include <core/InputManager.h>
 

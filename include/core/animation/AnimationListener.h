@@ -3,7 +3,7 @@
 #include <string>
 #include <map>
 
-#include "Animation.h"
+#include <core/animation/Animation.h>
 
 class AnimationStateMachine
 {

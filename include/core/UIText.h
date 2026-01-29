@@ -2,7 +2,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include <string>
-#include "UIElement.h"
+#include <core/UI/UIElement.h>
 
 class UIText : public UIElement
 {

@@ -1,8 +1,8 @@
 #pragma once
-#include "ResourceHandler.h"
-#include "Physics.h"
-#include "Camera.h"
-#include "Timer.h"
+#include <core/ResourceHandler.h>
+#include <core/Physics.h>
+#include <core/Camera.h>
+#include <core/Timer.h>
 #include <functional>
 
 class World;

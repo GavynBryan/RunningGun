@@ -1,4 +1,4 @@
-#include <PhysicsComponent.h>
+#include <game/components/PhysicsComponent.h>
 #include <iostream>
 
 PhysicsComponent::PhysicsComponent(Entity& _entity, GameContext& _context)

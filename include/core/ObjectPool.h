@@ -1,5 +1,5 @@
 #pragma once
-#include "Entity.h"
+#include <core/Entity.h>
 
 class GameContext;
 

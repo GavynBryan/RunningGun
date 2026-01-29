@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
-#include "Vec2.h"
-#include "Sprite.h"
+#include <core/Vec2.h>
+#include <core/Sprite.h>
 
 class Animation
 {

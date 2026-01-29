@@ -1,9 +1,9 @@
-#include <core/RunningGunGameMode.h>
+#include <game/RunningGunGameMode.h>
 #include <core/ObjectPool.h>
 #include <core/Prefabs.h>
-#include <core/UIManager.h>
+#include <core/UI/UIManager.h>
 #include <core/World.h>
-#include <PlayerComponent.h>
+#include <game/components/PlayerComponent.h>
 
 RunningGunGameMode::RunningGunGameMode(SDL_Renderer* _renderer, GameContext& _context, World& _world)
 	:Renderer(_renderer),

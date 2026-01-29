@@ -1,9 +1,9 @@
 #pragma once
 #include <SDL3/SDL.h>
 #include <memory>
-#include "GameContext.h"
-#include "Physics.h"
-#include "InputManager.h"
+#include <core/engine/GameContext.h>
+#include <core/Physics.h>
+#include <core/InputManager.h>
 
 class World;
 class GameMode;

@@ -1,11 +1,11 @@
 #pragma once
 #include <map>
 #include <core/Component.h>
-#include <core/AnimationListener.h>
+#include <core/animation/AnimationListener.h>
 #include <core/ObjectPool.h>
 #include <core/Vec2.h>
 
-#include "BullStates.h"
+#include <BullStates.h>
 
 typedef std::unique_ptr<BullState> BullStatePtr;
 

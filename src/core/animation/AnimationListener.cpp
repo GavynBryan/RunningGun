@@ -1,4 +1,4 @@
-#include <core/AnimationListener.h>
+#include <core/animation/AnimationListener.h>
 #include <cassert>
 
 AnimationStateMachine::AnimationStateMachine()
