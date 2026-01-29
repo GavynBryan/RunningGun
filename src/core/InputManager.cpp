@@ -104,14 +104,12 @@ void InputManager::BindAction(InputAction _action, SDL_Scancode _key) {
 bool InputManager::LoadBindings(const std::string& _path) {
 	auto _result = Json::ParseFile(_path);
 	if (_result.error()) {
-		SDL_Log("InputManager: Failed to parse %s: %s", _path.c_str(), simdjson::error_message(_result.error()));
 		return false;
 	}
 
 	simdjson::dom::element _root = _result.value();
 	auto _bindings = _root["bindings"].get_object();
 	if (_bindings.error()) {
-		SDL_Log("InputManager: Missing bindings object in %s", _path.c_str());
 		return false;
 	}
 
@@ -123,15 +121,12 @@ bool InputManager::LoadBindings(const std::string& _path) {
 
 		InputAction _action;
 		if (!TryParseActionName(_field.key, _action)) {
-			SDL_Log("InputManager: Unknown action name %.*s", static_cast<int>(_field.key.size()), _field.key.data());
 			continue;
 		}
 
 		std::string _keyStr(_keyName.value());
 		SDL_Scancode _scancode = SDL_GetScancodeFromName(_keyStr.c_str());
 		if (_scancode == SDL_SCANCODE_UNKNOWN) {
-			SDL_Log("InputManager: Unknown key binding %s for action %.*s",
-				_keyStr.c_str(), static_cast<int>(_field.key.size()), _field.key.data());
 			continue;
 		}
 		BindAction(_action, _scancode);

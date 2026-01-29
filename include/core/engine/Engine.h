@@ -8,7 +8,7 @@
 class World;
 class GameMode;
 
-class Game
+class Engine
 {
 private:
 	SDL_Window*								Window;
@@ -28,6 +28,6 @@ public:
 
 	SDL_Renderer* GetRenderer() { return Renderer; }
 
-	Game();
-	~Game();
+	Engine();
+	~Engine();
 };

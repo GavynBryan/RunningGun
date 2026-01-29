@@ -112,19 +112,16 @@ bool PrefabLoader::LoadFromFile(const std::string& _path, PrefabLibrary& _librar
 {
 	auto _result = Json::ParseFile(_path);
 	if (_result.error()) {
-		SDL_Log("PrefabLoader: Failed to parse %s: %s", _path.c_str(), simdjson::error_message(_result.error()));
 		return false;
 	}
 
 	simdjson::dom::element _root = _result.value();
 	if (_root.type() != simdjson::dom::element_type::OBJECT) {
-		SDL_Log("PrefabLoader: Root must be an object in %s", _path.c_str());
 		return false;
 	}
 
 	auto _prefabs = _root["prefabs"].get_array();
 	if (_prefabs.error()) {
-		SDL_Log("PrefabLoader: Missing 'prefabs' array in %s", _path.c_str());
 		return false;
 	}
 

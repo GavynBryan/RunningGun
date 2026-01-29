@@ -29,9 +29,6 @@ std::unique_ptr<Entity> PrefabFactory::CreateEntity(GameContext& _context, const
 			if (_comp) {
 				_entity->AttachComponent(std::move(_comp));
 			}
-		} else {
-			SDL_Log("PrefabFactory: Unknown component type '%s' in prefab '%s'",
-				_component.Type.c_str(), _definition.Id.c_str());
 		}
 	}
 

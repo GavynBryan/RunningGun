@@ -1,4 +1,4 @@
-#include <core/engine/Game.h>
+#include <core/engine/Engine.h>
 #include <core/GameMode.h>
 #include <game/RunningGunGameMode.h>
 #include <core/World.h>
@@ -6,7 +6,7 @@
 #include <core/Prefabs.h>
 #include <string.h>
 
-Game::Game()
+Engine::Engine()
 	:Window(nullptr),
 	Renderer(nullptr),
 	WorldContext(nullptr),
@@ -47,7 +47,7 @@ Game::Game()
 	WorldContext->SetGameMode(Mode.get());
 }
 
-Game::~Game()
+Engine::~Engine()
 {
 	delete WorldContext;
 	if (Renderer) {
@@ -59,7 +59,7 @@ Game::~Game()
 	SDL_Quit();
 }
 
-void Game::Run()
+void Engine::Run()
 {
 	Uint64 _lastTime = SDL_GetPerformanceCounter();
 	Uint64 _frequency = SDL_GetPerformanceFrequency();
