@@ -27,7 +27,7 @@ private:
 	bool							IsInputEnabled;
 
 public:
-									PlayerComponent(Entity& _entity);
+									PlayerComponent(Entity& _entity, GameContext& _context);
 									~PlayerComponent();
 
 

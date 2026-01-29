@@ -1,4 +1,5 @@
 #include <core/Prefabs.h>
+#include <core/GameContext.h>
 #include <PlayerComponent.h>
 #include <PhysicsComponent.h>
 #include <PatrolAIComponent.h>
@@ -14,12 +15,12 @@ Prefabs::~Prefabs()
 {
 }
 
-std::unique_ptr<Entity> Prefabs::GetPlayer()
+std::unique_ptr<Entity> Prefabs::GetPlayer(GameContext& _context)
 {
-	std::unique_ptr<Entity> _player(new Entity("sprites/player.png", 64, 64));
+	std::unique_ptr<Entity> _player(new Entity(_context, "sprites/player.png", 64, 64));
 
-	std::unique_ptr<PhysicsComponent> _phys(new PhysicsComponent(*_player));
-	std::unique_ptr<PlayerComponent> _pc(new PlayerComponent(*_player));
+	std::unique_ptr<PhysicsComponent> _phys(new PhysicsComponent(*_player, _context));
+	std::unique_ptr<PlayerComponent> _pc(new PlayerComponent(*_player, _context));
 	std::unique_ptr<AnimationListener> _anim(new AnimationListener());
 
 	//set up animations
@@ -49,11 +50,11 @@ std::unique_ptr<Entity> Prefabs::GetPlayer()
 	return _player;
 }
 
-std::unique_ptr<Entity> Prefabs::GetBull()
+std::unique_ptr<Entity> Prefabs::GetBull(GameContext& _context)
 {
-	std::unique_ptr<Entity> _bull(new Entity("sprites/bull.png", 256, 128));
+	std::unique_ptr<Entity> _bull(new Entity(_context, "sprites/bull.png", 256, 128));
 
-	std::unique_ptr<BullComponent> _bc(new BullComponent(*_bull));
+	std::unique_ptr<BullComponent> _bc(new BullComponent(*_bull, _context));
 	std::unique_ptr<AnimationListener> _anim(new AnimationListener());
 
 	//setup animations
@@ -75,12 +76,12 @@ std::unique_ptr<Entity> Prefabs::GetBull()
 	return _bull;
 }
 
-std::unique_ptr<Entity> Prefabs::GetScorpion()
+std::unique_ptr<Entity> Prefabs::GetScorpion(GameContext& _context)
 {
-	std::unique_ptr<Entity> _scorpion(new Entity("sprites/scorpion.png", 64, 64));
+	std::unique_ptr<Entity> _scorpion(new Entity(_context, "sprites/scorpion.png", 64, 64));
 
-	std::unique_ptr<PatrolAIComponent> _pc(new PatrolAIComponent(*_scorpion, 150));
-	std::unique_ptr<PhysicsComponent> _phys(new PhysicsComponent(*_scorpion));
+	std::unique_ptr<PatrolAIComponent> _pc(new PatrolAIComponent(*_scorpion, _context, 150));
+	std::unique_ptr<PhysicsComponent> _phys(new PhysicsComponent(*_scorpion, _context));
 	std::unique_ptr<AnimationListener> _anim(new AnimationListener());
 
 	//setup animations

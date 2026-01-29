@@ -1,9 +1,9 @@
 #include <PhysicsComponent.h>
 #include <iostream>
 
-PhysicsComponent::PhysicsComponent(Entity& _entity)
-	:Component(_entity),
-	PhysContext(*Environment::Instance().GetPhysics())
+PhysicsComponent::PhysicsComponent(Entity& _entity, GameContext& _context)
+	:Component(_entity, _context),
+	PhysContext(*_context.GetPhysics())
 {
 	
 }
@@ -18,7 +18,7 @@ void PhysicsComponent::Update()
 	float _gravity = PhysContext.GetGravity().y;
 	float _currentVelocity = ParentEntity.GetVelocity().y;
 	if (_currentVelocity < _gravity) {
-		float _result = _currentVelocity + _gravity * (Environment::Instance().DeltaTime());
+		float _result = _currentVelocity + _gravity * (Context.DeltaTime());
 		_result = std::min(_result, _gravity);
 		ParentEntity.SetVelocity(ParentEntity.GetVelocity().x, _result);
 	}

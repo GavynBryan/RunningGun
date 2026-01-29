@@ -2,8 +2,9 @@
 
 
 
-Component::Component(Entity& _entity)
+Component::Component(Entity& _entity, GameContext& _context)
 	:ParentEntity(_entity),
+	Context(_context),
 	Active(true)
 {
 }

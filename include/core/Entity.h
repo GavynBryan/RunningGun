@@ -8,6 +8,8 @@
 #include "AnimationListener.h"
 #include "Component.h"
 
+class GameContext;
+
 enum ENTITY_TAG {
 	player = 0,
 	bullet,
@@ -31,9 +33,10 @@ protected:
 	bool				Activated;
 
 	std::unique_ptr<AnimationListener>	Animator;
+	GameContext&							Context;
 
 public:
-	Entity(std::string _texture, float _width, float _height);
+	Entity(GameContext& _context, std::string _texture, float _width, float _height);
 	~Entity();
 
 	typedef std::unique_ptr<Entity> Ptr;
@@ -78,6 +81,7 @@ public:
 	bool				Collision(Entity* _entity) { return _entity->GetBoundingRect().Intersects(GetBoundingRect()); }
 
 	Sprite&				GetSprite() { return Sprite; }
+	GameContext&		GetContext() { return Context; }
 };
 
 template<typename Comp>

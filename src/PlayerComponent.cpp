@@ -5,12 +5,13 @@
 #include <core/Entity.h>
 #include <core/InputManager.h>
 
-PlayerComponent::PlayerComponent(Entity& _entity)
-	:Component(_entity),
-	PlayerSpeed(350),
+PlayerComponent::PlayerComponent(Entity& _entity, GameContext& _context)
+	:Component(_entity, _context),
 	Lives(5),
-	BulletOffset(32, 18),
+	PlayerSpeed(350),
 	Animator(nullptr),
+	Bullets(_context),
+	BulletOffset(32, 18),
 	LastShotTime(0),
 	IsInvulnerable(false),
 	InvulnerabilityEndTime(0),
@@ -39,7 +40,7 @@ void PlayerComponent::Update()
 {
 	// Check invulnerability cooldown
 	if (IsInvulnerable) {
-		if (Environment::Instance().GetElapsedTime() >= InvulnerabilityEndTime) {
+		if (Context.GetElapsedTime() >= InvulnerabilityEndTime) {
 			IsInvulnerable = false;
 		}
 	}
@@ -73,8 +74,8 @@ void PlayerComponent::HandleAnimations()
 void PlayerComponent::SetupBullets()
 {
 	for (int _index = 0; _index < 20; _index++) {
-		std::unique_ptr<Entity>_projectile(new Entity("sprites/bullet.png", 16, 16));
-		std::unique_ptr<ProjectileComponent> _projectileComponent(new ProjectileComponent(*_projectile, 400.0f, ParentEntity));
+		std::unique_ptr<Entity>_projectile(new Entity(Context, "sprites/bullet.png", 16, 16));
+		std::unique_ptr<ProjectileComponent> _projectileComponent(new ProjectileComponent(*_projectile, Context, 400.0f, ParentEntity));
 
 		_projectile->AttachComponent(std::move(_projectileComponent));
 		_projectile->SetTag(bullet);
@@ -85,7 +86,7 @@ void PlayerComponent::SetupBullets()
 void PlayerComponent::ShootBullet()
 {
 	//update the shooting cooldown
-	auto _currentTime = Environment::Instance().GetElapsedTime();
+	auto _currentTime = Context.GetElapsedTime();
 	if (_currentTime - BulletCoolDown > LastShotTime) {
 		LastShotTime = _currentTime;
 		//borrow bullet from object pool
@@ -170,7 +171,7 @@ void PlayerComponent::OnDamage()
 		OnDeath();
 	} else {
 		IsInvulnerable = true;
-		InvulnerabilityEndTime = Environment::Instance().GetElapsedTime() + InvulnerabilityDuration;
+		InvulnerabilityEndTime = Context.GetElapsedTime() + InvulnerabilityDuration;
 	}
 }
 
@@ -178,8 +179,8 @@ void PlayerComponent::OnDeath()
 {
 	IsInputEnabled = false;
 	Freeze();
-	Environment::Instance().ScheduleTimer(DeathResetDelay, []() {
-		Environment::Instance().Reset();
+	Context.ScheduleTimer(DeathResetDelay, [&context = Context]() {
+		context.Reset();
 	});
 }
 

@@ -3,11 +3,12 @@
 
 
 
-BullComponent::BullComponent(Entity& _entity)
-	:Component(_entity),
+BullComponent::BullComponent(Entity& _entity, GameContext& _context)
+	:Component(_entity, _context),
 	Offset1(0,32),
 	Offset2(0,55),
 	ProjectileOffset(Offset1),
+	Projectiles(_context),
 	Lives(45)
 {
 	std::unique_ptr<BullDefaultState> _defaultState(new BullDefaultState(*this));
@@ -43,8 +44,8 @@ void BullComponent::PostUpdate()
 void BullComponent::SetupProjectiles()
 {
 		for (int _index = 0; _index < 10; _index++) {
-			std::unique_ptr<Entity>_projectile(new Entity("sprites/waves.png", 32, 32));
-			std::unique_ptr<ProjectileComponent> _projectileComponent(new ProjectileComponent(*_projectile, 400.0f, ParentEntity));
+			std::unique_ptr<Entity>_projectile(new Entity(Context, "sprites/waves.png", 32, 32));
+			std::unique_ptr<ProjectileComponent> _projectileComponent(new ProjectileComponent(*_projectile, Context, 400.0f, ParentEntity));
 
 		_projectile->AttachComponent(std::move(_projectileComponent));
 		_projectile->SetTag(enemy_bullet);
@@ -96,7 +97,7 @@ void BullComponent::Damage() {
 	Animator->PlayAnimation("damage");
 	Lives--;
 	if (Lives <= 0) {
-		Environment::Instance().Win();
+		Context.Win();
 		Animator->PlayAnimation("die");
 		ParentEntity.Disable();
 	}

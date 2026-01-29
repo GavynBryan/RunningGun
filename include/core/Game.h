@@ -1,8 +1,10 @@
 #pragma once
 #include <SDL3/SDL.h>
-#include "Environment.h"
+#include "GameContext.h"
 #include "Physics.h"
 #include "InputManager.h"
+
+class World;
 
 class Game
 {
@@ -14,7 +16,7 @@ private:
 	World*									WorldContext;
 
 private:
-	Environment								EnvironmentContext;
+	GameContext								Context;
 	InputManager							InputManagerContext;
 
 public:

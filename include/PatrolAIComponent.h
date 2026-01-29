@@ -15,7 +15,7 @@ private:
 	float MoveSpeed;
 	AnimationListener* Animator;
 public:
-	PatrolAIComponent(Entity& _entity, float _speed);
+	PatrolAIComponent(Entity& _entity, GameContext& _context, float _speed);
 	~PatrolAIComponent();
 
 	void Start();

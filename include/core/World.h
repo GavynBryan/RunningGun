@@ -2,6 +2,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include "Entity.h"
+#include "GameContext.h"
 #include "QuadTree.h"
 #include "Timer.h"
 #include <memory>
@@ -17,6 +18,7 @@ private:
 private:
 	SDL_Renderer*				Renderer;
 	Sprite						Background;
+	GameContext&				Context;
 
 	std::vector<Entity::Ptr>	Entities;
 	std::vector<Entity::Ptr>	AddQueue;
@@ -51,7 +53,7 @@ private:
 	void						UpdateTimers();
 
 public:
-								World(SDL_Renderer* renderer);
+								World(SDL_Renderer* renderer, GameContext& _context);
 								~World();
 
 	float						GetElapsedTime();
