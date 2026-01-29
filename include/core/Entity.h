@@ -33,7 +33,7 @@ protected:
 	ENTITY_TAG			Tag;
 	bool				Activated;
 
-	std::unique_ptr<AnimationListener>	Animator;
+	std::unique_ptr<AnimationStateMachine>	Animator;
 	GameContext&							Context;
 
 public:
@@ -67,10 +67,10 @@ public:
 	void				SetDirection(Vec2 _dir);
 	void				SetDirection(float _x, float _y);
 
-	void				AssignAnimator(std::unique_ptr<AnimationListener> _animator);
+	void				AssignAnimator(std::unique_ptr<AnimationStateMachine> _animator);
 
 	ENTITY_TAG			GetTag() { return Tag; }
-	AnimationListener*	GetAnimator(){ return Animator.get(); }
+	AnimationStateMachine*	GetAnimator(){ return Animator.get(); }
 	bool				IsEnabled() { return Activated; }
 	bool				IsGrounded();
 	void				OnCollide(Entity& _other);

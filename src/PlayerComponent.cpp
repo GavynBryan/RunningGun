@@ -64,14 +64,12 @@ void PlayerComponent::PostUpdate()
 
 void PlayerComponent::HandleAnimations()
 {
-	if (ParentEntity.GetDirection().x > 0) {
-		if (ParentEntity.GetVelocity().x != 0)
-			Animator->PlayAnimation("walkright");
-		else Animator->PlayAnimation("right");
-	} else{
-		if (ParentEntity.GetVelocity().x != 0)
-			Animator->PlayAnimation("walkleft");
-		else Animator->PlayAnimation("left");
+	ParentEntity.GetSprite().SetFlipX(ParentEntity.GetDirection().x < 0);
+
+	if (ParentEntity.GetVelocity().x != 0) {
+		Animator->PlayAnimation("walk");
+	} else {
+		Animator->PlayAnimation("idle");
 	}
 
 }
@@ -106,10 +104,8 @@ void PlayerComponent::ShootBullet()
 			_bullet->SetPosition(_position);
 		}
 		if (ParentEntity.GetVelocity().x == 0) {
-			if(ParentEntity.GetDirection().x > 0)
-				Animator->PlayAnimation("shootright");
-			else
-				Animator->PlayAnimation("shootleft");
+			ParentEntity.GetSprite().SetFlipX(ParentEntity.GetDirection().x < 0);
+			Animator->PlayAnimation("shoot");
 		}
 	}
 }
@@ -173,10 +169,8 @@ void PlayerComponent::OnDamage()
 	Lives--;
 
 	// Play damage animation
-	if (ParentEntity.GetDirection().x > 0)
-		Animator->PlayAnimation("damageright");
-	else
-		Animator->PlayAnimation("damageleft");
+	ParentEntity.GetSprite().SetFlipX(ParentEntity.GetDirection().x < 0);
+	Animator->PlayAnimation("damage");
 
 	if (Lives <= 0) {
 		OnDeath();

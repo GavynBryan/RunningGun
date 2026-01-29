@@ -120,7 +120,7 @@ void Entity::SetDirection(float _x, float _y)
 	Direction.x = _x; Direction.y = _y;
 }
 
-void Entity::AssignAnimator(std::unique_ptr<AnimationListener> _animator)
+void Entity::AssignAnimator(std::unique_ptr<AnimationStateMachine> _animator)
 {
 	Animator = std::move(_animator);
 }

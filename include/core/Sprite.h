@@ -11,6 +11,7 @@ private:
     SDL_FRect       DestRect;
     Recti           SrcRect;
     bool            HasSrcRect;
+    SDL_FlipMode    FlipMode;
 
 public:
     Sprite();
@@ -20,6 +21,7 @@ public:
     void SetTextureRect(const Recti& _rect);
     void SetPosition(const Vec2& _pos);
     void SetPosition(float _x, float _y);
+    void SetFlipX(bool _flip);
 
     SDL_Texture* GetTexture() const { return Texture; }
     const SDL_FRect& GetDestRect() const { return DestRect; }

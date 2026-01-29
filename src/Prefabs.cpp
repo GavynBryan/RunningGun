@@ -21,25 +21,17 @@ std::unique_ptr<Entity> Prefabs::GetPlayer(GameContext& _context)
 
 	std::unique_ptr<PhysicsComponent> _phys(new PhysicsComponent(*_player, _context));
 	std::unique_ptr<PlayerComponent> _pc(new PlayerComponent(*_player, _context));
-	std::unique_ptr<AnimationListener> _anim(new AnimationListener());
+	std::unique_ptr<AnimationStateMachine> _anim(new AnimationStateMachine());
 
 	//set up animations
-	AnimPtr _right(new Animation(0, Vec2(64, 64), 1, true));
-	AnimPtr _left(new Animation(1, Vec2(64, 64), 1, true));
-	AnimPtr _walkRight(new Animation(6, Vec2(64, 64), 1, true));
-	AnimPtr _walkLeft(new Animation(5, Vec2(64, 64), 1, true));
-	AnimPtr _damageRight(new Animation(3, Vec2(64, 64), 1, false, true));
-	AnimPtr _damageLeft(new Animation(4, Vec2(64, 64), 1, false, true));
-	AnimPtr _shootRight(new Animation(7, Vec2(64, 64), 0, false));
-	AnimPtr _shootLeft(new Animation(8, Vec2(64, 64), 0, false));
-	_anim->AddAnimation("right", std::move(_right));
-	_anim->AddAnimation("left", std::move(_left));
-	_anim->AddAnimation("walkright", std::move(_walkRight));
-	_anim->AddAnimation("walkleft", std::move(_walkLeft));
-	_anim->AddAnimation("shootleft", std::move(_shootLeft));
-	_anim->AddAnimation("shootright", std::move(_shootRight));
-	_anim->AddAnimation("damageleft", std::move(_damageLeft));
-	_anim->AddAnimation("damageright", std::move(_damageRight));
+	AnimPtr _idle(new Animation(0, Vec2(64, 64), 1, true));
+	AnimPtr _walk(new Animation(6, Vec2(64, 64), 1, true));
+	AnimPtr _damage(new Animation(3, Vec2(64, 64), 1, false, true));
+	AnimPtr _shoot(new Animation(7, Vec2(64, 64), 0, false));
+	_anim->AddAnimation("idle", std::move(_idle));
+	_anim->AddAnimation("walk", std::move(_walk));
+	_anim->AddAnimation("shoot", std::move(_shoot));
+	_anim->AddAnimation("damage", std::move(_damage));
 
 	_player->AssignAnimator(std::move(_anim));
 
@@ -55,7 +47,7 @@ std::unique_ptr<Entity> Prefabs::GetBull(GameContext& _context)
 	std::unique_ptr<Entity> _bull(new Entity(_context, "sprites/bull.png", 256, 128));
 
 	std::unique_ptr<BullComponent> _bc(new BullComponent(*_bull, _context));
-	std::unique_ptr<AnimationListener> _anim(new AnimationListener());
+	std::unique_ptr<AnimationStateMachine> _anim(new AnimationStateMachine());
 
 	//setup animations
 	AnimPtr _default(new Animation(0, Vec2(256, 128), 0, true));
@@ -82,17 +74,13 @@ std::unique_ptr<Entity> Prefabs::GetScorpion(GameContext& _context)
 
 	std::unique_ptr<PatrolAIComponent> _pc(new PatrolAIComponent(*_scorpion, _context, 150));
 	std::unique_ptr<PhysicsComponent> _phys(new PhysicsComponent(*_scorpion, _context));
-	std::unique_ptr<AnimationListener> _anim(new AnimationListener());
+	std::unique_ptr<AnimationStateMachine> _anim(new AnimationStateMachine());
 
 	//setup animations
-	AnimPtr _left(new Animation(0, Vec2(64, 64), 1, true));
-	AnimPtr _right(new Animation(1, Vec2(64, 64), 1, true));
-	AnimPtr _damageLeft(new Animation(2, Vec2(64, 64), 0, false));
-	AnimPtr _damageRight(new Animation(3, Vec2(64, 64), 0, false));
-	_anim->AddAnimation("left", std::move(_left));
-	_anim->AddAnimation("right", std::move(_right));
-	_anim->AddAnimation("damageleft", std::move(_damageLeft));
-	_anim->AddAnimation("damageright", std::move(_damageRight));
+	AnimPtr _idle(new Animation(1, Vec2(64, 64), 1, true));
+	AnimPtr _damage(new Animation(3, Vec2(64, 64), 0, false));
+	_anim->AddAnimation("idle", std::move(_idle));
+	_anim->AddAnimation("damage", std::move(_damage));
 
 	_scorpion->AssignAnimator(std::move(_anim));
 

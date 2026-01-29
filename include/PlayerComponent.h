@@ -18,7 +18,7 @@ private:
 	uint8_t Lives;
 	float PlayerSpeed;
 
-	AnimationListener*				Animator;
+	AnimationStateMachine*				Animator;
 	ObjectPool						Bullets;
 
 	Vec2							BulletOffset;

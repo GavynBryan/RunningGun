@@ -40,12 +40,8 @@ void PatrolAIComponent::Update()
 
 void PatrolAIComponent::PostUpdate()
 {
-	if (ParentEntity.GetDirection().x == 1) {
-		Animator->PlayAnimation("left");
-	}
-	else {
-		Animator->PlayAnimation("right");
-	}
+	ParentEntity.GetSprite().SetFlipX(ParentEntity.GetDirection().x < 0);
+	Animator->PlayAnimation("idle");
 }
 
 void PatrolAIComponent::ChangeDirection()
@@ -67,12 +63,8 @@ void PatrolAIComponent::Damage()
 		ParentEntity.Disable();
 		return;
 	}
-	if (ParentEntity.GetDirection().x == 1) {
-		Animator->PlayAnimation("damageleft");
-	}
-	else {
-		Animator->PlayAnimation("damageright");
-	}
+	ParentEntity.GetSprite().SetFlipX(ParentEntity.GetDirection().x < 0);
+	Animator->PlayAnimation("damage");
 }
 
 //absolutely useless
