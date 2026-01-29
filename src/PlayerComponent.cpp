@@ -12,8 +12,6 @@ PlayerComponent::PlayerComponent(Entity& _entity)
 	BulletOffset(32, 18),
 	Animator(nullptr),
 	LastShotTime(0),
-	IsInvulnerable(false),
-	InvulnerabilityEndTime(0),
 	IsInputEnabled(true)
 {
 	//set initial direction (right)
@@ -29,20 +27,18 @@ PlayerComponent::~PlayerComponent()
 void PlayerComponent::Start()
 {
 	LastShotTime = 0;
-	IsInvulnerable = false;
 	IsInputEnabled = true;
+	InvulnerabilityTimer.Cancel();
+	DeathTimer.Cancel();
 
 	Animator = ParentEntity.GetAnimator();
 }
 
 void PlayerComponent::Update()
 {
-	// Check invulnerability timer
-	if (IsInvulnerable) {
-		if (Environment::Instance().GetElapsedTime() >= InvulnerabilityEndTime) {
-			IsInvulnerable = false;
-		}
-	}
+	float _currentTime = Environment::Instance().GetElapsedTime();
+	InvulnerabilityTimer.Update(_currentTime);
+	DeathTimer.Update(_currentTime);
 
 	if (IsInputEnabled) {
 		HandleInput();
@@ -154,7 +150,7 @@ void PlayerComponent::Freeze()
 
 void PlayerComponent::OnDamage()
 {
-	if (IsInvulnerable) {
+	if (InvulnerabilityTimer.IsActive()) {
 		return;
 	}
 
@@ -169,9 +165,7 @@ void PlayerComponent::OnDamage()
 	if (Lives <= 0) {
 		OnDeath();
 	} else {
-		// Start invulnerability period
-		IsInvulnerable = true;
-		InvulnerabilityEndTime = Environment::Instance().GetElapsedTime() + InvulnerabilityDuration;
+		InvulnerabilityTimer.Start(InvulnerabilityDuration, nullptr);
 	}
 }
 
@@ -179,7 +173,9 @@ void PlayerComponent::OnDeath()
 {
 	IsInputEnabled = false;
 	Freeze();
-	Environment::Instance().Reset();
+	DeathTimer.Start(DeathResetDelay, []() {
+		Environment::Instance().Reset();
+	});
 }
 
 void PlayerComponent::OnVictory()

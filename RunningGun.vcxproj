@@ -160,6 +160,7 @@
     <ClInclude Include="include\core\Physics.h" />
     <ClInclude Include="include\core\Prefabs.h" />
     <ClInclude Include="include\core\State.h" />
+    <ClInclude Include="include\core\Timer.h" />
     <ClInclude Include="include\core\World.h" />
     <ClInclude Include="include\DustComponent.h" />
     <ClInclude Include="include\PatrolAIComponent.h" />
@@ -184,6 +185,7 @@
     <ClCompile Include="src\core\QuadTree.cpp" />
     <ClCompile Include="src\core\Environment.cpp" />
     <ClCompile Include="src\core\State.cpp" />
+    <ClCompile Include="src\core\Timer.cpp" />
     <ClCompile Include="src\core\World.cpp" />
     <ClCompile Include="src\DustComponent.cpp" />
     <ClCompile Include="src\PatrolAIComponent.cpp" />
