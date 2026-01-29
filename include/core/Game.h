@@ -1,10 +1,12 @@
 #pragma once
 #include <SDL3/SDL.h>
+#include <memory>
 #include "GameContext.h"
 #include "Physics.h"
 #include "InputManager.h"
 
 class World;
+class GameMode;
 
 class Game
 {
@@ -14,6 +16,7 @@ private:
 	bool									Quit;
 
 	World*									WorldContext;
+	std::unique_ptr<GameMode>				Mode;
 
 private:
 	GameContext								Context;

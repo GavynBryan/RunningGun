@@ -7,6 +7,7 @@
 
 class World;
 class Entity;
+class GameMode;
 
 class GameContext
 {
@@ -33,9 +34,8 @@ public:
 	void													Instantiate(std::unique_ptr<Entity> _entity) const;
 	TimerHandle												ScheduleTimer(float _delay, std::function<void()> _callback) const;
 	void													CancelTimer(TimerHandle _handle) const;
-
-	void													Win() const;
 	void													Reset() const;
+	GameMode*												GetGameMode() const;
 
 public:
 	GameContext();

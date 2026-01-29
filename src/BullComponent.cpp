@@ -1,5 +1,6 @@
 #include <BullComponent.h>
 #include <ProjectileComponent.h>
+#include <core/RunningGunGameMode.h>
 
 
 
@@ -97,7 +98,9 @@ void BullComponent::Damage() {
 	Animator->PlayAnimation("damage");
 	Lives--;
 	if (Lives <= 0) {
-		Context.Win();
+		if (auto* _mode = dynamic_cast<RunningGunGameMode*>(Context.GetGameMode())) {
+			_mode->OnWin();
+		}
 		Animator->PlayAnimation("die");
 		ParentEntity.Disable();
 	}

@@ -1,4 +1,6 @@
 #include <core/Game.h>
+#include <core/GameMode.h>
+#include <core/RunningGunGameMode.h>
 #include <core/World.h>
 #include <core/Camera.h>
 #include <string.h>
@@ -35,6 +37,9 @@ Game::Game()
 	Context.SetPhysics(std::move(_physicsManager));
 	Context.SetCamera(std::move(_camera));
 	Context.SetWorld(WorldContext);
+
+	Mode = std::make_unique<RunningGunGameMode>(Renderer, Context, *WorldContext);
+	WorldContext->SetGameMode(Mode.get());
 }
 
 Game::~Game()
@@ -55,7 +60,8 @@ void Game::Run()
 	Uint64 _frequency = SDL_GetPerformanceFrequency();
 
 	WorldContext->Init();
-	WorldContext->BuildScene();
+	Mode->Init();
+	Mode->BuildScene();
 
 	while (!Quit) {
 		// Calculate delta time
@@ -86,8 +92,11 @@ void Game::Run()
 
 		// Update and render
 		WorldContext->Start();
+		Mode->Update();
 		WorldContext->Update();
 		WorldContext->PostUpdate();
+		Mode->PostUpdate();
+
 		WorldContext->Render();
 
 		// Present
