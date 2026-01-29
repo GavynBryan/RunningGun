@@ -1,6 +1,8 @@
 #pragma once
 #include <core/Component.h>
-#include <core/Environment.h>
+
+class Physics;
+class GameContext;
 
 class PhysicsComponent :
 	public Component
@@ -8,7 +10,7 @@ class PhysicsComponent :
 private:
 	Physics &PhysContext;
 public:
-	PhysicsComponent(Entity& _entity);
+	PhysicsComponent(Entity& _entity, GameContext& _context);
 	~PhysicsComponent();
 
 	void Update();
@@ -16,4 +18,3 @@ public:
 
 	void OnCollide(Entity& _other);
 };
-

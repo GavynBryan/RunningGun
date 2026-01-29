@@ -1,8 +1,10 @@
 #include <core/ObjectPool.h>
+#include <core/GameContext.h>
 
 
 
-ObjectPool::ObjectPool()
+ObjectPool::ObjectPool(GameContext& _context)
+	:Context(_context)
 {
 }
 
@@ -15,7 +17,7 @@ void ObjectPool::FeedObject(Entity::Ptr _obj)
 {
 	_obj->Disable();
 	Pool.push_back(_obj.get());
-	Environment::Instance().Instantiate(std::move(_obj));
+	Context.Instantiate(std::move(_obj));
 }
 
 void ObjectPool::Clear()

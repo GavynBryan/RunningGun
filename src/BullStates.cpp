@@ -33,7 +33,7 @@ void BullDefaultState::EnterState()
 
 void BullDefaultState::Update() 
 {
-	float _currentTime = Environment::Instance().GetElapsedTime();
+	float _currentTime = BullRef.GetContext().GetElapsedTime();
 	if (_currentTime - LastShot > ShootFrequency) {
 		BullRef.Shoot();
 		LastShot = _currentTime;

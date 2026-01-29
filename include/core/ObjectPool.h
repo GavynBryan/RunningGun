@@ -1,11 +1,15 @@
 #pragma once
-#include "Environment.h"
+#include "Entity.h"
+
+class GameContext;
+
 class ObjectPool
 {
 private:
+	GameContext& Context;
 	std::vector<Entity*> Pool;
 public:
-	ObjectPool();
+	ObjectPool(GameContext& _context);
 	~ObjectPool();
 
 	void FeedObject(Entity::Ptr _obj);

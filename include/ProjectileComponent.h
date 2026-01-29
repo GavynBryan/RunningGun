@@ -11,7 +11,7 @@ private:
 
 	Entity&	Shooter;
 public:
-	ProjectileComponent(Entity& _entity, float _speed, Entity& _shooter);
+	ProjectileComponent(Entity& _entity, GameContext& _context, float _speed, Entity& _shooter);
 	~ProjectileComponent();
 
 	void Start();

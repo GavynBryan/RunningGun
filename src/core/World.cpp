@@ -1,15 +1,15 @@
 #include <core/World.h>
-#include <core/Game.h>
 #include <core/Prefabs.h>
 #include <core/AnimationListener.h>
 #include <core/ObjectPool.h>
 #include <PlayerComponent.h>
 #include <algorithm>
 
-World::World(SDL_Renderer* renderer)
+World::World(SDL_Renderer* renderer, GameContext& _context)
 	:Renderer(renderer),
+	Context(_context),
 	ResetFlag(false),
-	ObjectPoolContext(new ObjectPool()),
+	ObjectPoolContext(new ObjectPool(_context)),
 	SpawnScorpion1Interval(10.0f),
 	LastSpawn1Time(0),
 	SpawnScorpion2Interval(11.0f),
@@ -114,7 +114,7 @@ void World::Init()
 		SDL_Log("Failed to initialize SDL_ttf: %s", SDL_GetError());
 	}
 
-	auto _handler = Environment::Instance().GetTextureHandler();
+	auto _handler = Context.GetTextureHandler();
 	_handler->Load("sprites/player.png");
 	_handler->Load("sprites/ball.png");
 	_handler->Load("sprites/bullet.png");
@@ -133,7 +133,7 @@ void World::Init()
 	Background.SetTexture(_handler->Get("sprites/background.png"));
 
 	for (int _index = 0; _index < 5; _index++) {
-		std::unique_ptr<Entity> _heart(new Entity("sprites/health.png", 32, 32));
+		std::unique_ptr<Entity> _heart(new Entity(Context, "sprites/health.png", 32, 32));
 		_heart->SetPosition(32.0f * _index + 5, 0);
 		Hearts.push_back(std::move(_heart));
 	}
@@ -141,16 +141,16 @@ void World::Init()
 
 void World::BuildScene()
 {
-	auto _player = Prefabs::GetPlayer();
+	auto _player = Prefabs::GetPlayer(Context);
 	PlayerEntity = _player.get();
 	PlayerComponentRef = PlayerEntity->GetComponent<PlayerComponent>();
 	AddObject(std::move(_player));
 
-	auto _bull = Prefabs::GetBull();
+	auto _bull = Prefabs::GetBull(Context);
 	AddObject(std::move(_bull));
 
 	for (int _index = 0; _index < 3; _index++) {
-		auto _scorpion = Prefabs::GetScorpion();
+		auto _scorpion = Prefabs::GetScorpion(Context);
 		ObjectPoolContext->FeedObject(std::move(_scorpion));
 	}
 

@@ -1,4 +1,5 @@
 #include <core/Game.h>
+#include <core/World.h>
 #include <string.h>
 
 Game::Game()
@@ -24,13 +25,13 @@ Game::Game()
 		return;
 	}
 
-	WorldContext = new World(Renderer);
+	WorldContext = new World(Renderer, Context);
 
 	std::unique_ptr<ResourceHandler> _textureHandler(new ResourceHandler(Renderer));
 	std::unique_ptr<Physics> _physicsManager(new Physics());
-	EnvironmentContext.SetTextureHandler(std::move(_textureHandler));
-	EnvironmentContext.SetPhysics(std::move(_physicsManager));
-	EnvironmentContext.SetWorld(WorldContext);
+	Context.SetTextureHandler(std::move(_textureHandler));
+	Context.SetPhysics(std::move(_physicsManager));
+	Context.SetWorld(WorldContext);
 }
 
 Game::~Game()
@@ -74,7 +75,7 @@ void Game::Run()
 		// End input frame
 		InputManagerContext.EndFrame();
 
-		EnvironmentContext.SetDeltaTime(_deltaTime);
+		Context.SetDeltaTime(_deltaTime);
 
 		// Clear screen
 		SDL_SetRenderDrawColor(Renderer, 0, 0, 0, 255);
