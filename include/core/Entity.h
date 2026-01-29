@@ -5,7 +5,7 @@
 #include <core/Vec2.h>
 #include <core/Rect.h>
 #include <core/Sprite.h>
-#include <core/animation/AnimationListener.h>
+#include <core/animation/AnimationStateMachine.h>
 #include <core/Component.h>
 
 class GameContext;

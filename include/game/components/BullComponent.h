@@ -1,7 +1,7 @@
 #pragma once
 #include <map>
 #include <core/Component.h>
-#include <core/animation/AnimationListener.h>
+#include <core/animation/AnimationStateMachine.h>
 #include <core/ObjectPool.h>
 #include <core/Vec2.h>
 
