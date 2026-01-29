@@ -1,18 +1,20 @@
 #include <core/PrefabLoader.h>
-#include <core/JsonUtils.h>
+#include <core/JsonParser.h>
 #include <core/PrefabLibrary.h>
-#include <rapidjson/document.h>
-#include <rapidjson/error/en.h>
+#include <SDL3/SDL.h>
 
 namespace {
-	bool TryParseVec2(const rapidjson::Value& _value, Vec2& _out) {
+	bool TryParseVec2(const JsonValue& _value, Vec2& _out) {
 		if (!_value.IsArray() || _value.Size() != 2) {
 			return false;
 		}
 		if (!_value[0].IsNumber() || !_value[1].IsNumber()) {
 			return false;
 		}
-		_out = Vec2(static_cast<float>(_value[0].GetDouble()), static_cast<float>(_value[1].GetDouble()));
+		_out = Vec2(
+			static_cast<float>(_value[0].GetDouble()),
+			static_cast<float>(_value[1].GetDouble())
+		);
 		return true;
 	}
 
@@ -35,56 +37,75 @@ namespace {
 		return player;
 	}
 
-	void ParseAnimations(const rapidjson::Value& _prefabValue, PrefabDefinition& _definition) {
-		if (!_prefabValue.HasMember("animations") || !_prefabValue["animations"].IsArray()) {
+	void ParseAnimations(const JsonValue& _prefabValue, PrefabDefinition& _definition) {
+		const JsonValue& _animations = _prefabValue["animations"];
+		if (!_animations.IsArray()) {
 			return;
 		}
-		for (const auto& _animValue : _prefabValue["animations"].GetArray()) {
+		for (const auto& _animValue : _animations.GetArray()) {
 			if (!_animValue.IsObject()) {
 				continue;
 			}
 			AnimationDefinition _animDef;
-			if (_animValue.HasMember("name") && _animValue["name"].IsString()) {
-				_animDef.Name = _animValue["name"].GetString();
+
+			const JsonValue& _name = _animValue["name"];
+			if (_name.IsString()) {
+				_animDef.Name = _name.GetString();
 			}
-			if (_animValue.HasMember("index") && _animValue["index"].IsInt()) {
-				_animDef.Index = _animValue["index"].GetInt();
+
+			const JsonValue& _index = _animValue["index"];
+			if (_index.IsNumber()) {
+				_animDef.Index = static_cast<int>(_index.GetInt());
 			}
-			if (_animValue.HasMember("frames") && _animValue["frames"].IsInt()) {
-				_animDef.Frames = _animValue["frames"].GetInt();
+
+			const JsonValue& _frames = _animValue["frames"];
+			if (_frames.IsNumber()) {
+				_animDef.Frames = static_cast<int>(_frames.GetInt());
 			}
-			if (_animValue.HasMember("loop") && _animValue["loop"].IsBool()) {
-				_animDef.Loop = _animValue["loop"].GetBool();
+
+			const JsonValue& _loop = _animValue["loop"];
+			if (_loop.IsBool()) {
+				_animDef.Loop = _loop.GetBool();
 			}
-			if (_animValue.HasMember("priority") && _animValue["priority"].IsBool()) {
-				_animDef.Priority = _animValue["priority"].GetBool();
+
+			const JsonValue& _priority = _animValue["priority"];
+			if (_priority.IsBool()) {
+				_animDef.Priority = _priority.GetBool();
 			}
-			if (_animValue.HasMember("frameSize")) {
-				TryParseVec2(_animValue["frameSize"], _animDef.FrameSize);
+
+			const JsonValue& _frameSize = _animValue["frameSize"];
+			if (!_frameSize.IsNull()) {
+				TryParseVec2(_frameSize, _animDef.FrameSize);
 			}
+
 			if (!_animDef.Name.empty()) {
-				_definition.Animations.push_back(_animDef);
+				_definition.Animations.push_back(std::move(_animDef));
 			}
 		}
 	}
 
-	void ParseComponents(const rapidjson::Value& _prefabValue, rapidjson::Document::AllocatorType& _allocator, PrefabDefinition& _definition) {
-		if (!_prefabValue.HasMember("components") || !_prefabValue["components"].IsArray()) {
+	void ParseComponents(const JsonValue& _prefabValue, PrefabDefinition& _definition) {
+		const JsonValue& _components = _prefabValue["components"];
+		if (!_components.IsArray()) {
 			return;
 		}
 
-		for (const auto& _compValue : _prefabValue["components"].GetArray()) {
+		for (const auto& _compValue : _components.GetArray()) {
 			if (!_compValue.IsObject()) {
 				continue;
 			}
 			ComponentDefinition _component;
-			if (_compValue.HasMember("type") && _compValue["type"].IsString()) {
-				_component.Type = _compValue["type"].GetString();
+
+			const JsonValue& _type = _compValue["type"];
+			if (_type.IsString()) {
+				_component.Type = _type.GetString();
 			}
-			_component.Params.SetObject();
-			if (_compValue.HasMember("params") && _compValue["params"].IsObject()) {
-				_component.Params.CopyFrom(_compValue["params"], _allocator);
+
+			const JsonValue& _params = _compValue["params"];
+			if (_params.IsObject()) {
+				_component.Params = _params;
 			}
+
 			if (!_component.Type.empty()) {
 				_definition.Components.push_back(std::move(_component));
 			}
@@ -94,48 +115,65 @@ namespace {
 
 bool PrefabLoader::LoadFromFile(const std::string& _path, PrefabLibrary& _library)
 {
-	std::string _contents;
-	if (!JsonUtils::ReadFileContents(_path, _contents)) {
+	JsonParseResult _result = JsonParser::ParseFile(_path);
+	if (!_result) {
+		SDL_Log("PrefabLoader: Failed to parse %s: %s", _path.c_str(), _result.Error.c_str());
 		return false;
 	}
 
-	_library.Reset();
-	rapidjson::Document& _doc = _library.Document();
-	_doc.Parse(_contents.c_str());
-	if (_doc.HasParseError()) {
-		return false;
-	}
-	if (!_doc.IsObject() || !_doc.HasMember("prefabs") || !_doc["prefabs"].IsArray()) {
+	const JsonValue& _root = _result.Root;
+	if (!_root.IsObject()) {
+		SDL_Log("PrefabLoader: Root must be an object in %s", _path.c_str());
 		return false;
 	}
 
-	const auto& _prefabs = _doc["prefabs"];
+	const JsonValue& _prefabs = _root["prefabs"];
+	if (!_prefabs.IsArray()) {
+		SDL_Log("PrefabLoader: Missing 'prefabs' array in %s", _path.c_str());
+		return false;
+	}
+
+	_library.Clear();
+
 	for (const auto& _prefabValue : _prefabs.GetArray()) {
 		if (!_prefabValue.IsObject()) {
 			continue;
 		}
+
 		PrefabDefinition _definition;
-		if (_prefabValue.HasMember("id") && _prefabValue["id"].IsString()) {
-			_definition.Id = _prefabValue["id"].GetString();
+
+		const JsonValue& _id = _prefabValue["id"];
+		if (_id.IsString()) {
+			_definition.Id = _id.GetString();
 		}
-		if (_prefabValue.HasMember("texture") && _prefabValue["texture"].IsString()) {
-			_definition.Texture = _prefabValue["texture"].GetString();
+
+		const JsonValue& _texture = _prefabValue["texture"];
+		if (_texture.IsString()) {
+			_definition.Texture = _texture.GetString();
 		}
-		if (_prefabValue.HasMember("width") && _prefabValue["width"].IsNumber()) {
-			_definition.Width = static_cast<float>(_prefabValue["width"].GetDouble());
+
+		const JsonValue& _width = _prefabValue["width"];
+		if (_width.IsNumber()) {
+			_definition.Width = static_cast<float>(_width.GetDouble());
 		}
-		if (_prefabValue.HasMember("height") && _prefabValue["height"].IsNumber()) {
-			_definition.Height = static_cast<float>(_prefabValue["height"].GetDouble());
+
+		const JsonValue& _height = _prefabValue["height"];
+		if (_height.IsNumber()) {
+			_definition.Height = static_cast<float>(_height.GetDouble());
 		}
-		if (_prefabValue.HasMember("position")) {
-			TryParseVec2(_prefabValue["position"], _definition.Position);
+
+		const JsonValue& _position = _prefabValue["position"];
+		if (!_position.IsNull()) {
+			TryParseVec2(_position, _definition.Position);
 		}
-		if (_prefabValue.HasMember("tag") && _prefabValue["tag"].IsString()) {
-			_definition.Tag = ParseTag(_prefabValue["tag"].GetString());
+
+		const JsonValue& _tag = _prefabValue["tag"];
+		if (_tag.IsString()) {
+			_definition.Tag = ParseTag(_tag.GetString());
 		}
 
 		ParseAnimations(_prefabValue, _definition);
-		ParseComponents(_prefabValue, _doc.GetAllocator(), _definition);
+		ParseComponents(_prefabValue, _definition);
 
 		if (!_definition.Id.empty()) {
 			_library.Add(std::move(_definition));

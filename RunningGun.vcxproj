@@ -153,6 +153,9 @@
     <ClInclude Include="include\core\Entity.h" />
     <ClInclude Include="include\core\Game.h" />
     <ClInclude Include="include\core\GameMode.h" />
+    <ClInclude Include="include\core\InputManager.h" />
+    <ClInclude Include="include\core\JsonParser.h" />
+    <ClInclude Include="include\core\JsonValue.h" />
     <ClInclude Include="include\core\RunningGunGameMode.h" />
     <ClInclude Include="include\core\ObjectPool.h" />
     <ClInclude Include="include\core\QuadTree.h" />
@@ -160,6 +163,10 @@
     <ClInclude Include="include\core\Locator.h" />
     <ClInclude Include="include\core\Physics.h" />
     <ClInclude Include="include\core\Prefabs.h" />
+    <ClInclude Include="include\core\PrefabComponentRegistry.h" />
+    <ClInclude Include="include\core\PrefabFactory.h" />
+    <ClInclude Include="include\core\PrefabLibrary.h" />
+    <ClInclude Include="include\core\PrefabLoader.h" />
     <ClInclude Include="include\core\State.h" />
     <ClInclude Include="include\core\Timer.h" />
     <ClInclude Include="include\core\World.h" />
@@ -186,6 +193,13 @@
     <ClCompile Include="src\core\Component.cpp" />
     <ClCompile Include="src\core\Entity.cpp" />
     <ClCompile Include="src\core\Game.cpp" />
+    <ClCompile Include="src\core\InputManager.cpp" />
+    <ClCompile Include="src\core\JsonParser.cpp" />
+    <ClCompile Include="src\core\JsonValue.cpp" />
+    <ClCompile Include="src\core\PrefabComponentRegistry.cpp" />
+    <ClCompile Include="src\core\PrefabFactory.cpp" />
+    <ClCompile Include="src\core\PrefabLibrary.cpp" />
+    <ClCompile Include="src\core\PrefabLoader.cpp" />
     <ClCompile Include="src\core\RunningGunGameMode.cpp" />
     <ClCompile Include="src\core\main.cpp" />
     <ClCompile Include="src\core\ObjectPool.cpp" />
@@ -198,13 +212,13 @@
     <ClCompile Include="src\core\UIHealthBar.cpp" />
     <ClCompile Include="src\core\UIText.cpp" />
     <ClCompile Include="src\DustComponent.cpp" />
+    <ClCompile Include="src\game\Prefabs.cpp" />
     <ClCompile Include="src\PatrolAIComponent.cpp" />
     <ClCompile Include="src\PhysicsComponent.cpp" />
     <ClCompile Include="src\PlayerComponent.cpp" />
     <ClCompile Include="src\ProjectileComponent.cpp" />
     <ClCompile Include="src\Locator.cpp" />
     <ClCompile Include="src\Physics.cpp" />
-    <ClCompile Include="src\Prefabs.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

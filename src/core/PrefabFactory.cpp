@@ -3,6 +3,7 @@
 #include <core/Entity.h>
 #include <core/PrefabComponentRegistry.h>
 #include <core/PrefabLibrary.h>
+#include <SDL3/SDL.h>
 
 std::unique_ptr<Entity> PrefabFactory::CreateEntity(GameContext& _context, const PrefabDefinition& _definition, const PrefabComponentRegistry& _registry)
 {
@@ -24,7 +25,13 @@ std::unique_ptr<Entity> PrefabFactory::CreateEntity(GameContext& _context, const
 	for (const auto& _component : _definition.Components) {
 		const auto* _factory = _registry.Find(_component.Type);
 		if (_factory) {
-			_entity->AttachComponent((*_factory)(*_entity, _context, _component.Params));
+			auto _comp = (*_factory)(*_entity, _context, _component.Params);
+			if (_comp) {
+				_entity->AttachComponent(std::move(_comp));
+			}
+		} else {
+			SDL_Log("PrefabFactory: Unknown component type '%s' in prefab '%s'",
+				_component.Type.c_str(), _definition.Id.c_str());
 		}
 	}
 

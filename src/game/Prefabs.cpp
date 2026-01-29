@@ -1,5 +1,6 @@
 #include <core/Prefabs.h>
 #include <core/engine/GameContext.h>
+#include <core/JsonValue.h>
 #include <core/PrefabComponentRegistry.h>
 #include <core/PrefabFactory.h>
 #include <core/PrefabLibrary.h>
@@ -38,20 +39,21 @@ bool Prefabs::LoadDefinitions(GameContext& _context, const std::string& _path)
 
 void Prefabs::RegisterDefaultComponents()
 {
-	ComponentRegistry.Register("player", [](Entity& _entity, GameContext& _context, const rapidjson::Value&) {
+	ComponentRegistry.Register("player", [](Entity& _entity, GameContext& _context, const JsonValue&) {
 		return std::make_unique<PlayerComponent>(_entity, _context);
 	});
-	ComponentRegistry.Register("physics", [](Entity& _entity, GameContext& _context, const rapidjson::Value&) {
+	ComponentRegistry.Register("physics", [](Entity& _entity, GameContext& _context, const JsonValue&) {
 		return std::make_unique<PhysicsComponent>(_entity, _context);
 	});
-	ComponentRegistry.Register("patrol_ai", [](Entity& _entity, GameContext& _context, const rapidjson::Value& _params) {
+	ComponentRegistry.Register("patrol_ai", [](Entity& _entity, GameContext& _context, const JsonValue& _params) {
 		float _speed = 150.0f;
-		if (_params.HasMember("speed") && _params["speed"].IsNumber()) {
-			_speed = static_cast<float>(_params["speed"].GetDouble());
+		const JsonValue& _speedParam = _params["speed"];
+		if (_speedParam.IsNumber()) {
+			_speed = static_cast<float>(_speedParam.GetDouble());
 		}
 		return std::make_unique<PatrolAIComponent>(_entity, _context, _speed);
 	});
-	ComponentRegistry.Register("bull", [](Entity& _entity, GameContext& _context, const rapidjson::Value&) {
+	ComponentRegistry.Register("bull", [](Entity& _entity, GameContext& _context, const JsonValue&) {
 		return std::make_unique<BullComponent>(_entity, _context);
 	});
 }
