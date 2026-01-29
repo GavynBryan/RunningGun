@@ -3,6 +3,7 @@
 #include <core/RunningGunGameMode.h>
 #include <core/World.h>
 #include <core/Camera.h>
+#include <core/Prefabs.h>
 #include <string.h>
 
 Game::Game()
@@ -37,6 +38,10 @@ Game::Game()
 	Context.SetPhysics(std::move(_physicsManager));
 	Context.SetCamera(std::move(_camera));
 	Context.SetWorld(WorldContext);
+
+	InputManagerContext.LoadBindings("config/controls.json");
+	Prefabs::RegisterDefaultComponents();
+	Prefabs::LoadDefinitions(Context, "config/prefabs.json");
 
 	Mode = std::make_unique<RunningGunGameMode>(Renderer, Context, *WorldContext);
 	WorldContext->SetGameMode(Mode.get());

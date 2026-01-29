@@ -1,0 +1,55 @@
+{
+  "prefabs": [
+    {
+      "id": "player",
+      "texture": "sprites/player.png",
+      "width": 64,
+      "height": 64,
+      "position": [0, 450],
+      "tag": "player",
+      "animations": [
+        {"name": "idle", "index": 0, "frameSize": [64, 64], "frames": 1, "loop": true, "priority": false},
+        {"name": "walk", "index": 6, "frameSize": [64, 64], "frames": 1, "loop": true, "priority": false},
+        {"name": "damage", "index": 3, "frameSize": [64, 64], "frames": 1, "loop": false, "priority": true},
+        {"name": "shoot", "index": 7, "frameSize": [64, 64], "frames": 0, "loop": false, "priority": false}
+      ],
+      "components": [
+        {"type": "player", "params": {}},
+        {"type": "physics", "params": {}}
+      ]
+    },
+    {
+      "id": "bull",
+      "texture": "sprites/bull.png",
+      "width": 256,
+      "height": 128,
+      "position": [580, 415],
+      "tag": "hazard",
+      "animations": [
+        {"name": "default", "index": 0, "frameSize": [256, 128], "frames": 0, "loop": true, "priority": false},
+        {"name": "shoot", "index": 1, "frameSize": [256, 128], "frames": 0, "loop": false, "priority": true},
+        {"name": "damage", "index": 2, "frameSize": [256, 128], "frames": 0, "loop": false, "priority": true},
+        {"name": "die", "index": 3, "frameSize": [256, 128], "frames": 2, "loop": false, "priority": true}
+      ],
+      "components": [
+        {"type": "bull", "params": {}}
+      ]
+    },
+    {
+      "id": "scorpion",
+      "texture": "sprites/scorpion.png",
+      "width": 64,
+      "height": 64,
+      "position": [0, 0],
+      "tag": "hazard",
+      "animations": [
+        {"name": "idle", "index": 1, "frameSize": [64, 64], "frames": 1, "loop": true, "priority": false},
+        {"name": "damage", "index": 3, "frameSize": [64, 64], "frames": 0, "loop": false, "priority": false}
+      ],
+      "components": [
+        {"type": "patrol_ai", "params": {"speed": 150}},
+        {"type": "physics", "params": {}}
+      ]
+    }
+  ]
+}
