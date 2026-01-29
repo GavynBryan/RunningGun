@@ -4,6 +4,7 @@
 #include <core/AnimationListener.h>
 #include <core/ObjectPool.h>
 #include <PlayerComponent.h>
+#include <algorithm>
 
 World::World(SDL_Renderer* renderer)
 	:Renderer(renderer),
@@ -20,7 +21,8 @@ World::World(SDL_Renderer* renderer)
 	PlayerEntity(nullptr),
 	PlayerComponentRef(nullptr),
 	GameStartTime(0),
-	CollisionTree(Rectf(0.0f, 0.0f, 800.0f, 600.0f))
+	CollisionTree(Rectf(0.0f, 0.0f, 800.0f, 600.0f)),
+	NextTimerHandle(1)
 {
 	StatusRect = {0, 0, 0, 0};
 }
@@ -45,10 +47,20 @@ void World::AddObject(std::unique_ptr<Entity> _entity)
 	AddQueue.push_back(std::move(_entity));
 }
 
-void World::ScheduleTimer(float _delay, std::function<void()> _callback)
+TimerHandle World::ScheduleTimer(float _delay, std::function<void()> _callback)
 {
+	TimerHandle _handle = NextTimerHandle++;
 	float _endTime = GetElapsedTime() + _delay;
-	Timers.push_back(std::make_unique<Timer>(_endTime, _callback));
+	Timers.push_back(std::make_unique<Timer>(_handle, _endTime, _callback));
+	return _handle;
+}
+
+void World::CancelTimer(TimerHandle _handle)
+{
+	Timers.erase(
+		std::remove_if(Timers.begin(), Timers.end(),
+			[_handle](const std::unique_ptr<Timer>& _t) { return _t->GetHandle() == _handle; }),
+		Timers.end());
 }
 
 void World::UpdateTimers()

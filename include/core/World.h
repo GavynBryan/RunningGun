@@ -45,6 +45,7 @@ private:
 	std::vector<Entity*>		CollisionCandidates;
 
 	std::vector<std::unique_ptr<Timer>>	Timers;
+	TimerHandle					NextTimerHandle;
 
 	void						UpdateStatusText(const std::string& _text);
 	void						UpdateTimers();
@@ -55,7 +56,8 @@ public:
 
 	float						GetElapsedTime();
 	void						AddObject(std::unique_ptr<Entity> _entity);
-	void						ScheduleTimer(float _delay, std::function<void()> _callback);
+	TimerHandle					ScheduleTimer(float _delay, std::function<void()> _callback);
+	void						CancelTimer(TimerHandle _handle);
 	void						WinGame();
 	void						Reset() { ResetFlag = true; }
 

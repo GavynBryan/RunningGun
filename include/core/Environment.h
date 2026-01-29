@@ -2,6 +2,7 @@
 #include "ResourceHandler.h"
 #include "Physics.h"
 #include "World.h"
+#include "Timer.h"
 #include <functional>
 
 class Environment
@@ -26,7 +27,8 @@ public:
 	float													DeltaTime() const;
 
 	void													Instantiate(std::unique_ptr<Entity> _entity) const;
-	void													ScheduleTimer(float _delay, std::function<void()> _callback) const;
+	TimerHandle												ScheduleTimer(float _delay, std::function<void()> _callback) const;
+	void													CancelTimer(TimerHandle _handle) const;
 
 	void													Win() const;
 	void													Reset() const;
