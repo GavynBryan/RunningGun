@@ -45,6 +45,25 @@ void World::AddObject(std::unique_ptr<Entity> _entity)
 	AddQueue.push_back(std::move(_entity));
 }
 
+void World::ScheduleTimer(float _delay, std::function<void()> _callback)
+{
+	float _endTime = GetElapsedTime() + _delay;
+	Timers.push_back(std::make_unique<Timer>(_endTime, _callback));
+}
+
+void World::UpdateTimers()
+{
+	float _currentTime = GetElapsedTime();
+	for (auto _it = Timers.begin(); _it != Timers.end(); ) {
+		if ((*_it)->IsExpired(_currentTime)) {
+			(*_it)->Fire();
+			_it = Timers.erase(_it);
+		} else {
+			++_it;
+		}
+	}
+}
+
 void World::UpdateStatusText(const std::string& _text)
 {
 	StatusText = _text;
@@ -140,6 +159,7 @@ void World::Start()
 void World::Update()
 {
 	HandleQueue();
+	UpdateTimers();
 	for (auto& _entity : Entities) {
 		_entity->Update();
 	}

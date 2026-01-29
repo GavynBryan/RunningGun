@@ -3,6 +3,8 @@
 #include <SDL3_ttf/SDL_ttf.h>
 #include "Entity.h"
 #include "QuadTree.h"
+#include "Timer.h"
+#include <memory>
 
 class ObjectPool;
 class PlayerComponent;
@@ -42,7 +44,10 @@ private:
 	QuadTree					CollisionTree;
 	std::vector<Entity*>		CollisionCandidates;
 
+	std::vector<std::unique_ptr<Timer>>	Timers;
+
 	void						UpdateStatusText(const std::string& _text);
+	void						UpdateTimers();
 
 public:
 								World(SDL_Renderer* renderer);
@@ -50,6 +55,7 @@ public:
 
 	float						GetElapsedTime();
 	void						AddObject(std::unique_ptr<Entity> _entity);
+	void						ScheduleTimer(float _delay, std::function<void()> _callback);
 	void						WinGame();
 	void						Reset() { ResetFlag = true; }
 

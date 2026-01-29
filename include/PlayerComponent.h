@@ -1,7 +1,6 @@
 #pragma once
 #include <core/ObjectPool.h>
 #include <core/Component.h>
-#include <core/Timer.h>
 #include <core/Vec2.h>
 
 constexpr auto BulletCoolDown = .3f;
@@ -23,8 +22,8 @@ private:
 	float							LastShotTime;
 
 	// Event-based flags and timers
-	Timer							InvulnerabilityTimer;
-	Timer							DeathTimer;
+	bool							IsInvulnerable;
+	float							InvulnerabilityEndTime;
 	bool							IsInputEnabled;
 
 public:

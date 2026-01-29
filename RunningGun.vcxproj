@@ -185,7 +185,6 @@
     <ClCompile Include="src\core\QuadTree.cpp" />
     <ClCompile Include="src\core\Environment.cpp" />
     <ClCompile Include="src\core\State.cpp" />
-    <ClCompile Include="src\core\Timer.cpp" />
     <ClCompile Include="src\core\World.cpp" />
     <ClCompile Include="src\DustComponent.cpp" />
     <ClCompile Include="src\PatrolAIComponent.cpp" />

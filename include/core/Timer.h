@@ -4,15 +4,13 @@
 class Timer
 {
 private:
-	bool Active;
 	float EndTime;
 	std::function<void()> Callback;
 
 public:
-	Timer() : Active(false), EndTime(0), Callback(nullptr) {}
+	Timer(float _endTime, std::function<void()> _callback)
+		: EndTime(_endTime), Callback(_callback) {}
 
-	void Start(float _duration, std::function<void()> _callback);
-	void Update(float _currentTime);
-	void Cancel();
-	bool IsActive() const { return Active; }
+	bool IsExpired(float _currentTime) const { return _currentTime >= EndTime; }
+	void Fire() { if (Callback) Callback(); }
 };
