@@ -1,75 +1,100 @@
 #include <core/AnimationListener.h>
 #include <cassert>
-#include <iostream>
 
-AnimationListener::AnimationListener()
+AnimationStateMachine::AnimationStateMachine()
 	: CurrentAnimation(nullptr)
-	, NextAnimation(nullptr)
+	, PendingAnimation(nullptr)
 	, LastAnimTime(SDL_GetTicks())
+	, ForceRestart(false)
 {
 }
 
 
-AnimationListener::~AnimationListener()
+AnimationStateMachine::~AnimationStateMachine()
 {
 }
 
-void AnimationListener::Update(Sprite& _sprite)
+void AnimationStateMachine::Update(Sprite& _sprite)
 {
+	if (PendingAnimation && (ForceRestart || CanTransition(PendingAnimation))) {
+		TransitionTo(PendingAnimation, _sprite);
+	}
+
 	if (CurrentAnimation) {
-		//if it is a loop and there's another animation queued, then interrupt it
-		if (CurrentAnimation->IsLoop() && NextAnimation) {
-			CurrentAnimation = NextAnimation;
-			NextAnimation = nullptr;
-			CurrentAnimation->Update(_sprite);
-			return;
-		}
 		Uint64 _currentTime = SDL_GetTicks();
 		float _elapsedSeconds = (_currentTime - LastAnimTime) / 1000.0f;
 		if (_elapsedSeconds >= 0.25f) {
 			CurrentAnimation->Update(_sprite);
-			//If it's NOT a loop and it HAS finished, then play the next queued anim
 			LastAnimTime = _currentTime;
 		}
-		if (!CurrentAnimation->IsLoop() && NextAnimation) {
-			if (NextAnimation->IsPriority() || CurrentAnimation->IsFinished()) {
-				CurrentAnimation = NextAnimation;
-				NextAnimation = nullptr;
-				LastAnimTime = SDL_GetTicks();
-			}
-		}
-
-
-	//There is no current animation, but there is one queued up
-	} else if (NextAnimation) {
-		CurrentAnimation = NextAnimation;
-		NextAnimation = nullptr;
-		LastAnimTime = SDL_GetTicks();
+	} else if (PendingAnimation) {
+		TransitionTo(PendingAnimation, _sprite);
 	}
 }
 
-void AnimationListener::AddAnimation(const std::string& _name, AnimPtr _anim)
+void AnimationStateMachine::AddAnimation(const std::string& _name, AnimPtr _anim)
 {
 	AnimationMap.insert(std::make_pair(_name, std::move(_anim)));
 }
 
 //is the next animation a priority animation?
-bool AnimationListener::IsNextPriority()
+bool AnimationStateMachine::IsNextPriority()
 {
-	if (NextAnimation && NextAnimation->IsPriority())
+	if (PendingAnimation && PendingAnimation->IsPriority())
 		return true;
 	return false;
 }
 
-void AnimationListener::PlayAnimation(const std::string& _anim)
+void AnimationStateMachine::PlayAnimation(const std::string& _anim)
 {
 	auto _found = AnimationMap.find(_anim);
 	assert(_found != AnimationMap.end());
 
 	auto _animTarget = _found->second.get();
-	//if (isNextPriority() && !anim->isPriority()) return;
-	if (_animTarget != CurrentAnimation) {
-		NextAnimation = _animTarget;
+	if (_animTarget == CurrentAnimation) {
+		if (!CurrentAnimation->IsLoop() && CurrentAnimation->IsFinished()) {
+			PendingAnimation = _animTarget;
+			ForceRestart = true;
+		}
+		return;
 	}
+	if (CurrentAnimation && CurrentAnimation->IsPriority() && !CurrentAnimation->IsFinished() &&
+		!_animTarget->IsPriority()) {
+		return;
+	}
+	PendingAnimation = _animTarget;
+	ForceRestart = false;
+}
 
+void AnimationStateMachine::TransitionTo(Animation* _next, Sprite& _sprite)
+{
+	if (!_next) {
+		return;
+	}
+	CurrentAnimation = _next;
+	PendingAnimation = nullptr;
+	ForceRestart = false;
+	CurrentAnimation->Reset();
+	CurrentAnimation->Update(_sprite);
+	LastAnimTime = SDL_GetTicks();
+}
+
+bool AnimationStateMachine::CanTransition(Animation* _next) const
+{
+	if (!_next) {
+		return false;
+	}
+	if (!CurrentAnimation) {
+		return true;
+	}
+	if (CurrentAnimation->IsLoop()) {
+		return true;
+	}
+	if (_next->IsPriority()) {
+		return true;
+	}
+	if (CurrentAnimation->IsPriority() && !CurrentAnimation->IsFinished()) {
+		return false;
+	}
+	return CurrentAnimation->IsFinished();
 }

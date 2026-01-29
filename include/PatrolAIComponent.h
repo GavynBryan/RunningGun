@@ -1,7 +1,7 @@
 #pragma once
 #include <core/Component.h>
 
-class AnimationListener;
+class AnimationStateMachine;
 
 class PatrolAIComponent :
 	public Component
@@ -13,7 +13,7 @@ private:
 
 	float Interval = 1.5f;
 	float MoveSpeed;
-	AnimationListener* Animator;
+	AnimationStateMachine* Animator;
 public:
 	PatrolAIComponent(Entity& _entity, GameContext& _context, float _speed);
 	~PatrolAIComponent();

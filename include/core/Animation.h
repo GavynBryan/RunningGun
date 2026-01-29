@@ -22,6 +22,7 @@ public:
 	~Animation();
 
 	void Update(Sprite& _sprite);
+	void Reset();
 
 	bool IsLoop() { return Loop; }
 	bool IsFinished() { return Finished; }

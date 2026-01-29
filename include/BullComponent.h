@@ -14,7 +14,7 @@ class BullComponent :
 {
 private:
 	std::map<std::string, BullStatePtr> States;
-	AnimationListener*				Animator;
+	AnimationStateMachine*				Animator;
 	BullState*						CurrentState;
 	ObjectPool						Projectiles;
 

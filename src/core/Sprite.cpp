@@ -6,6 +6,7 @@ Sprite::Sprite()
     , DestRect{0, 0, 0, 0}
     , SrcRect(0, 0, 0, 0)
     , HasSrcRect(false)
+    , FlipMode(SDL_FLIP_NONE)
 {
 }
 
@@ -45,6 +46,11 @@ void Sprite::SetPosition(float _x, float _y)
     DestRect.y = _y;
 }
 
+void Sprite::SetFlipX(bool _flip)
+{
+    FlipMode = _flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
+}
+
 Rectf Sprite::GetGlobalBounds() const
 {
     return Rectf(DestRect.x, DestRect.y, DestRect.w, DestRect.h);
@@ -64,15 +70,18 @@ void Sprite::Render(SDL_Renderer* _renderer, Camera* _camera)
         _destRect.h = DestRect.h * _zoom;
     }
 
-    if (HasSrcRect) {
-        SDL_FRect _srcRect = {
-            static_cast<float>(SrcRect.x),
-            static_cast<float>(SrcRect.y),
-            static_cast<float>(SrcRect.width),
-            static_cast<float>(SrcRect.height)
-        };
-        SDL_RenderTexture(_renderer, Texture, &_srcRect, &_destRect);
-    } else {
-        SDL_RenderTexture(_renderer, Texture, nullptr, &_destRect);
+    SDL_FRect _srcRect = {
+        static_cast<float>(SrcRect.x),
+        static_cast<float>(SrcRect.y),
+        static_cast<float>(SrcRect.width),
+        static_cast<float>(SrcRect.height)
+    };
+    const SDL_FRect* _srcPtr = HasSrcRect ? &_srcRect : nullptr;
+
+    if (FlipMode != SDL_FLIP_NONE) {
+        SDL_RenderTextureRotated(_renderer, Texture, _srcPtr, &_destRect, 0.0, nullptr, FlipMode);
+        return;
     }
+
+    SDL_RenderTexture(_renderer, Texture, _srcPtr, &_destRect);
 }

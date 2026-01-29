@@ -46,3 +46,9 @@ void Animation::Update(Sprite& _sprite)
 	}
 	else Finished = false;
 }
+
+void Animation::Reset()
+{
+	CurrentFrame = 0;
+	Finished = false;
+}
