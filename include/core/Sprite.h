@@ -3,6 +3,8 @@
 #include "Vec2.h"
 #include "Rect.h"
 
+class Camera;
+
 class Sprite {
 private:
     SDL_Texture*    Texture;
@@ -24,4 +26,5 @@ public:
     Rectf GetGlobalBounds() const;
 
     void Render(SDL_Renderer* _renderer);
+    void RenderWithCamera(SDL_Renderer* _renderer, Camera* _camera);
 };

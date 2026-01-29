@@ -2,6 +2,7 @@
 #include <cmath>
 #include <core/Entity.h>
 #include <core/GameContext.h>
+#include <core/Camera.h>
 
 
 Entity::Entity(GameContext& _context, std::string _texture, float _width, float _height)
@@ -84,6 +85,14 @@ void Entity::Render(SDL_Renderer* _renderer)
 	if (Activated) {
 		Sprite.SetPosition(Position);
 		Sprite.Render(_renderer);
+	}
+}
+
+void Entity::RenderWithCamera(SDL_Renderer* _renderer, Camera* _camera)
+{
+	if (Activated) {
+		Sprite.SetPosition(Position);
+		Sprite.RenderWithCamera(_renderer, _camera);
 	}
 }
 

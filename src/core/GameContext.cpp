@@ -22,6 +22,11 @@ void GameContext::SetPhysics(std::unique_ptr<Physics> _physics)
 	PhysicsManager = std::move(_physics);
 }
 
+void GameContext::SetCamera(std::unique_ptr<Camera> _camera)
+{
+	CameraContext = std::move(_camera);
+}
+
 void GameContext::SetWorld(World* _world)
 {
 	WorldContext = _world;
@@ -42,6 +47,12 @@ Physics* GameContext::GetPhysics() const
 {
 	assert(PhysicsManager);
 	return PhysicsManager.get();
+}
+
+Camera* GameContext::GetCamera() const
+{
+	assert(CameraContext);
+	return CameraContext.get();
 }
 
 float GameContext::GetElapsedTime() const

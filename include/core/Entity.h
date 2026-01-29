@@ -9,6 +9,7 @@
 #include "Component.h"
 
 class GameContext;
+class Camera;
 
 enum ENTITY_TAG {
 	player = 0,
@@ -50,6 +51,7 @@ public:
 	virtual void		Update();
 	virtual void		PostUpdate();
 	void				Render(SDL_Renderer* _renderer);
+	void				RenderWithCamera(SDL_Renderer* _renderer, Camera* _camera);
 
 	void				StartComponents();
 	void				UpdateComponents();

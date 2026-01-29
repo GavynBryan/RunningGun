@@ -1,5 +1,6 @@
 #include <core/Game.h>
 #include <core/World.h>
+#include <core/Camera.h>
 #include <string.h>
 
 Game::Game()
@@ -29,8 +30,10 @@ Game::Game()
 
 	std::unique_ptr<ResourceHandler> _textureHandler(new ResourceHandler(Renderer));
 	std::unique_ptr<Physics> _physicsManager(new Physics());
+	std::unique_ptr<Camera> _camera(new Camera(800.0f, 600.0f));
 	Context.SetTextureHandler(std::move(_textureHandler));
 	Context.SetPhysics(std::move(_physicsManager));
+	Context.SetCamera(std::move(_camera));
 	Context.SetWorld(WorldContext);
 }
 

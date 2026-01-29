@@ -2,6 +2,7 @@
 #include <core/Prefabs.h>
 #include <core/AnimationListener.h>
 #include <core/ObjectPool.h>
+#include <core/Camera.h>
 #include <PlayerComponent.h>
 #include <algorithm>
 
@@ -16,22 +17,19 @@ World::World(SDL_Renderer* renderer, GameContext& _context)
 	LastSpawn2Time(0),
 	Win(false),
 	GameFont(nullptr),
-	StatusTexture(nullptr),
-	StatusText(""),
+	UI(new UIManager(800.0f, 600.0f)),
+	HealthBar(nullptr),
+	StatusTextUI(nullptr),
 	PlayerEntity(nullptr),
 	PlayerComponentRef(nullptr),
 	GameStartTime(0),
 	CollisionTree(Rectf(0.0f, 0.0f, 800.0f, 600.0f)),
 	NextTimerHandle(1)
 {
-	StatusRect = {0, 0, 0, 0};
 }
 
 World::~World()
 {
-	if (StatusTexture) {
-		SDL_DestroyTexture(StatusTexture);
-	}
 	if (GameFont) {
 		TTF_CloseFont(GameFont);
 	}
@@ -76,25 +74,21 @@ void World::UpdateTimers()
 	}
 }
 
-void World::UpdateStatusText(const std::string& _text)
+void World::SetStatusText(const std::string& _text)
 {
-	StatusText = _text;
-	if (StatusTexture) {
-		SDL_DestroyTexture(StatusTexture);
-		StatusTexture = nullptr;
+	if (StatusTextUI) {
+		StatusTextUI->SetText(_text);
+		StatusTextUI->SetVisible(!_text.empty());
 	}
+}
 
-	if (!_text.empty() && GameFont) {
-		SDL_Color _white = {255, 255, 255, 255};
-		SDL_Surface* _surface = TTF_RenderText_Solid(GameFont, _text.c_str(), 0, _white);
-		if (_surface) {
-			StatusTexture = SDL_CreateTextureFromSurface(Renderer, _surface);
-			StatusRect.w = static_cast<float>(_surface->w);
-			StatusRect.h = static_cast<float>(_surface->h);
-			StatusRect.x = 400 - StatusRect.w / 2;
-			StatusRect.y = 300 - StatusRect.h / 2;
-			SDL_DestroySurface(_surface);
-		}
+void World::UpdateCamera()
+{
+	Camera* _camera = Context.GetCamera();
+	if (_camera && PlayerEntity && PlayerEntity->IsEnabled()) {
+		Vec2 _playerPos = PlayerEntity->GetPosition();
+		_camera->SetTarget(_playerPos + Vec2(32, 32));
+		_camera->Update(Context.DeltaTime());
 	}
 }
 
@@ -102,7 +96,7 @@ void World::WinGame()
 {
 	Win = true;
 	PlayerEntity->Disable();
-	UpdateStatusText("You Win!");
+	SetStatusText("You Win!");
 }
 
 void World::Init()
@@ -132,11 +126,15 @@ void World::Init()
 
 	Background.SetTexture(_handler->Get("sprites/background.png"));
 
-	for (int _index = 0; _index < 5; _index++) {
-		std::unique_ptr<Entity> _heart(new Entity(Context, "sprites/health.png", 32, 32));
-		_heart->SetPosition(32.0f * _index + 5, 0);
-		Hearts.push_back(std::move(_heart));
-	}
+	// Set up UI
+	HealthBar = UI->AddElement<UIHealthBar>(_handler->Get("sprites/health.png"), 5);
+	HealthBar->SetPosition(5, 5);
+	HealthBar->SetAnchor(UIAnchor::TopLeft);
+
+	StatusTextUI = UI->AddElement<UIText>(Renderer, GameFont);
+	StatusTextUI->SetPosition(0, 0);
+	StatusTextUI->SetAnchor(UIAnchor::Center);
+	StatusTextUI->SetVisible(false);
 }
 
 void World::BuildScene()
@@ -158,7 +156,12 @@ void World::BuildScene()
 	LastSpawn2Time = 0;
 	GameStartTime = SDL_GetTicks();
 
-	UpdateStatusText("");
+	// Set up health bar to track player health
+	if (HealthBar && PlayerComponentRef) {
+		HealthBar->SetHealthGetter([this]() { return PlayerComponentRef->GetHealth(); });
+	}
+
+	SetStatusText("");
 }
 
 void World::Start()
@@ -172,6 +175,8 @@ void World::Update()
 {
 	HandleQueue();
 	UpdateTimers();
+	UpdateCamera();
+
 	for (auto& _entity : Entities) {
 		_entity->Update();
 	}
@@ -202,6 +207,8 @@ void World::Update()
 			}
 		}
 	}
+
+	UI->Update(Context.DeltaTime());
 }
 
 void World::PostUpdate()
@@ -240,21 +247,16 @@ void World::PostUpdate()
 
 void World::Render()
 {
-	Background.Render(Renderer);
-	for (auto& _entity : Entities) {
-		_entity->Render(Renderer);
-	}
-	if (StatusTexture) {
-		SDL_RenderTexture(Renderer, StatusTexture, nullptr, &StatusRect);
-	}
-	DrawHearts(PlayerComponentRef->GetHealth());
-}
+	Camera* _camera = Context.GetCamera();
 
-void World::DrawHearts(int _heartCount)
-{
-	for(int _index = 0; _index < _heartCount; _index++){
-		Hearts[_index]->Render(Renderer);
+	// Render world elements with camera transform
+	Background.RenderWithCamera(Renderer, _camera);
+	for (auto& _entity : Entities) {
+		_entity->RenderWithCamera(Renderer, _camera);
 	}
+
+	// Render UI (no camera transform)
+	UI->Render(Renderer);
 }
 
 void World::HandleQueue()

@@ -1,4 +1,5 @@
 #include <core/Sprite.h>
+#include <core/Camera.h>
 
 Sprite::Sprite()
     : Texture(nullptr)
@@ -63,5 +64,32 @@ void Sprite::Render(SDL_Renderer* _renderer)
         SDL_RenderTexture(_renderer, Texture, &_srcRect, &DestRect);
     } else {
         SDL_RenderTexture(_renderer, Texture, nullptr, &DestRect);
+    }
+}
+
+void Sprite::RenderWithCamera(SDL_Renderer* _renderer, Camera* _camera)
+{
+    if (!Texture) return;
+
+    SDL_FRect _transformedRect = DestRect;
+    if (_camera) {
+        Vec2 _screenPos = _camera->WorldToScreen(Vec2(DestRect.x, DestRect.y));
+        float _zoom = _camera->GetZoom();
+        _transformedRect.x = _screenPos.x;
+        _transformedRect.y = _screenPos.y;
+        _transformedRect.w = DestRect.w * _zoom;
+        _transformedRect.h = DestRect.h * _zoom;
+    }
+
+    if (HasSrcRect) {
+        SDL_FRect _srcRect = {
+            static_cast<float>(SrcRect.x),
+            static_cast<float>(SrcRect.y),
+            static_cast<float>(SrcRect.width),
+            static_cast<float>(SrcRect.height)
+        };
+        SDL_RenderTexture(_renderer, Texture, &_srcRect, &_transformedRect);
+    } else {
+        SDL_RenderTexture(_renderer, Texture, nullptr, &_transformedRect);
     }
 }
