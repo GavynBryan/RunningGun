@@ -1,6 +1,6 @@
 #include <core/Prefabs.h>
 #include <core/engine/GameContext.h>
-#include <core/JsonValue.h>
+#include <core/Json.h>
 #include <core/PrefabComponentRegistry.h>
 #include <core/PrefabFactory.h>
 #include <core/PrefabLibrary.h>
@@ -39,21 +39,23 @@ bool Prefabs::LoadDefinitions(GameContext& _context, const std::string& _path)
 
 void Prefabs::RegisterDefaultComponents()
 {
-	ComponentRegistry.Register("player", [](Entity& _entity, GameContext& _context, const JsonValue&) {
+	ComponentRegistry.Register("player", [](Entity& _entity, GameContext& _context, std::string_view) {
 		return std::make_unique<PlayerComponent>(_entity, _context);
 	});
-	ComponentRegistry.Register("physics", [](Entity& _entity, GameContext& _context, const JsonValue&) {
+	ComponentRegistry.Register("physics", [](Entity& _entity, GameContext& _context, std::string_view) {
 		return std::make_unique<PhysicsComponent>(_entity, _context);
 	});
-	ComponentRegistry.Register("patrol_ai", [](Entity& _entity, GameContext& _context, const JsonValue& _params) {
+	ComponentRegistry.Register("patrol_ai", [](Entity& _entity, GameContext& _context, std::string_view _paramsJson) {
 		float _speed = 150.0f;
-		const JsonValue& _speedParam = _params["speed"];
-		if (_speedParam.IsNumber()) {
-			_speed = static_cast<float>(_speedParam.GetDouble());
+		if (!_paramsJson.empty()) {
+			auto _result = Json::Parse(std::string(_paramsJson));
+			if (!_result.error()) {
+				_speed = Json::GetDouble(_result.value(), "speed", _speed);
+			}
 		}
 		return std::make_unique<PatrolAIComponent>(_entity, _context, _speed);
 	});
-	ComponentRegistry.Register("bull", [](Entity& _entity, GameContext& _context, const JsonValue&) {
+	ComponentRegistry.Register("bull", [](Entity& _entity, GameContext& _context, std::string_view) {
 		return std::make_unique<BullComponent>(_entity, _context);
 	});
 }

@@ -154,8 +154,7 @@
     <ClInclude Include="include\core\Game.h" />
     <ClInclude Include="include\core\GameMode.h" />
     <ClInclude Include="include\core\InputManager.h" />
-    <ClInclude Include="include\core\JsonParser.h" />
-    <ClInclude Include="include\core\JsonValue.h" />
+    <ClInclude Include="include\core\Json.h" />
     <ClInclude Include="include\core\RunningGunGameMode.h" />
     <ClInclude Include="include\core\ObjectPool.h" />
     <ClInclude Include="include\core\QuadTree.h" />
@@ -194,8 +193,6 @@
     <ClCompile Include="src\core\Entity.cpp" />
     <ClCompile Include="src\core\Game.cpp" />
     <ClCompile Include="src\core\InputManager.cpp" />
-    <ClCompile Include="src\core\JsonParser.cpp" />
-    <ClCompile Include="src\core\JsonValue.cpp" />
     <ClCompile Include="src\core\PrefabComponentRegistry.cpp" />
     <ClCompile Include="src\core\PrefabFactory.cpp" />
     <ClCompile Include="src\core\PrefabLibrary.cpp" />

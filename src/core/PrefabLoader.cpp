@@ -1,81 +1,76 @@
 #include <core/PrefabLoader.h>
-#include <core/JsonParser.h>
+#include <core/Json.h>
 #include <core/PrefabLibrary.h>
 #include <SDL3/SDL.h>
 
 namespace {
-	bool TryParseVec2(const JsonValue& _value, Vec2& _out) {
-		if (!_value.IsArray() || _value.Size() != 2) {
+	bool TryParseVec2(simdjson::dom::element _value, Vec2& _out) {
+		if (_value.type() != simdjson::dom::element_type::ARRAY) {
 			return false;
 		}
-		if (!_value[0].IsNumber() || !_value[1].IsNumber()) {
+		auto _arr = _value.get_array().value();
+		if (_arr.size() != 2) {
 			return false;
 		}
-		_out = Vec2(
-			static_cast<float>(_value[0].GetDouble()),
-			static_cast<float>(_value[1].GetDouble())
-		);
+		auto _it = _arr.begin();
+		auto _x = (*_it).get_double();
+		++_it;
+		auto _y = (*_it).get_double();
+		if (_x.error() || _y.error()) {
+			return false;
+		}
+		_out = Vec2(static_cast<float>(_x.value()), static_cast<float>(_y.value()));
 		return true;
 	}
 
-	ENTITY_TAG ParseTag(const std::string& _value) {
-		if (_value == "player") {
-			return player;
-		}
-		if (_value == "bullet") {
-			return bullet;
-		}
-		if (_value == "enemy_bullet") {
-			return enemy_bullet;
-		}
-		if (_value == "hazard") {
-			return hazard;
-		}
-		if (_value == "pickup") {
-			return pickup;
-		}
+	ENTITY_TAG ParseTag(std::string_view _value) {
+		if (_value == "player") return player;
+		if (_value == "bullet") return bullet;
+		if (_value == "enemy_bullet") return enemy_bullet;
+		if (_value == "hazard") return hazard;
+		if (_value == "pickup") return pickup;
 		return player;
 	}
 
-	void ParseAnimations(const JsonValue& _prefabValue, PrefabDefinition& _definition) {
-		const JsonValue& _animations = _prefabValue["animations"];
-		if (!_animations.IsArray()) {
+	void ParseAnimations(simdjson::dom::element _prefab, PrefabDefinition& _definition) {
+		auto _animations = _prefab["animations"].get_array();
+		if (_animations.error()) {
 			return;
 		}
-		for (const auto& _animValue : _animations.GetArray()) {
-			if (!_animValue.IsObject()) {
+		for (auto _anim : _animations.value()) {
+			if (_anim.type() != simdjson::dom::element_type::OBJECT) {
 				continue;
 			}
 			AnimationDefinition _animDef;
 
-			const JsonValue& _name = _animValue["name"];
-			if (_name.IsString()) {
-				_animDef.Name = _name.GetString();
+			auto _name = _anim["name"].get_string();
+			if (!_name.error()) {
+				_animDef.Name = std::string(_name.value());
 			}
 
-			const JsonValue& _index = _animValue["index"];
-			if (_index.IsNumber()) {
-				_animDef.Index = static_cast<int>(_index.GetInt());
+			auto _index = _anim["index"].get_int64();
+			if (!_index.error()) {
+				_animDef.Index = static_cast<int>(_index.value());
 			}
 
-			const JsonValue& _frames = _animValue["frames"];
-			if (_frames.IsNumber()) {
-				_animDef.Frames = static_cast<int>(_frames.GetInt());
+			auto _frames = _anim["frames"].get_int64();
+			if (!_frames.error()) {
+				_animDef.Frames = static_cast<int>(_frames.value());
 			}
 
-			const JsonValue& _loop = _animValue["loop"];
-			if (_loop.IsBool()) {
-				_animDef.Loop = _loop.GetBool();
+			auto _loop = _anim["loop"].get_bool();
+			if (!_loop.error()) {
+				_animDef.Loop = _loop.value();
 			}
 
-			const JsonValue& _priority = _animValue["priority"];
-			if (_priority.IsBool()) {
-				_animDef.Priority = _priority.GetBool();
+			auto _priority = _anim["priority"].get_bool();
+			if (!_priority.error()) {
+				_animDef.Priority = _priority.value();
 			}
 
-			const JsonValue& _frameSize = _animValue["frameSize"];
-			if (!_frameSize.IsNull()) {
-				TryParseVec2(_frameSize, _animDef.FrameSize);
+			auto _frameSize = _anim["frameSize"];
+			if (!_frameSize.error()) {
+				TryParseVec2(_frameSize.value(), _animDef.FrameSize);
 			}
 
 			if (!_animDef.Name.empty()) {
@@ -84,30 +79,30 @@ namespace {
 		}
 	}
 
-	void ParseComponents(const JsonValue& _prefabValue, PrefabDefinition& _definition) {
-		const JsonValue& _components = _prefabValue["components"];
-		if (!_components.IsArray()) {
+	void ParseComponents(simdjson::dom::element _prefab, PrefabDefinition& _definition) {
+		auto _components = _prefab["components"].get_array();
+		if (_components.error()) {
 			return;
 		}
 
-		for (const auto& _compValue : _components.GetArray()) {
-			if (!_compValue.IsObject()) {
+		for (auto _comp : _components.value()) {
+			if (_comp.type() != simdjson::dom::element_type::OBJECT) {
 				continue;
 			}
-			ComponentDefinition _component;
+			ComponentDefinition _compDef;
 
-			const JsonValue& _type = _compValue["type"];
-			if (_type.IsString()) {
-				_component.Type = _type.GetString();
+			auto _type = _comp["type"].get_string();
+			if (!_type.error()) {
+				_compDef.Type = std::string(_type.value());
 			}
 
-			const JsonValue& _params = _compValue["params"];
-			if (_params.IsObject()) {
-				_component.Params = _params;
+			auto _params = _comp["params"];
+			if (!_params.error() && _params.value().type() == simdjson::dom::element_type::OBJECT) {
+				_compDef.ParamsJson = simdjson::to_string(_params.value());
 			}
 
-			if (!_component.Type.empty()) {
-				_definition.Components.push_back(std::move(_component));
+			if (!_compDef.Type.empty()) {
+				_definition.Components.push_back(std::move(_compDef));
 			}
 		}
 	}
@@ -115,65 +110,65 @@ namespace {
 
 bool PrefabLoader::LoadFromFile(const std::string& _path, PrefabLibrary& _library)
 {
-	JsonParseResult _result = JsonParser::ParseFile(_path);
-	if (!_result) {
-		SDL_Log("PrefabLoader: Failed to parse %s: %s", _path.c_str(), _result.Error.c_str());
+	auto _result = Json::ParseFile(_path);
+	if (_result.error()) {
+		SDL_Log("PrefabLoader: Failed to parse %s: %s", _path.c_str(), simdjson::error_message(_result.error()));
 		return false;
 	}
 
-	const JsonValue& _root = _result.Root;
-	if (!_root.IsObject()) {
+	simdjson::dom::element _root = _result.value();
+	if (_root.type() != simdjson::dom::element_type::OBJECT) {
 		SDL_Log("PrefabLoader: Root must be an object in %s", _path.c_str());
 		return false;
 	}
 
-	const JsonValue& _prefabs = _root["prefabs"];
-	if (!_prefabs.IsArray()) {
+	auto _prefabs = _root["prefabs"].get_array();
+	if (_prefabs.error()) {
 		SDL_Log("PrefabLoader: Missing 'prefabs' array in %s", _path.c_str());
 		return false;
 	}
 
 	_library.Clear();
 
-	for (const auto& _prefabValue : _prefabs.GetArray()) {
-		if (!_prefabValue.IsObject()) {
+	for (auto _prefab : _prefabs.value()) {
+		if (_prefab.type() != simdjson::dom::element_type::OBJECT) {
 			continue;
 		}
 
 		PrefabDefinition _definition;
 
-		const JsonValue& _id = _prefabValue["id"];
-		if (_id.IsString()) {
-			_definition.Id = _id.GetString();
+		auto _id = _prefab["id"].get_string();
+		if (!_id.error()) {
+			_definition.Id = std::string(_id.value());
 		}
 
-		const JsonValue& _texture = _prefabValue["texture"];
-		if (_texture.IsString()) {
-			_definition.Texture = _texture.GetString();
+		auto _texture = _prefab["texture"].get_string();
+		if (!_texture.error()) {
+			_definition.Texture = std::string(_texture.value());
 		}
 
-		const JsonValue& _width = _prefabValue["width"];
-		if (_width.IsNumber()) {
-			_definition.Width = static_cast<float>(_width.GetDouble());
+		auto _width = _prefab["width"].get_double();
+		if (!_width.error()) {
+			_definition.Width = static_cast<float>(_width.value());
 		}
 
-		const JsonValue& _height = _prefabValue["height"];
-		if (_height.IsNumber()) {
-			_definition.Height = static_cast<float>(_height.GetDouble());
+		auto _height = _prefab["height"].get_double();
+		if (!_height.error()) {
+			_definition.Height = static_cast<float>(_height.value());
 		}
 
-		const JsonValue& _position = _prefabValue["position"];
-		if (!_position.IsNull()) {
-			TryParseVec2(_position, _definition.Position);
+		auto _position = _prefab["position"];
+		if (!_position.error()) {
+			TryParseVec2(_position.value(), _definition.Position);
 		}
 
-		const JsonValue& _tag = _prefabValue["tag"];
-		if (_tag.IsString()) {
-			_definition.Tag = ParseTag(_tag.GetString());
+		auto _tag = _prefab["tag"].get_string();
+		if (!_tag.error()) {
+			_definition.Tag = ParseTag(_tag.value());
 		}
 
-		ParseAnimations(_prefabValue, _definition);
-		ParseComponents(_prefabValue, _definition);
+		ParseAnimations(_prefab, _definition);
+		ParseComponents(_prefab, _definition);
 
 		if (!_definition.Id.empty()) {
 			_library.Add(std::move(_definition));

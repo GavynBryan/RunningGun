@@ -1,7 +1,6 @@
 #pragma once
 
 #include <core/Entity.h>
-#include <core/JsonValue.h>
 #include <core/Vec2.h>
 #include <string>
 #include <unordered_map>
@@ -20,7 +19,7 @@ struct AnimationDefinition
 struct ComponentDefinition
 {
 	std::string Type;
-	JsonValue Params;
+	std::string ParamsJson;
 };
 
 struct PrefabDefinition

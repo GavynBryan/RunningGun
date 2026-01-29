@@ -1,8 +1,8 @@
 #include <core/InputManager.h>
-#include <core/JsonParser.h>
+#include <core/Json.h>
 
 namespace {
-	bool TryParseActionName(const std::string& _name, InputAction& _action) {
+	bool TryParseActionName(std::string_view _name, InputAction& _action) {
 		if (_name == "MoveLeft") {
 			_action = InputAction::MoveLeft;
 			return true;
@@ -102,39 +102,36 @@ void InputManager::BindAction(InputAction _action, SDL_Scancode _key) {
 }
 
 bool InputManager::LoadBindings(const std::string& _path) {
-	JsonParseResult _result = JsonParser::ParseFile(_path);
-	if (!_result) {
-		SDL_Log("InputManager: Failed to parse %s: %s", _path.c_str(), _result.Error.c_str());
+	auto _result = Json::ParseFile(_path);
+	if (_result.error()) {
+		SDL_Log("InputManager: Failed to parse %s: %s", _path.c_str(), simdjson::error_message(_result.error()));
 		return false;
 	}
 
-	const JsonValue& _root = _result.Root;
-	if (!_root.IsObject()) {
-		SDL_Log("InputManager: Root must be an object in %s", _path.c_str());
-		return false;
-	}
-
-	const JsonValue& _bindings = _root["bindings"];
-	if (!_bindings.IsObject()) {
+	simdjson::dom::element _root = _result.value();
+	auto _bindings = _root["bindings"].get_object();
+	if (_bindings.error()) {
 		SDL_Log("InputManager: Missing bindings object in %s", _path.c_str());
 		return false;
 	}
 
-	for (const auto& [_actionName, _keyValue] : _bindings.GetObject()) {
-		if (!_keyValue.IsString()) {
+	for (auto _field : _bindings.value()) {
+		auto _keyName = _field.value.get_string();
+		if (_keyName.error()) {
 			continue;
 		}
 
 		InputAction _action;
-		if (!TryParseActionName(_actionName, _action)) {
-			SDL_Log("InputManager: Unknown action name %s", _actionName.c_str());
+		if (!TryParseActionName(_field.key, _action)) {
+			SDL_Log("InputManager: Unknown action name %.*s", static_cast<int>(_field.key.size()), _field.key.data());
 			continue;
 		}
 
-		SDL_Scancode _scancode = SDL_GetScancodeFromName(_keyValue.GetString().c_str());
+		std::string _keyStr(_keyName.value());
+		SDL_Scancode _scancode = SDL_GetScancodeFromName(_keyStr.c_str());
 		if (_scancode == SDL_SCANCODE_UNKNOWN) {
-			SDL_Log("InputManager: Unknown key binding %s for action %s",
-				_keyValue.GetString().c_str(), _actionName.c_str());
+			SDL_Log("InputManager: Unknown key binding %s for action %.*s",
+				_keyStr.c_str(), static_cast<int>(_field.key.size()), _field.key.data());
 			continue;
 		}
 		BindAction(_action, _scancode);

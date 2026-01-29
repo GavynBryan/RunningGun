@@ -25,7 +25,7 @@ std::unique_ptr<Entity> PrefabFactory::CreateEntity(GameContext& _context, const
 	for (const auto& _component : _definition.Components) {
 		const auto* _factory = _registry.Find(_component.Type);
 		if (_factory) {
-			auto _comp = (*_factory)(*_entity, _context, _component.Params);
+			auto _comp = (*_factory)(*_entity, _context, _component.ParamsJson);
 			if (_comp) {
 				_entity->AttachComponent(std::move(_comp));
 			}

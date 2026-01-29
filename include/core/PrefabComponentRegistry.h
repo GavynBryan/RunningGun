@@ -3,17 +3,17 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 
 class Component;
 class Entity;
 class GameContext;
-class JsonValue;
 
 class PrefabComponentRegistry
 {
 public:
-	using Factory = std::function<std::unique_ptr<Component>(Entity&, GameContext&, const JsonValue&)>;
+	using Factory = std::function<std::unique_ptr<Component>(Entity&, GameContext&, std::string_view)>;
 
 	void Register(const std::string& _type, Factory _factory);
 	const Factory* Find(const std::string& _type) const;
