@@ -80,19 +80,11 @@ void Entity::PostUpdate()
 	}
 }
 
-void Entity::Render(SDL_Renderer* _renderer)
+void Entity::Render(SDL_Renderer* _renderer, Camera* _camera)
 {
 	if (Activated) {
 		Sprite.SetPosition(Position);
-		Sprite.Render(_renderer);
-	}
-}
-
-void Entity::RenderWithCamera(SDL_Renderer* _renderer, Camera* _camera)
-{
-	if (Activated) {
-		Sprite.SetPosition(Position);
-		Sprite.RenderWithCamera(_renderer, _camera);
+		Sprite.Render(_renderer, _camera);
 	}
 }
 

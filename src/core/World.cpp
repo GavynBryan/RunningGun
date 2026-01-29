@@ -250,12 +250,12 @@ void World::Render()
 	Camera* _camera = Context.GetCamera();
 
 	// Render world elements with camera transform
-	Background.RenderWithCamera(Renderer, _camera);
+	Background.Render(Renderer, _camera);
 	for (auto& _entity : Entities) {
-		_entity->RenderWithCamera(Renderer, _camera);
+		_entity->Render(Renderer, _camera);
 	}
 
-	// Render UI (no camera transform)
+	// Render UI (screen space, no camera)
 	UI->Render(Renderer);
 }
 

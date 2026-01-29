@@ -50,8 +50,7 @@ public:
 	virtual void		Start();
 	virtual void		Update();
 	virtual void		PostUpdate();
-	void				Render(SDL_Renderer* _renderer);
-	void				RenderWithCamera(SDL_Renderer* _renderer, Camera* _camera);
+	void				Render(SDL_Renderer* _renderer, Camera* _camera = nullptr);
 
 	void				StartComponents();
 	void				UpdateComponents();

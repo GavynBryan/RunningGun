@@ -25,6 +25,5 @@ public:
     const SDL_FRect& GetDestRect() const { return DestRect; }
     Rectf GetGlobalBounds() const;
 
-    void Render(SDL_Renderer* _renderer);
-    void RenderWithCamera(SDL_Renderer* _renderer, Camera* _camera);
+    void Render(SDL_Renderer* _renderer, Camera* _camera = nullptr);
 };

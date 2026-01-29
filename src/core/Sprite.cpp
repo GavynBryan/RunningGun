@@ -50,35 +50,18 @@ Rectf Sprite::GetGlobalBounds() const
     return Rectf(DestRect.x, DestRect.y, DestRect.w, DestRect.h);
 }
 
-void Sprite::Render(SDL_Renderer* _renderer)
+void Sprite::Render(SDL_Renderer* _renderer, Camera* _camera)
 {
     if (!Texture) return;
 
-    if (HasSrcRect) {
-        SDL_FRect _srcRect = {
-            static_cast<float>(SrcRect.x),
-            static_cast<float>(SrcRect.y),
-            static_cast<float>(SrcRect.width),
-            static_cast<float>(SrcRect.height)
-        };
-        SDL_RenderTexture(_renderer, Texture, &_srcRect, &DestRect);
-    } else {
-        SDL_RenderTexture(_renderer, Texture, nullptr, &DestRect);
-    }
-}
-
-void Sprite::RenderWithCamera(SDL_Renderer* _renderer, Camera* _camera)
-{
-    if (!Texture) return;
-
-    SDL_FRect _transformedRect = DestRect;
+    SDL_FRect _destRect = DestRect;
     if (_camera) {
         Vec2 _screenPos = _camera->WorldToScreen(Vec2(DestRect.x, DestRect.y));
         float _zoom = _camera->GetZoom();
-        _transformedRect.x = _screenPos.x;
-        _transformedRect.y = _screenPos.y;
-        _transformedRect.w = DestRect.w * _zoom;
-        _transformedRect.h = DestRect.h * _zoom;
+        _destRect.x = _screenPos.x;
+        _destRect.y = _screenPos.y;
+        _destRect.w = DestRect.w * _zoom;
+        _destRect.h = DestRect.h * _zoom;
     }
 
     if (HasSrcRect) {
@@ -88,8 +71,8 @@ void Sprite::RenderWithCamera(SDL_Renderer* _renderer, Camera* _camera)
             static_cast<float>(SrcRect.width),
             static_cast<float>(SrcRect.height)
         };
-        SDL_RenderTexture(_renderer, Texture, &_srcRect, &_transformedRect);
+        SDL_RenderTexture(_renderer, Texture, &_srcRect, &_destRect);
     } else {
-        SDL_RenderTexture(_renderer, Texture, nullptr, &_transformedRect);
+        SDL_RenderTexture(_renderer, Texture, nullptr, &_destRect);
     }
 }
