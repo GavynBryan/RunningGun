@@ -4,6 +4,13 @@ InputManager* InputManager::InstancePtr = nullptr;
 
 InputManager::InputManager() {
     InstancePtr = this;
+    ActionStates.fill(ActionState::None);
+    CurrentActions.fill(false);
+    ActionBindings.fill(SDL_SCANCODE_UNKNOWN);
+    ActionBindings[GetActionIndex(InputAction::MoveLeft)] = SDL_SCANCODE_LEFT;
+    ActionBindings[GetActionIndex(InputAction::MoveRight)] = SDL_SCANCODE_RIGHT;
+    ActionBindings[GetActionIndex(InputAction::Jump)] = SDL_SCANCODE_Z;
+    ActionBindings[GetActionIndex(InputAction::Shoot)] = SDL_SCANCODE_X;
 }
 
 InputManager::~InputManager() {
@@ -16,75 +23,78 @@ InputManager& InputManager::Instance() {
     return *InstancePtr;
 }
 
-void InputManager::BeginFrame() {
-    // Copy current state to previous state
-    PreviousKeys = CurrentKeys;
+size_t InputManager::GetActionIndex(InputAction _action) const {
+    return static_cast<size_t>(_action);
+}
 
-    // Clear key states for the new frame
-    for (auto& _pair : KeyStates) {
-        if (_pair.second == KeyState::Pressed) {
-            _pair.second = KeyState::Held;
-        } else if (_pair.second == KeyState::Released) {
-            _pair.second = KeyState::None;
+bool InputManager::TryGetAction(SDL_Scancode _key, InputAction& _action) const {
+    for (size_t _index = 0; _index < ActionBindings.size(); ++_index) {
+        if (ActionBindings[_index] == _key) {
+            _action = static_cast<InputAction>(_index);
+            return true;
+        }
+    }
+    return false;
+}
+
+void InputManager::BeginFrame() {
+    for (auto& _state : ActionStates) {
+        if (_state == ActionState::Pressed) {
+            _state = ActionState::Held;
+        } else if (_state == ActionState::Released) {
+            _state = ActionState::None;
         }
     }
 }
 
 void InputManager::ProcessEvent(const SDL_Event& _event) {
+    InputAction _action;
     if (_event.type == SDL_EVENT_KEY_DOWN) {
         SDL_Scancode _key = _event.key.scancode;
-        if (!_event.key.repeat) {
-            CurrentKeys[_key] = true;
-            KeyStates[_key] = KeyState::Pressed;
+        if (!_event.key.repeat && TryGetAction(_key, _action)) {
+            auto _index = GetActionIndex(_action);
+            CurrentActions[_index] = true;
+            ActionStates[_index] = ActionState::Pressed;
         }
     } else if (_event.type == SDL_EVENT_KEY_UP) {
         SDL_Scancode _key = _event.key.scancode;
-        CurrentKeys[_key] = false;
-        KeyStates[_key] = KeyState::Released;
+        if (TryGetAction(_key, _action)) {
+            auto _index = GetActionIndex(_action);
+            CurrentActions[_index] = false;
+            ActionStates[_index] = ActionState::Released;
+        }
     }
 }
 
 void InputManager::EndFrame() {
-    // Update held states based on current key state
-    for (auto& _pair : CurrentKeys) {
-        if (_pair.second && KeyStates[_pair.first] != KeyState::Pressed) {
-            KeyStates[_pair.first] = KeyState::Held;
+    // Update held states based on current action state
+    for (size_t _index = 0; _index < CurrentActions.size(); ++_index) {
+        if (CurrentActions[_index] && ActionStates[_index] != ActionState::Pressed) {
+            ActionStates[_index] = ActionState::Held;
         }
     }
 }
 
-bool InputManager::IsKeyPressed(SDL_Scancode _key) const {
-    auto _found = KeyStates.find(_key);
-    if (_found != KeyStates.end()) {
-        return _found->second == KeyState::Pressed;
-    }
-    return false;
+void InputManager::BindAction(InputAction _action, SDL_Scancode _key) {
+    ActionBindings[GetActionIndex(_action)] = _key;
 }
 
-bool InputManager::IsKeyHeld(SDL_Scancode _key) const {
-    auto _found = CurrentKeys.find(_key);
-    if (_found != CurrentKeys.end()) {
-        return _found->second;
-    }
-    return false;
+bool InputManager::IsActionPressed(InputAction _action) const {
+    return ActionStates[GetActionIndex(_action)] == ActionState::Pressed;
 }
 
-bool InputManager::IsKeyReleased(SDL_Scancode _key) const {
-    auto _found = KeyStates.find(_key);
-    if (_found != KeyStates.end()) {
-        return _found->second == KeyState::Released;
-    }
-    return false;
+bool InputManager::IsActionHeld(InputAction _action) const {
+    return CurrentActions[GetActionIndex(_action)];
 }
 
-bool InputManager::IsKeyDown(SDL_Scancode _key) const {
-    return IsKeyHeld(_key);
+bool InputManager::IsActionReleased(InputAction _action) const {
+    return ActionStates[GetActionIndex(_action)] == ActionState::Released;
 }
 
-KeyState InputManager::GetKeyState(SDL_Scancode _key) const {
-    auto _found = KeyStates.find(_key);
-    if (_found != KeyStates.end()) {
-        return _found->second;
-    }
-    return KeyState::None;
+bool InputManager::IsActionDown(InputAction _action) const {
+    return IsActionHeld(_action);
+}
+
+ActionState InputManager::GetActionState(InputAction _action) const {
+    return ActionStates[GetActionIndex(_action)];
 }
