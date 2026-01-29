@@ -1,4 +1,28 @@
 #include <core/InputManager.h>
+#include <core/JsonUtils.h>
+#include <rapidjson/document.h>
+#include <rapidjson/error/en.h>
+namespace {
+    bool TryParseActionName(const std::string& _name, InputAction& _action) {
+        if (_name == "MoveLeft") {
+            _action = InputAction::MoveLeft;
+            return true;
+        }
+        if (_name == "MoveRight") {
+            _action = InputAction::MoveRight;
+            return true;
+        }
+        if (_name == "Jump") {
+            _action = InputAction::Jump;
+            return true;
+        }
+        if (_name == "Shoot") {
+            _action = InputAction::Shoot;
+            return true;
+        }
+        return false;
+    }
+}
 
 InputManager* InputManager::InstancePtr = nullptr;
 
@@ -77,6 +101,46 @@ void InputManager::EndFrame() {
 
 void InputManager::BindAction(InputAction _action, SDL_Scancode _key) {
     ActionBindings[GetActionIndex(_action)] = _key;
+}
+
+bool InputManager::LoadBindings(const std::string& _path) {
+    std::string _contents;
+    if (!JsonUtils::ReadFileContents(_path, _contents)) {
+        SDL_Log("InputManager: Could not read bindings file: %s", _path.c_str());
+        return false;
+    }
+
+    rapidjson::Document _doc;
+    _doc.Parse(_contents.c_str());
+    if (_doc.HasParseError()) {
+        SDL_Log("InputManager: Failed to parse %s: %s", _path.c_str(), rapidjson::GetParseError_En(_doc.GetParseError()));
+        return false;
+    }
+
+    if (!_doc.IsObject() || !_doc.HasMember("bindings") || !_doc["bindings"].IsObject()) {
+        SDL_Log("InputManager: Missing bindings object in %s", _path.c_str());
+        return false;
+    }
+
+    const auto& _bindings = _doc["bindings"];
+    for (auto _iter = _bindings.MemberBegin(); _iter != _bindings.MemberEnd(); ++_iter) {
+        if (!_iter->name.IsString() || !_iter->value.IsString()) {
+            continue;
+        }
+        InputAction _action;
+        if (!TryParseActionName(_iter->name.GetString(), _action)) {
+            SDL_Log("InputManager: Unknown action name %s", _iter->name.GetString());
+            continue;
+        }
+
+        SDL_Scancode _scancode = SDL_GetScancodeFromName(_iter->value.GetString());
+        if (_scancode == SDL_SCANCODE_UNKNOWN) {
+            SDL_Log("InputManager: Unknown key binding %s for action %s", _iter->value.GetString(), _iter->name.GetString());
+            continue;
+        }
+        BindAction(_action, _scancode);
+    }
+    return true;
 }
 
 bool InputManager::IsActionPressed(InputAction _action) const {

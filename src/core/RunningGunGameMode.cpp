@@ -38,12 +38,9 @@ void RunningGunGameMode::Init()
 	}
 
 	auto _handler = Context.GetTextureHandler();
-	_handler->Load("sprites/player.png");
 	_handler->Load("sprites/ball.png");
 	_handler->Load("sprites/bullet.png");
-	_handler->Load("sprites/bull.png");
 	_handler->Load("sprites/waves.png");
-	_handler->Load("sprites/scorpion.png");
 	_handler->Load("sprites/duststorm.png");
 	_handler->Load("sprites/background.png");
 	_handler->Load("sprites/health.png");

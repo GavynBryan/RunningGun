@@ -1,6 +1,7 @@
 #pragma once
 #include <SDL3/SDL.h>
 #include <array>
+#include <string>
 
 enum class ActionState {
     None,
@@ -45,6 +46,7 @@ public:
 
     // Action bindings
     void BindAction(InputAction _action, SDL_Scancode _key);
+    bool LoadBindings(const std::string& _path);
 
     // Query action states
     bool IsActionPressed(InputAction _action) const;   // True only on the frame action was pressed

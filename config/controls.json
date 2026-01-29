@@ -1,0 +1,8 @@
+{
+  "bindings": {
+    "MoveLeft": "Left",
+    "MoveRight": "Right",
+    "Jump": "Z",
+    "Shoot": "X"
+  }
+}
