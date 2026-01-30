@@ -1,6 +1,5 @@
 #pragma once
 #include <memory>
-#include <core/ObjectPool.h>
 #include <core/Component.h>
 #include <core/Vec2.h>
 #include <core/events/MulticastDelegate.h>
@@ -21,7 +20,6 @@ private:
 	float PlayerSpeed;
 
 	AnimationStateMachine*				Animator;
-	ObjectPool						Bullets;
 
 	Vec2							BulletOffset;
 	float							LastShotTime;
@@ -48,7 +46,6 @@ public:
 
 	void							HandleAnimations();
 
-	void							SetupBullets();
 	void							ShootBullet();
 	int								GetHealth() { return Lives; }
 	float							GetPlayerSpeed() const { return PlayerSpeed; }

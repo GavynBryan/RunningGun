@@ -7,6 +7,7 @@
 #include <game/components/PatrolAIComponent.h>
 #include <game/components/PhysicsComponent.h>
 #include <game/components/PlayerComponent.h>
+#include <game/components/ProjectileComponent.h>
 #include <game/input/PlayerInputConfig.h>
 #include <string>
 #include <string_view>
@@ -31,5 +32,17 @@ void RegisterDefaultComponents(ComponentRegistry& registry, const PlayerInputCon
 	});
 	registry.Register("bull", [](Entity& entity, GameServiceHost& context, std::string_view) {
 		return std::make_unique<BullComponent>(entity, context);
+	});
+	registry.Register("projectile", [](Entity& entity, GameServiceHost& context, std::string_view paramsJson) {
+		float speed = 400.0f;
+		float lifeSpan = 3.0f;
+		if (!paramsJson.empty()) {
+			auto result = Json::Parse(std::string(paramsJson));
+			if (!result.error()) {
+				speed = Json::GetDouble(result.value(), "speed", speed);
+				lifeSpan = Json::GetDouble(result.value(), "lifeSpan", lifeSpan);
+			}
+		}
+		return std::make_unique<ProjectileComponent>(entity, context, speed, lifeSpan);
 	});
 }

@@ -2,6 +2,7 @@
 #include <game/components/ProjectileComponent.h>
 #include <core/Entity.h>
 #include <core/engine/GameServiceHost.h>
+#include <core/engine/ObjectPoolService.h>
 #include <memory>
 
 
@@ -11,14 +12,12 @@ BullComponent::BullComponent(Entity& _entity, GameServiceHost& _context)
 	Offset1(0,32),
 	Offset2(0,55),
 	ProjectileOffset(Offset1),
-	Projectiles(_context),
 	Lives(45)
 {
 	std::unique_ptr<BullDefaultState> _defaultState(new BullDefaultState(*this));
 
 	AddState("DefaultState", std::move(_defaultState));
 
-	SetupProjectiles();
 	ParentEntity.SetDirection(-1, 0);
 
 }
@@ -44,22 +43,13 @@ void BullComponent::PostUpdate()
 {
 }
 
-void BullComponent::SetupProjectiles()
-{
-	for (int _index = 0; _index < 10; _index++) {
-			auto _projectile = std::make_unique<Entity>(Context, "sprites/waves.png", 32, 32);
-			std::unique_ptr<ProjectileComponent> _projectileComponent(new ProjectileComponent(*_projectile, Context, 400.0f, ParentEntity));
-
-		_projectile->AttachComponent(std::move(_projectileComponent));
-		_projectile->SetTag(enemy_bullet);
-		Projectiles.FeedObject(std::move(_projectile));
-	}
-}
-
 void BullComponent::Shoot()
 {
-	auto _projectile = Projectiles.BorrowObject();
+	auto* _projectile = Context.Get<ObjectPoolService>().FetchPrefab("waves");
 	if (_projectile != nullptr) {
+		if (auto* _projectileComponent = _projectile->GetComponent<ProjectileComponent>()) {
+			_projectileComponent->Activate(&ParentEntity);
+		}
 		_projectile->SetPosition(ParentEntity.GetPosition() + ProjectileOffset);
 		SwitchShootPositions();
 		Animator->PlayAnimation("shoot");

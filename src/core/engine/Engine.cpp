@@ -3,6 +3,7 @@
 #include <core/ResourceHandler.h>
 #include <core/Camera.h>
 #include <core/engine/InputService.h>
+#include <core/engine/ObjectPoolService.h>
 #include <core/engine/PhysicsService.h>
 #include <core/engine/RenderService.h>
 #include <core/engine/RunnerService.h>
@@ -37,6 +38,7 @@ Engine::Engine()
 	Services.AddService<PhysicsService>(30);
 	Services.AddService<RenderService>(40, Renderer, std::make_unique<ResourceHandler>(Renderer), std::make_unique<Camera>(800.0f, 600.0f));
 	Services.AddService<WorldService>(50);
+	Services.AddService<ObjectPoolService>(60, Prefabs);
 
 	Prefabs.SetServices(Services);
 }

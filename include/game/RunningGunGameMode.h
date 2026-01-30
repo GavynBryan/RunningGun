@@ -10,7 +10,6 @@
 #include <string>
 
 class BullComponent;
-class ObjectPool;
 class PlayerComponent;
 class World;
 class Entity;
@@ -28,7 +27,6 @@ private:
 	UIText*						StatusTextUI;
 	TTF_Font*					GameFont;
 
-	std::unique_ptr<ObjectPool>	ObjectPoolContext;
 	Entity*						PlayerEntity;
 	Entity*						BullEntity;
 	PlayerComponent*			PlayerComponentRef;

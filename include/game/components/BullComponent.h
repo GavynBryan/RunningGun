@@ -2,7 +2,6 @@
 #include <map>
 #include <core/Component.h>
 #include <core/animation/AnimationStateMachine.h>
-#include <core/ObjectPool.h>
 #include <core/Vec2.h>
 #include <core/events/MulticastDelegate.h>
 
@@ -17,7 +16,6 @@ private:
 	std::map<std::string, BullStatePtr> States;
 	AnimationStateMachine*				Animator;
 	BullState*						CurrentState;
-	ObjectPool						Projectiles;
 
 	uint8_t							Lives;
 
@@ -33,7 +31,6 @@ public:
 	void							Update();
 	void							PostUpdate();
 
-	void							SetupProjectiles();
 	void							Shoot();
 	void							SwitchShootPositions();
 

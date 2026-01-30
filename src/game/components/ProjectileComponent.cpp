@@ -5,10 +5,10 @@
 
 
 
-ProjectileComponent::ProjectileComponent(Entity& _entity, GameServiceHost& _context, float _speed, Entity& _shooter)
+ProjectileComponent::ProjectileComponent(Entity& _entity, GameServiceHost& _context, float _speed, float _lifeSpan)
 	:Component(_entity, _context),
 	Speed(_speed),
-	Shooter(_shooter)
+	LifeSpan(_lifeSpan)
 {
 }
 
@@ -20,7 +20,9 @@ ProjectileComponent::~ProjectileComponent()
 void ProjectileComponent::Start()
 {
 	SpawnTime = Context.Get<RunnerService>().GetElapsedTime();
-	ParentEntity.SetDirection(Shooter.GetDirection());
+	if (Shooter) {
+		ParentEntity.SetDirection(Shooter->GetDirection());
+	}
 }
 
 void ProjectileComponent::Update()
@@ -36,12 +38,26 @@ void ProjectileComponent::PostUpdate()
 {
 }
 
+void ProjectileComponent::Activate(Entity* _shooter)
+{
+	SetShooter(_shooter);
+	SpawnTime = Context.Get<RunnerService>().GetElapsedTime();
+}
+
+void ProjectileComponent::SetShooter(Entity* _shooter)
+{
+	Shooter = _shooter;
+	if (Shooter) {
+		ParentEntity.SetDirection(Shooter->GetDirection());
+	}
+}
+
 void ProjectileComponent::OnCollide(Entity& _other)
 {
 	//don't let scorpions block the bull from getting the player
 	if (ParentEntity.GetTag() == enemy_bullet && _other.GetTag() == hazard) return;
 	//don't detect collsion with its own shooter or other projectiles
-	if (&_other != &Shooter && _other.GetTag() != bullet && _other.GetTag() != enemy_bullet) {
+	if ((!Shooter || &_other != Shooter) && _other.GetTag() != bullet && _other.GetTag() != enemy_bullet) {
 		ParentEntity.Disable();
 	}
 }
