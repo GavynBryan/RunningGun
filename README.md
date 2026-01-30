@@ -5,7 +5,7 @@ Arcade game that I made for a Game Jam back in 2020. Maintaining and expanding u
 - SDL3
 - SDL_image
 - SDL_ttf
-- RapidJSON
+- simdjson
 - Visual Studio 2017 toolchain (project targets VS2017)
 
 ## Engine Structure
