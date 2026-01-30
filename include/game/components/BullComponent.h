@@ -4,6 +4,7 @@
 #include <core/animation/AnimationStateMachine.h>
 #include <core/ObjectPool.h>
 #include <core/Vec2.h>
+#include <core/events/MulticastDelegate.h>
 
 #include <BullStates.h>
 
@@ -40,4 +41,7 @@ public:
 	void							SwitchState(const std::string& _id);
 	void							Damage();
 	void							OnCollide(Entity& _other);
+
+	// Events - GameMode subscribes to these
+	MulticastDelegate<Entity*>		OnDied;
 };

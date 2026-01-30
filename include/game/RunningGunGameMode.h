@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+class BullComponent;
 class ObjectPool;
 class PlayerComponent;
 class World;
@@ -29,7 +30,9 @@ private:
 
 	std::unique_ptr<ObjectPool>	ObjectPoolContext;
 	Entity*						PlayerEntity;
+	Entity*						BullEntity;
 	PlayerComponent*			PlayerComponentRef;
+	BullComponent*				BullComponentRef;
 
 	float						SpawnScorpion1Interval;
 	float						LastSpawn1Time;

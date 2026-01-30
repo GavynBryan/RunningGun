@@ -3,7 +3,7 @@
 #include <core/PrefabSystem.h>
 #include <core/UI/UIManager.h>
 #include <core/World.h>
-#include <core/events/GameStateEvents.h>
+#include <game/components/BullComponent.h>
 #include <game/components/PlayerComponent.h>
 #include <cassert>
 
@@ -17,7 +17,9 @@ RunningGunGameMode::RunningGunGameMode(SDL_Renderer* _renderer, EngineServices& 
 	GameFont(nullptr),
 	ObjectPoolContext(new ObjectPool(_services)),
 	PlayerEntity(nullptr),
+	BullEntity(nullptr),
 	PlayerComponentRef(nullptr),
+	BullComponentRef(nullptr),
 	SpawnScorpion1Interval(10.0f),
 	LastSpawn1Time(0.0f),
 	SpawnScorpion2Interval(11.0f),
@@ -72,6 +74,8 @@ void RunningGunGameMode::BuildScene()
 
 	auto _bull = Prefabs.Instantiate("bull");
 	assert(_bull);
+	BullEntity = _bull.get();
+	BullComponentRef = BullEntity->GetComponent<BullComponent>();
 	Services.Instantiate(std::move(_bull));
 
 	for (int _index = 0; _index < 3; _index++) {
@@ -168,28 +172,28 @@ void RunningGunGameMode::RequestReset()
 
 void RunningGunGameMode::SubscribeToEvents()
 {
-	auto& _events = Services.GetGameStateEvents();
+	if (PlayerComponentRef) {
+		PlayerDiedHandle = PlayerComponentRef->OnDied.Subscribe([this](Entity* _player) {
+			OnLose(_player);
+		});
+	}
 
-	PlayerDiedHandle = _events.OnPlayerDied.Subscribe([this](Entity* _player) {
-		OnLose(_player);
-	});
-
-	BossDiedHandle = _events.OnBossDied.Subscribe([this](Entity* _boss) {
-		OnWin(_boss);
-	});
+	if (BullComponentRef) {
+		BossDiedHandle = BullComponentRef->OnDied.Subscribe([this](Entity* _boss) {
+			OnWin(_boss);
+		});
+	}
 }
 
 void RunningGunGameMode::UnsubscribeFromEvents()
 {
-	auto& _events = Services.GetGameStateEvents();
-
-	if (PlayerDiedHandle != 0) {
-		_events.OnPlayerDied.Unsubscribe(PlayerDiedHandle);
+	if (PlayerComponentRef && PlayerDiedHandle != 0) {
+		PlayerComponentRef->OnDied.Unsubscribe(PlayerDiedHandle);
 		PlayerDiedHandle = 0;
 	}
 
-	if (BossDiedHandle != 0) {
-		_events.OnBossDied.Unsubscribe(BossDiedHandle);
+	if (BullComponentRef && BossDiedHandle != 0) {
+		BullComponentRef->OnDied.Unsubscribe(BossDiedHandle);
 		BossDiedHandle = 0;
 	}
 }

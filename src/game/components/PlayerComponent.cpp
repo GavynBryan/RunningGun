@@ -4,7 +4,6 @@
 #include <game/actions/PlayerActions.h>
 #include <core/Entity.h>
 #include <core/InputManager.h>
-#include <core/events/GameStateEvents.h>
 
 PlayerComponent::PlayerComponent(Entity& _entity, GameplayServices& _context, const PlayerInputConfig& _inputConfig)
 	:Component(_entity, _context),
@@ -169,9 +168,6 @@ void PlayerComponent::OnDamage()
 
 	Lives--;
 
-	// Broadcast health change event
-	Context.GetGameStateEvents().OnPlayerHealthChanged.Broadcast(Lives);
-
 	// Play damage animation
 	ParentEntity.GetSprite().SetFlipX(ParentEntity.GetDirection().x < 0);
 	Animator->PlayAnimation("damage");
@@ -189,8 +185,8 @@ void PlayerComponent::OnDeath()
 	IsInputEnabled = false;
 	Freeze();
 
-	// Broadcast death event - GameMode handles the game state transition
-	Context.GetGameStateEvents().OnPlayerDied.Broadcast(&ParentEntity);
+	// Broadcast through component's own delegate
+	OnDied.Broadcast(&ParentEntity);
 }
 
 void PlayerComponent::OnVictory()

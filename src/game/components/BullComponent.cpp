@@ -1,6 +1,5 @@
 #include <game/components/BullComponent.h>
 #include <game/components/ProjectileComponent.h>
-#include <core/events/GameStateEvents.h>
 
 
 
@@ -98,8 +97,8 @@ void BullComponent::Damage() {
 	Animator->PlayAnimation("damage");
 	Lives--;
 	if (Lives <= 0) {
-		// Broadcast boss death event - GameMode handles the win state
-		Context.GetGameStateEvents().OnBossDied.Broadcast(&ParentEntity);
+		// Broadcast through component's own delegate
+		OnDied.Broadcast(&ParentEntity);
 		Animator->PlayAnimation("die");
 		ParentEntity.Disable();
 	}

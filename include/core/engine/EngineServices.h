@@ -6,7 +6,6 @@
 #include <core/engine/FrameClock.h>
 #include <core/engine/RenderServices.h>
 #include <core/engine/WorldServices.h>
-#include <core/events/GameStateEvents.h>
 
 class Camera;
 class InputManager;
@@ -27,7 +26,6 @@ public:
 	Camera& GetCamera() const;
 	Physics& GetPhysics() const override;
 	InputManager& GetInput() const override;
-	GameStateEvents& GetGameStateEvents() override;
 	float GetElapsedTime() const override;
 	float DeltaTime() const override;
 
@@ -43,7 +41,6 @@ private:
 	std::unique_ptr<Physics> PhysicsManager;
 	FrameClock FrameTime;
 	WorldServices WorldContext;
-	GameStateEvents StateEvents;
 	InputManager* InputContext = nullptr;
 
 	void SetTextureHandler(std::unique_ptr<ResourceHandler> _handler);
