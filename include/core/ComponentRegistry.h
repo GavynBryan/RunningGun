@@ -8,12 +8,12 @@
 
 class Component;
 class Entity;
-class GameplayServices;
+class GameServiceHost;
 
 class ComponentRegistry
 {
 public:
-	using Factory = std::function<std::unique_ptr<Component>(Entity&, GameplayServices&, std::string_view)>;
+	using Factory = std::function<std::unique_ptr<Component>(Entity&, GameServiceHost&, std::string_view)>;
 
 	void Register(std::string_view type, Factory factory);
 	const Factory* Find(std::string_view type) const;

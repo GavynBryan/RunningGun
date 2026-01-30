@@ -1,15 +1,14 @@
 #include <core/World.h>
 #include <core/GameMode.h>
 #include <core/Camera.h>
+#include <core/engine/RenderService.h>
+#include <core/engine/RunnerService.h>
 #include <algorithm>
 
-World::World(SDL_Renderer* renderer, EngineServices& _services)
-	:Renderer(renderer),
-	Services(_services),
-	GameStartTime(0),
+World::World(GameServiceHost& _services)
+	:Services(_services),
 	CameraTarget(nullptr),
 	CollisionTree(Rectf(0.0f, 0.0f, 800.0f, 600.0f)),
-	NextTimerHandle(1),
 	Mode(nullptr),
 	UI(new UIManager(800.0f, 600.0f))
 {
@@ -24,43 +23,16 @@ void World::SetGameMode(GameMode* _mode)
 	Mode = _mode;
 }
 
-float World::GetElapsedTime()
-{
-	return (SDL_GetTicks() - GameStartTime) / 1000.0f;
-}
-
-void World::ResetElapsedTime()
-{
-	GameStartTime = SDL_GetTicks();
-}
 
 void World::AddObject(std::unique_ptr<Entity> _entity)
 {
 	AddQueue.push_back(std::move(_entity));
 }
 
-TimerHandle World::ScheduleTimer(float _delay, std::function<void()> _callback)
-{
-	TimerHandle _handle = NextTimerHandle++;
-	float _endTime = GetElapsedTime() + _delay;
-	Timers.push_back(std::make_unique<Timer>(_handle, _endTime, _callback));
-	return _handle;
-}
-
-void World::CancelTimer(TimerHandle _handle)
-{
-	Timers.erase(
-		std::remove_if(Timers.begin(), Timers.end(),
-			[_handle](const std::unique_ptr<Timer>& _t) { return _t->GetHandle() == _handle; }),
-		Timers.end());
-}
-
 void World::ClearEntities()
 {
 	Entities.clear();
 	AddQueue.clear();
-	Timers.clear();
-	NextTimerHandle = 1;
 }
 
 void World::Reset()
@@ -70,26 +42,13 @@ void World::Reset()
 	}
 }
 
-void World::UpdateTimers()
-{
-	float _currentTime = GetElapsedTime();
-	for (auto _it = Timers.begin(); _it != Timers.end(); ) {
-		if ((*_it)->IsExpired(_currentTime)) {
-			(*_it)->Fire();
-			_it = Timers.erase(_it);
-		} else {
-			++_it;
-		}
-	}
-}
-
 void World::UpdateCamera()
 {
-	Camera* _camera = &Services.GetCamera();
+	Camera* _camera = &Services.Get<RenderService>().GetCamera();
 	if (_camera && CameraTarget && CameraTarget->IsEnabled()) {
 		Vec2 _targetPos = CameraTarget->GetPosition();
 		_camera->SetTarget(_targetPos + Vec2(32, 32));
-		_camera->Update(Services.DeltaTime());
+		_camera->Update(Services.Get<RunnerService>().GetDeltaTime());
 	}
 }
 
@@ -105,7 +64,6 @@ void World::SetCameraTarget(Entity* _entity)
 
 void World::Init()
 {
-	GameStartTime = SDL_GetTicks();
 }
 
 void World::BuildScene()
@@ -125,7 +83,6 @@ void World::Start()
 void World::Update()
 {
 	HandleQueue();
-	UpdateTimers();
 	UpdateCamera();
 
 	for (auto& _entity : Entities) {
@@ -160,7 +117,7 @@ void World::Update()
 	}
 
 	if (UI) {
-		UI->Update(Services.DeltaTime());
+		UI->Update(Services.Get<RunnerService>().GetDeltaTime());
 	}
 }
 
@@ -173,16 +130,18 @@ void World::PostUpdate()
 
 void World::Render()
 {
-	Camera* _camera = &Services.GetCamera();
+	auto& renderService = Services.Get<RenderService>();
+	Camera* _camera = &renderService.GetCamera();
+	SDL_Renderer* renderer = renderService.GetRenderer();
 
 	// Render world elements with camera transform
-	Background.Render(Renderer, _camera);
+	Background.Render(renderer, _camera);
 	for (auto& _entity : Entities) {
-		_entity->Render(Renderer, _camera);
+		_entity->Render(renderer, _camera);
 	}
 
 	if (UI) {
-		UI->Render(Renderer);
+		UI->Render(renderer);
 	}
 }
 

@@ -1,16 +1,16 @@
 #pragma once
 #include <core/Component.h>
 
-class Physics;
-class GameplayServices;
+class GameServiceHost;
+class PhysicsService;
 
 class PhysicsComponent :
 	public Component
 {
 private:
-	Physics &PhysContext;
+	PhysicsService& PhysContext;
 public:
-	PhysicsComponent(Entity& _entity, GameplayServices& _context);
+	PhysicsComponent(Entity& _entity, GameServiceHost& _context);
 	~PhysicsComponent();
 
 	void Update();

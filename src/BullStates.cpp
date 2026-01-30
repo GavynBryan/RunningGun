@@ -1,5 +1,6 @@
 #include <BullStates.h>
 #include <game/components/BullComponent.h>
+#include <core/engine/RunnerService.h>
 
 
 
@@ -33,7 +34,7 @@ void BullDefaultState::EnterState()
 
 void BullDefaultState::Update() 
 {
-	float _currentTime = BullRef.GetContext().GetElapsedTime();
+	float _currentTime = BullRef.GetContext().Get<RunnerService>().GetElapsedTime();
 	if (_currentTime - LastShot > ShootFrequency) {
 		BullRef.Shoot();
 		LastShot = _currentTime;

@@ -1,13 +1,17 @@
 #include <core/engine/Engine.h>
 #include <core/GameMode.h>
 #include <core/ResourceHandler.h>
-#include <core/World.h>
 #include <core/Camera.h>
+#include <core/engine/InputService.h>
+#include <core/engine/PhysicsService.h>
+#include <core/engine/RenderService.h>
+#include <core/engine/RunnerService.h>
+#include <core/engine/TimerService.h>
+#include <core/engine/WorldService.h>
 
 Engine::Engine()
 	:Window(nullptr),
 	Renderer(nullptr),
-	WorldContext(nullptr),
 	Quit(false)
 {
 	if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -27,23 +31,18 @@ Engine::Engine()
 		return;
 	}
 
-	WorldContext = new World(Renderer, Services);
-
-	std::unique_ptr<ResourceHandler> _textureHandler(new ResourceHandler(Renderer));
-	std::unique_ptr<Physics> _physicsManager(new Physics());
-	std::unique_ptr<Camera> _camera(new Camera(800.0f, 600.0f));
-	Services.SetTextureHandler(std::move(_textureHandler));
-	Services.SetPhysics(std::move(_physicsManager));
-	Services.SetCamera(std::move(_camera));
-	Services.SetWorld(WorldContext);
-	Services.SetInput(&InputManagerContext);
+	Services.AddService<RunnerService>(0);
+	Services.AddService<TimerService>(10);
+	Services.AddService<InputService>(20, InputManagerContext);
+	Services.AddService<PhysicsService>(30);
+	Services.AddService<RenderService>(40, Renderer, std::make_unique<ResourceHandler>(Renderer), std::make_unique<Camera>(800.0f, 600.0f));
+	Services.AddService<WorldService>(50);
 
 	Prefabs.SetServices(Services);
 }
 
 Engine::~Engine()
 {
-	delete WorldContext;
 	if (Renderer) {
 		SDL_DestroyRenderer(Renderer);
 	}
@@ -59,21 +58,12 @@ void Engine::Run()
 		SDL_Log("Engine cannot run without a game mode.");
 		return;
 	}
-	Uint64 _lastTime = SDL_GetPerformanceCounter();
-	Uint64 _frequency = SDL_GetPerformanceFrequency();
-
-	WorldContext->Init();
-	Mode->Init();
-	Mode->BuildScene();
+	Services.Init();
 
 	while (!Quit) {
-		// Calculate delta time
-		Uint64 _currentTime = SDL_GetPerformanceCounter();
-		float _deltaTime = static_cast<float>(_currentTime - _lastTime) / static_cast<float>(_frequency);
-		_lastTime = _currentTime;
-
 		// Begin input frame
-		InputManagerContext.BeginFrame();
+		auto& inputService = Services.Get<InputService>();
+		inputService.BeginFrame();
 
 		// Process events
 		SDL_Event _event;
@@ -81,26 +71,18 @@ void Engine::Run()
 			if (_event.type == SDL_EVENT_QUIT) {
 				Quit = true;
 			}
-			InputManagerContext.ProcessEvent(_event);
+			inputService.ProcessEvent(_event);
 		}
 
 		// End input frame
-		InputManagerContext.EndFrame();
-
-		Services.SetDeltaTime(_deltaTime);
+		inputService.EndFrame();
 
 		// Clear screen
 		SDL_SetRenderDrawColor(Renderer, 0, 0, 0, 255);
 		SDL_RenderClear(Renderer);
 
 		// Update and render
-		WorldContext->Start();
-		Mode->Update();
-		WorldContext->Update();
-		WorldContext->PostUpdate();
-		Mode->PostUpdate();
-
-		WorldContext->Render();
+		Services.Update();
 
 		// Present
 		SDL_RenderPresent(Renderer);
@@ -108,14 +90,16 @@ void Engine::Run()
 		// Frame rate limiting (approximately 120 FPS)
 		SDL_Delay(8);
 	}
+
+	Services.Shutdown();
 }
 
 World& Engine::GetWorld()
 {
-	return *WorldContext;
+	return Services.Get<WorldService>().GetWorld();
 }
 
-EngineServices& Engine::GetServices()
+GameServiceHost& Engine::GetServices()
 {
 	return Services;
 }
@@ -133,7 +117,5 @@ PrefabSystem& Engine::GetPrefabs()
 void Engine::SetGameMode(std::unique_ptr<GameMode> _mode)
 {
 	Mode = std::move(_mode);
-	if (WorldContext) {
-		WorldContext->SetGameMode(Mode.get());
-	}
+	Services.Get<WorldService>().SetGameMode(Mode.get());
 }

@@ -1,6 +1,6 @@
 #include <core/PrefabSystem.h>
 #include <core/animation/Animation.h>
-#include <core/engine/GameplayServices.h>
+#include <core/engine/GameServiceHost.h>
 #include <core/Json.h>
 #include <core/ResourceHandler.h>
 #include <cassert>
@@ -114,7 +114,7 @@ namespace {
 	}
 }
 
-void PrefabSystem::SetServices(GameplayServices& services)
+void PrefabSystem::SetServices(GameServiceHost& services)
 {
 	Services = &services;
 }

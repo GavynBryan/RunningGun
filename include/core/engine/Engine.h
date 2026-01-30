@@ -1,9 +1,8 @@
 #pragma once
 #include <SDL3/SDL.h>
 #include <memory>
-#include <core/engine/EngineServices.h>
+#include <core/engine/GameServiceHost.h>
 #include <core/PrefabSystem.h>
-#include <core/Physics.h>
 #include <core/InputManager.h>
 
 class World;
@@ -16,11 +15,10 @@ private:
 	SDL_Renderer*							Renderer;
 	bool									Quit;
 
-	World*									WorldContext;
 	std::unique_ptr<GameMode>				Mode;
 
 private:
-	EngineServices							Services;
+	GameServiceHost							Services;
 	InputManager							InputManagerContext;
 	PrefabSystem							Prefabs;
 
@@ -30,7 +28,7 @@ public:
 
 	SDL_Renderer* GetRenderer() { return Renderer; }
 	World& GetWorld();
-	EngineServices& GetServices();
+	GameServiceHost& GetServices();
 	InputManager& GetInputManager();
 	PrefabSystem& GetPrefabs();
 

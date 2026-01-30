@@ -1,9 +1,10 @@
 #include <core/ObjectPool.h>
-#include <core/engine/GameplayServices.h>
+#include <core/engine/GameServiceHost.h>
+#include <core/engine/WorldService.h>
 
 
 
-ObjectPool::ObjectPool(GameplayServices& _context)
+ObjectPool::ObjectPool(GameServiceHost& _context)
 	:Context(_context)
 {
 }
@@ -17,7 +18,7 @@ void ObjectPool::FeedObject(Entity::Ptr _obj)
 {
 	_obj->Disable();
 	Pool.push_back(_obj.get());
-	Context.Instantiate(std::move(_obj));
+	Context.Get<WorldService>().GetWorld().AddObject(std::move(_obj));
 }
 
 void ObjectPool::Clear()

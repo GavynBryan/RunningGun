@@ -1,15 +1,15 @@
 #pragma once
 #include <core/Entity.h>
 
-class GameplayServices;
+class GameServiceHost;
 
 class ObjectPool
 {
 private:
-	GameplayServices& Context;
+	GameServiceHost& Context;
 	std::vector<Entity*> Pool;
 public:
-	ObjectPool(GameplayServices& _context);
+	ObjectPool(GameServiceHost& _context);
 	~ObjectPool();
 
 	void FeedObject(Entity::Ptr _obj);

@@ -1,6 +1,7 @@
 #include <game/app/RunningGunApp.h>
 #include <core/engine/Engine.h>
 #include <core/InputManager.h>
+#include <core/engine/RenderService.h>
 #include <game/RunningGunGameMode.h>
 #include <game/components/ComponentRegistration.h>
 #include <game/input/PlayerInputConfig.h>
@@ -19,7 +20,7 @@ int RunningGunApp::Run()
 	}
 
 	RegisterDefaultComponents(_engine.GetPrefabs().GetRegistry(), _inputConfig);
-	_engine.GetPrefabs().LoadFromFile("config/prefabs.json", _engine.GetServices().GetTextureHandler());
+	_engine.GetPrefabs().LoadFromFile("config/prefabs.json", _engine.GetServices().Get<RenderService>().GetTextureHandler());
 
 	_engine.SetGameMode(std::make_unique<RunningGunGameMode>(
 		_engine.GetRenderer(),

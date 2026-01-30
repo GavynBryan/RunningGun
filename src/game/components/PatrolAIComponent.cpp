@@ -1,9 +1,10 @@
 #include <game/components/PatrolAIComponent.h>
 #include <core/Entity.h>
-#include <core/engine/GameplayServices.h>
+#include <core/engine/GameServiceHost.h>
+#include <core/engine/RunnerService.h>
 #include <core/animation/AnimationStateMachine.h>
 
-PatrolAIComponent::PatrolAIComponent(Entity& _entity, GameplayServices& _context, float _speed)
+PatrolAIComponent::PatrolAIComponent(Entity& _entity, GameServiceHost& _context, float _speed)
 	:Component(_entity, _context),
 	MoveSpeed(_speed)
 {
@@ -18,7 +19,7 @@ void PatrolAIComponent::Start()
 {
 	Lives = 2;
 	Animator = ParentEntity.GetAnimator();
-	LastTurnAround = Context.GetElapsedTime();
+	LastTurnAround = Context.Get<RunnerService>().GetElapsedTime();
 }
 
 void PatrolAIComponent::Update()
@@ -28,7 +29,7 @@ void PatrolAIComponent::Update()
 		_patrolVelocity.y = ParentEntity.GetVelocity().y;
 		_patrolVelocity.x *= MoveSpeed;
 		ParentEntity.SetVelocity(_patrolVelocity);
-		float _currentTime = Context.GetElapsedTime();
+		float _currentTime = Context.Get<RunnerService>().GetElapsedTime();
 
 		if (_currentTime - Interval > LastTurnAround) {
 			ChangeDirection();

@@ -38,7 +38,7 @@ private:
 	const PlayerInputConfig&		InputConfig;
 
 public:
-									PlayerComponent(Entity& _entity, GameplayServices& _context, const PlayerInputConfig& _inputConfig);
+									PlayerComponent(Entity& _entity, GameServiceHost& _context, const PlayerInputConfig& _inputConfig);
 									~PlayerComponent();
 
 

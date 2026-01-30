@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <vector>
 
-class GameplayServices;
+class GameServiceHost;
 class ResourceHandler;
 
 struct AnimationDefinition
@@ -43,7 +43,7 @@ struct PrefabDefinition
 class PrefabSystem
 {
 public:
-	void SetServices(GameplayServices& services);
+	void SetServices(GameServiceHost& services);
 
 	ComponentRegistry& GetRegistry();
 	const ComponentRegistry& GetRegistry() const;
@@ -63,5 +63,5 @@ public:
 private:
 	ComponentRegistry Registry;
 	std::unordered_map<std::string, PrefabDefinition> Definitions;
-	GameplayServices* Services = nullptr;
+	GameServiceHost* Services = nullptr;
 };

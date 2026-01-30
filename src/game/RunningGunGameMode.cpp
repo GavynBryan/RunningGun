@@ -3,11 +3,14 @@
 #include <core/PrefabSystem.h>
 #include <core/UI/UIManager.h>
 #include <core/World.h>
+#include <core/engine/RenderService.h>
+#include <core/engine/RunnerService.h>
+#include <core/engine/TimerService.h>
 #include <game/components/BullComponent.h>
 #include <game/components/PlayerComponent.h>
 #include <cassert>
 
-RunningGunGameMode::RunningGunGameMode(SDL_Renderer* _renderer, EngineServices& _services, PrefabSystem& _prefabs, World& _world)
+RunningGunGameMode::RunningGunGameMode(SDL_Renderer* _renderer, GameServiceHost& _services, PrefabSystem& _prefabs, World& _world)
 	:Renderer(_renderer),
 	Services(_services),
 	Prefabs(_prefabs),
@@ -46,7 +49,7 @@ void RunningGunGameMode::Init()
 		SDL_Log("Failed to initialize SDL_ttf: %s", SDL_GetError());
 	}
 
-	auto& _handler = Services.GetTextureHandler();
+	auto& _handler = Services.Get<RenderService>().GetTextureHandler();
 	_handler.Load("sprites/ball.png");
 	_handler.Load("sprites/bullet.png");
 	_handler.Load("sprites/waves.png");
@@ -64,19 +67,19 @@ void RunningGunGameMode::Init()
 
 void RunningGunGameMode::BuildScene()
 {
-	auto& _handler = Services.GetTextureHandler();
+	auto& _handler = Services.Get<RenderService>().GetTextureHandler();
 	auto _player = Prefabs.Instantiate("player");
 	assert(_player);
 	PlayerEntity = _player.get();
 	PlayerComponentRef = PlayerEntity->GetComponent<PlayerComponent>();
-	Services.Instantiate(std::move(_player));
+	WorldContext.AddObject(std::move(_player));
 	WorldContext.SetCameraTarget(PlayerEntity);
 
 	auto _bull = Prefabs.Instantiate("bull");
 	assert(_bull);
 	BullEntity = _bull.get();
 	BullComponentRef = BullEntity->GetComponent<BullComponent>();
-	Services.Instantiate(std::move(_bull));
+	WorldContext.AddObject(std::move(_bull));
 
 	for (int _index = 0; _index < 3; _index++) {
 		auto _scorpion = Prefabs.Instantiate("scorpion");
@@ -86,7 +89,8 @@ void RunningGunGameMode::BuildScene()
 
 	LastSpawn1Time = 0.0f;
 	LastSpawn2Time = 0.0f;
-	WorldContext.ResetElapsedTime();
+	Services.Get<RunnerService>().ResetClock();
+	Services.Get<TimerService>().Reset();
 	Win = false;
 	Lose = false;
 
@@ -94,7 +98,7 @@ void RunningGunGameMode::BuildScene()
 
 	if (UIManager* _ui = WorldContext.GetUI()) {
 		_ui->Clear();
-		HealthBar = _ui->AddElement<UIHealthBar>(_handler->Get("sprites/health.png"), 5);
+		HealthBar = _ui->AddElement<UIHealthBar>(_handler.Get("sprites/health.png"), 5);
 		HealthBar->SetPosition(5, 5);
 		HealthBar->SetAnchor(UIAnchor::TopLeft);
 
@@ -117,22 +121,22 @@ void RunningGunGameMode::Update()
 void RunningGunGameMode::PostUpdate()
 {
 	if (!Win && !Lose) {
-		if (Services.GetElapsedTime() - LastSpawn1Time > SpawnScorpion1Interval) {
+		if (Services.Get<RunnerService>().GetElapsedTime() - LastSpawn1Time > SpawnScorpion1Interval) {
 			auto _scorpion1 = ObjectPoolContext->BorrowObject();
 			if (_scorpion1 != nullptr) {
 				_scorpion1->SetPosition(50, 20);
 				_scorpion1->SetDirection(1, 0);
 			}
-			LastSpawn1Time = Services.GetElapsedTime();
+			LastSpawn1Time = Services.Get<RunnerService>().GetElapsedTime();
 		}
 
-		if (Services.GetElapsedTime() - LastSpawn2Time > SpawnScorpion2Interval) {
+		if (Services.Get<RunnerService>().GetElapsedTime() - LastSpawn2Time > SpawnScorpion2Interval) {
 			auto _scorpion2 = ObjectPoolContext->BorrowObject();
 			if (_scorpion2 != nullptr) {
 				_scorpion2->SetPosition(400, 20);
 				_scorpion2->SetDirection(-1, 0);
 			}
-			LastSpawn2Time = Services.GetElapsedTime();
+			LastSpawn2Time = Services.Get<RunnerService>().GetElapsedTime();
 		}
 	}
 
@@ -160,7 +164,7 @@ void RunningGunGameMode::OnLose(Entity* _player)
 	SetStatusText("Game Over");
 
 	// Schedule reset after delay
-	Services.ScheduleTimer(3.0f, [this]() {
+	Services.Get<TimerService>().ScheduleTimer(3.0f, [this]() {
 		RequestReset();
 	});
 }

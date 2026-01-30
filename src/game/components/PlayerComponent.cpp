@@ -4,8 +4,11 @@
 #include <game/actions/PlayerActions.h>
 #include <core/Entity.h>
 #include <core/InputManager.h>
+#include <core/engine/GameServiceHost.h>
+#include <core/engine/InputService.h>
+#include <core/engine/RunnerService.h>
 
-PlayerComponent::PlayerComponent(Entity& _entity, GameplayServices& _context, const PlayerInputConfig& _inputConfig)
+PlayerComponent::PlayerComponent(Entity& _entity, GameServiceHost& _context, const PlayerInputConfig& _inputConfig)
 	:Component(_entity, _context),
 	Lives(5),
 	PlayerSpeed(350),
@@ -45,7 +48,7 @@ void PlayerComponent::Update()
 {
 	// Check invulnerability cooldown
 	if (IsInvulnerable) {
-		if (Context.GetElapsedTime() >= InvulnerabilityEndTime) {
+		if (Context.Get<RunnerService>().GetElapsedTime() >= InvulnerabilityEndTime) {
 			IsInvulnerable = false;
 		}
 	}
@@ -77,7 +80,7 @@ void PlayerComponent::HandleAnimations()
 void PlayerComponent::SetupBullets()
 {
 	for (int _index = 0; _index < 20; _index++) {
-		auto _projectile = Context.CreateEntity("sprites/bullet.png", 16, 16);
+		auto _projectile = std::make_unique<Entity>(Context, "sprites/bullet.png", 16, 16);
 		std::unique_ptr<ProjectileComponent> _projectileComponent(new ProjectileComponent(*_projectile, Context, 400.0f, ParentEntity));
 
 		_projectile->AttachComponent(std::move(_projectileComponent));
@@ -89,7 +92,7 @@ void PlayerComponent::SetupBullets()
 void PlayerComponent::ShootBullet()
 {
 	//update the shooting cooldown
-	auto _currentTime = Context.GetElapsedTime();
+	auto _currentTime = Context.Get<RunnerService>().GetElapsedTime();
 	if (_currentTime - BulletCoolDown > LastShotTime) {
 		LastShotTime = _currentTime;
 		//borrow bullet from object pool
@@ -132,7 +135,7 @@ void PlayerComponent::SetVerticalVelocity(float y)
 
 void PlayerComponent::HandleInput()
 {
-	auto& _input = Context.GetInput();
+	auto& _input = Context.Get<InputService>().GetInput();
 
 	SetHorizontalVelocity(0);
 
@@ -176,7 +179,7 @@ void PlayerComponent::OnDamage()
 		OnDeath();
 	} else {
 		IsInvulnerable = true;
-		InvulnerabilityEndTime = Context.GetElapsedTime() + InvulnerabilityDuration;
+		InvulnerabilityEndTime = Context.Get<RunnerService>().GetElapsedTime() + InvulnerabilityDuration;
 	}
 }
 
