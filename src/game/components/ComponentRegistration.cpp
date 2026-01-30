@@ -1,8 +1,8 @@
 #include <game/components/ComponentRegistration.h>
+#include <core/ComponentRegistry.h>
 #include <core/engine/GameplayServices.h>
 #include <core/Entity.h>
 #include <core/Json.h>
-#include <core/PrefabComponentRegistry.h>
 #include <game/components/BullComponent.h>
 #include <game/components/PatrolAIComponent.h>
 #include <game/components/PhysicsComponent.h>
@@ -11,25 +11,25 @@
 #include <string>
 #include <string_view>
 
-void RegisterDefaultComponents(PrefabComponentRegistry& _registry, const PlayerInputConfig& _inputConfig)
+void RegisterDefaultComponents(ComponentRegistry& registry, const PlayerInputConfig& inputConfig)
 {
-	_registry.Register("player", [&_inputConfig](Entity& _entity, GameplayServices& _context, std::string_view) {
-		return std::make_unique<PlayerComponent>(_entity, _context, _inputConfig);
+	registry.Register("player", [&inputConfig](Entity& entity, GameplayServices& context, std::string_view) {
+		return std::make_unique<PlayerComponent>(entity, context, inputConfig);
 	});
-	_registry.Register("physics", [](Entity& _entity, GameplayServices& _context, std::string_view) {
-		return std::make_unique<PhysicsComponent>(_entity, _context);
+	registry.Register("physics", [](Entity& entity, GameplayServices& context, std::string_view) {
+		return std::make_unique<PhysicsComponent>(entity, context);
 	});
-	_registry.Register("patrol_ai", [](Entity& _entity, GameplayServices& _context, std::string_view _paramsJson) {
-		float _speed = 150.0f;
-		if (!_paramsJson.empty()) {
-			auto _result = Json::Parse(std::string(_paramsJson));
-			if (!_result.error()) {
-				_speed = Json::GetDouble(_result.value(), "speed", _speed);
+	registry.Register("patrol_ai", [](Entity& entity, GameplayServices& context, std::string_view paramsJson) {
+		float speed = 150.0f;
+		if (!paramsJson.empty()) {
+			auto result = Json::Parse(std::string(paramsJson));
+			if (!result.error()) {
+				speed = Json::GetDouble(result.value(), "speed", speed);
 			}
 		}
-		return std::make_unique<PatrolAIComponent>(_entity, _context, _speed);
+		return std::make_unique<PatrolAIComponent>(entity, context, speed);
 	});
-	_registry.Register("bull", [](Entity& _entity, GameplayServices& _context, std::string_view) {
-		return std::make_unique<BullComponent>(_entity, _context);
+	registry.Register("bull", [](Entity& entity, GameplayServices& context, std::string_view) {
+		return std::make_unique<BullComponent>(entity, context);
 	});
 }

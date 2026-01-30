@@ -12,14 +12,14 @@ class ObjectPool;
 class PlayerComponent;
 class World;
 class Entity;
-class PrefabStore;
+class PrefabSystem;
 
 class RunningGunGameMode : public GameMode
 {
 private:
 	SDL_Renderer*				Renderer;
 	EngineServices&				Services;
-	PrefabStore&				Prefabs;
+	PrefabSystem&				Prefabs;
 	World&						WorldContext;
 
 	UIHealthBar*				HealthBar;
@@ -40,7 +40,7 @@ private:
 
 	void						SetStatusText(const std::string& _text);
 public:
-								RunningGunGameMode(SDL_Renderer* _renderer, EngineServices& _services, PrefabStore& _prefabs, World& _world);
+								RunningGunGameMode(SDL_Renderer* _renderer, EngineServices& _services, PrefabSystem& _prefabs, World& _world);
 								~RunningGunGameMode() override;
 
 	void						Init() override;

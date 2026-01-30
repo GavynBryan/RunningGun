@@ -19,7 +19,7 @@ int RunningGunApp::Run()
 	}
 
 	RegisterDefaultComponents(_engine.GetPrefabs().GetRegistry(), _inputConfig);
-	_engine.GetPrefabs().LoadDefinitions(_engine.GetServices().GetTextureHandler(), "config/prefabs.json");
+	_engine.GetPrefabs().LoadFromFile("config/prefabs.json", _engine.GetServices().GetTextureHandler());
 
 	_engine.SetGameMode(std::make_unique<RunningGunGameMode>(
 		_engine.GetRenderer(),

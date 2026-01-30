@@ -1,13 +1,12 @@
 #include <game/RunningGunGameMode.h>
 #include <core/ObjectPool.h>
-#include <core/PrefabFactory.h>
-#include <core/PrefabLibrary.h>
+#include <core/PrefabSystem.h>
 #include <core/UI/UIManager.h>
 #include <core/World.h>
 #include <game/components/PlayerComponent.h>
 #include <cassert>
 
-RunningGunGameMode::RunningGunGameMode(SDL_Renderer* _renderer, EngineServices& _services, PrefabStore& _prefabs, World& _world)
+RunningGunGameMode::RunningGunGameMode(SDL_Renderer* _renderer, EngineServices& _services, PrefabSystem& _prefabs, World& _world)
 	:Renderer(_renderer),
 	Services(_services),
 	Prefabs(_prefabs),
@@ -59,23 +58,20 @@ void RunningGunGameMode::Init()
 void RunningGunGameMode::BuildScene()
 {
 	auto& _handler = Services.GetTextureHandler();
-	const PrefabDefinition* _playerDef = Prefabs.GetLibrary().Find("player");
-	assert(_playerDef);
-	auto _player = PrefabFactory::CreateEntity(Services, *_playerDef, Prefabs.GetRegistry());
+	auto _player = Prefabs.Instantiate("player", Services);
+	assert(_player);
 	PlayerEntity = _player.get();
 	PlayerComponentRef = PlayerEntity->GetComponent<PlayerComponent>();
 	Services.Instantiate(std::move(_player));
 	WorldContext.SetCameraTarget(PlayerEntity);
 
-	const PrefabDefinition* _bullDef = Prefabs.GetLibrary().Find("bull");
-	assert(_bullDef);
-	auto _bull = PrefabFactory::CreateEntity(Services, *_bullDef, Prefabs.GetRegistry());
+	auto _bull = Prefabs.Instantiate("bull", Services);
+	assert(_bull);
 	Services.Instantiate(std::move(_bull));
 
 	for (int _index = 0; _index < 3; _index++) {
-		const PrefabDefinition* _scorpionDef = Prefabs.GetLibrary().Find("scorpion");
-		assert(_scorpionDef);
-		auto _scorpion = PrefabFactory::CreateEntity(Services, *_scorpionDef, Prefabs.GetRegistry());
+		auto _scorpion = Prefabs.Instantiate("scorpion", Services);
+		assert(_scorpion);
 		ObjectPoolContext->FeedObject(std::move(_scorpion));
 	}
 

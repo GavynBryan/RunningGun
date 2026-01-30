@@ -123,7 +123,7 @@ InputManager& Engine::GetInputManager()
 	return InputManagerContext;
 }
 
-PrefabStore& Engine::GetPrefabs()
+PrefabSystem& Engine::GetPrefabs()
 {
 	return Prefabs;
 }

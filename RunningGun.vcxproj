@@ -164,11 +164,8 @@
     <ClInclude Include="include\game\components\ComponentRegistration.h" />
     <ClInclude Include="include\game\input\InputActions.h" />
     <ClInclude Include="include\game\input\PlayerInputConfig.h" />
-    <ClInclude Include="include\core\PrefabComponentRegistry.h" />
-    <ClInclude Include="include\core\PrefabFactory.h" />
-    <ClInclude Include="include\core\PrefabLibrary.h" />
-    <ClInclude Include="include\core\PrefabLoader.h" />
-    <ClInclude Include="include\core\engine\PrefabStore.h" />
+    <ClInclude Include="include\core\ComponentRegistry.h" />
+    <ClInclude Include="include\core\PrefabSystem.h" />
     <ClInclude Include="include\core\State.h" />
     <ClInclude Include="include\core\Timer.h" />
     <ClInclude Include="include\core\World.h" />
@@ -196,11 +193,8 @@
     <ClCompile Include="src\core\Entity.cpp" />
     <ClCompile Include="src\core\Game.cpp" />
     <ClCompile Include="src\core\InputManager.cpp" />
-    <ClCompile Include="src\core\PrefabComponentRegistry.cpp" />
-    <ClCompile Include="src\core\PrefabFactory.cpp" />
-    <ClCompile Include="src\core\PrefabLibrary.cpp" />
-    <ClCompile Include="src\core\PrefabLoader.cpp" />
-    <ClCompile Include="src\core\engine\PrefabStore.cpp" />
+    <ClCompile Include="src\core\ComponentRegistry.cpp" />
+    <ClCompile Include="src\core\PrefabSystem.cpp" />
     <ClCompile Include="src\core\RunningGunGameMode.cpp" />
     <ClCompile Include="src\core\main.cpp" />
     <ClCompile Include="src\core\ObjectPool.cpp" />
