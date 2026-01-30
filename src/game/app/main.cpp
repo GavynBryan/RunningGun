@@ -1,7 +1,7 @@
-#include <core/engine/Game.h>
+#include <game/app/RunningGunApp.h>
+
 int main()
 {
-	Game _game;
-	_game.Run();
-	return EXIT_SUCCESS;
+	RunningGunApp _app;
+	return _app.Run();
 }

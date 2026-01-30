@@ -1,18 +1,21 @@
 #include <game/RunningGunGameMode.h>
 #include <core/ObjectPool.h>
-#include <core/Prefabs.h>
+#include <core/PrefabFactory.h>
+#include <core/PrefabLibrary.h>
 #include <core/UI/UIManager.h>
 #include <core/World.h>
 #include <game/components/PlayerComponent.h>
+#include <cassert>
 
-RunningGunGameMode::RunningGunGameMode(SDL_Renderer* _renderer, GameContext& _context, World& _world)
+RunningGunGameMode::RunningGunGameMode(SDL_Renderer* _renderer, EngineServices& _services, PrefabStore& _prefabs, World& _world)
 	:Renderer(_renderer),
-	Context(_context),
+	Services(_services),
+	Prefabs(_prefabs),
 	WorldContext(_world),
 	HealthBar(nullptr),
 	StatusTextUI(nullptr),
 	GameFont(nullptr),
-	ObjectPoolContext(new ObjectPool(_context)),
+	ObjectPoolContext(new ObjectPool(_services)),
 	PlayerEntity(nullptr),
 	PlayerComponentRef(nullptr),
 	SpawnScorpion1Interval(10.0f),
@@ -37,36 +40,42 @@ void RunningGunGameMode::Init()
 		SDL_Log("Failed to initialize SDL_ttf: %s", SDL_GetError());
 	}
 
-	auto _handler = Context.GetTextureHandler();
-	_handler->Load("sprites/ball.png");
-	_handler->Load("sprites/bullet.png");
-	_handler->Load("sprites/waves.png");
-	_handler->Load("sprites/duststorm.png");
-	_handler->Load("sprites/background.png");
-	_handler->Load("sprites/health.png");
+	auto& _handler = Services.GetTextureHandler();
+	_handler.Load("sprites/ball.png");
+	_handler.Load("sprites/bullet.png");
+	_handler.Load("sprites/waves.png");
+	_handler.Load("sprites/duststorm.png");
+	_handler.Load("sprites/background.png");
+	_handler.Load("sprites/health.png");
 
 	GameFont = TTF_OpenFont("arial.ttf", 60);
 	if (!GameFont) {
 		SDL_Log("Failed to load font: %s", SDL_GetError());
 	}
 
-	WorldContext.SetBackgroundTexture(_handler->Get("sprites/background.png"));
+	WorldContext.SetBackgroundTexture(_handler.Get("sprites/background.png"));
 }
 
 void RunningGunGameMode::BuildScene()
 {
-	auto _handler = Context.GetTextureHandler();
-	auto _player = Prefabs::GetPlayer(Context);
+	auto& _handler = Services.GetTextureHandler();
+	const PrefabDefinition* _playerDef = Prefabs.GetLibrary().Find("player");
+	assert(_playerDef);
+	auto _player = PrefabFactory::CreateEntity(Services, *_playerDef, Prefabs.GetRegistry());
 	PlayerEntity = _player.get();
 	PlayerComponentRef = PlayerEntity->GetComponent<PlayerComponent>();
-	Context.Instantiate(std::move(_player));
+	Services.Instantiate(std::move(_player));
 	WorldContext.SetCameraTarget(PlayerEntity);
 
-	auto _bull = Prefabs::GetBull(Context);
-	Context.Instantiate(std::move(_bull));
+	const PrefabDefinition* _bullDef = Prefabs.GetLibrary().Find("bull");
+	assert(_bullDef);
+	auto _bull = PrefabFactory::CreateEntity(Services, *_bullDef, Prefabs.GetRegistry());
+	Services.Instantiate(std::move(_bull));
 
 	for (int _index = 0; _index < 3; _index++) {
-		auto _scorpion = Prefabs::GetScorpion(Context);
+		const PrefabDefinition* _scorpionDef = Prefabs.GetLibrary().Find("scorpion");
+		assert(_scorpionDef);
+		auto _scorpion = PrefabFactory::CreateEntity(Services, *_scorpionDef, Prefabs.GetRegistry());
 		ObjectPoolContext->FeedObject(std::move(_scorpion));
 	}
 
@@ -100,22 +109,22 @@ void RunningGunGameMode::Update()
 void RunningGunGameMode::PostUpdate()
 {
 	if (!Win) {
-		if (Context.GetElapsedTime() - LastSpawn1Time > SpawnScorpion1Interval) {
+		if (Services.GetElapsedTime() - LastSpawn1Time > SpawnScorpion1Interval) {
 			auto _scorpion1 = ObjectPoolContext->BorrowObject();
 			if (_scorpion1 != nullptr) {
 				_scorpion1->SetPosition(50, 20);
 				_scorpion1->SetDirection(1, 0);
 			}
-			LastSpawn1Time = Context.GetElapsedTime();
+			LastSpawn1Time = Services.GetElapsedTime();
 		}
 
-		if (Context.GetElapsedTime() - LastSpawn2Time > SpawnScorpion2Interval) {
+		if (Services.GetElapsedTime() - LastSpawn2Time > SpawnScorpion2Interval) {
 			auto _scorpion2 = ObjectPoolContext->BorrowObject();
 			if (_scorpion2 != nullptr) {
 				_scorpion2->SetPosition(400, 20);
 				_scorpion2->SetDirection(-1, 0);
 			}
-			LastSpawn2Time = Context.GetElapsedTime();
+			LastSpawn2Time = Services.GetElapsedTime();
 		}
 	}
 

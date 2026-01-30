@@ -2,7 +2,7 @@
 
 
 
-Component::Component(Entity& _entity, GameContext& _context)
+Component::Component(Entity& _entity, GameplayServices& _context)
 	:ParentEntity(_entity),
 	Context(_context),
 	Active(true)

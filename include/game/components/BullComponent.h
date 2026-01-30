@@ -25,7 +25,7 @@ private:
 
 	Vec2							ProjectileOffset;
 public:
-									BullComponent(Entity& _entity, GameContext& _context);
+									BullComponent(Entity& _entity, GameplayServices& _context);
 									~BullComponent();
 
 	void							Start();
