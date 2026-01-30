@@ -1,6 +1,6 @@
 #include <game/components/BullComponent.h>
 #include <game/components/ProjectileComponent.h>
-#include <game/RunningGunGameMode.h>
+#include <core/events/GameStateEvents.h>
 
 
 
@@ -98,9 +98,8 @@ void BullComponent::Damage() {
 	Animator->PlayAnimation("damage");
 	Lives--;
 	if (Lives <= 0) {
-		if (auto* _mode = dynamic_cast<RunningGunGameMode*>(Context.GetGameMode())) {
-			_mode->OnWin();
-		}
+		// Broadcast boss death event - GameMode handles the win state
+		Context.GetGameStateEvents().OnBossDied.Broadcast(&ParentEntity);
 		Animator->PlayAnimation("die");
 		ParentEntity.Disable();
 	}

@@ -3,6 +3,7 @@
 #include <core/PrefabSystem.h>
 #include <core/UI/UIManager.h>
 #include <core/World.h>
+#include <core/events/GameStateEvents.h>
 #include <game/components/PlayerComponent.h>
 #include <cassert>
 
@@ -22,12 +23,16 @@ RunningGunGameMode::RunningGunGameMode(SDL_Renderer* _renderer, EngineServices& 
 	SpawnScorpion2Interval(11.0f),
 	LastSpawn2Time(0.0f),
 	Win(false),
-	ResetRequested(false)
+	Lose(false),
+	ResetRequested(false),
+	PlayerDiedHandle(0),
+	BossDiedHandle(0)
 {
 }
 
 RunningGunGameMode::~RunningGunGameMode()
 {
+	UnsubscribeFromEvents();
 	if (GameFont) {
 		TTF_CloseFont(GameFont);
 	}
@@ -79,6 +84,9 @@ void RunningGunGameMode::BuildScene()
 	LastSpawn2Time = 0.0f;
 	WorldContext.ResetElapsedTime();
 	Win = false;
+	Lose = false;
+
+	SubscribeToEvents();
 
 	if (UIManager* _ui = WorldContext.GetUI()) {
 		_ui->Clear();
@@ -104,7 +112,7 @@ void RunningGunGameMode::Update()
 
 void RunningGunGameMode::PostUpdate()
 {
-	if (!Win) {
+	if (!Win && !Lose) {
 		if (Services.GetElapsedTime() - LastSpawn1Time > SpawnScorpion1Interval) {
 			auto _scorpion1 = ObjectPoolContext->BorrowObject();
 			if (_scorpion1 != nullptr) {
@@ -125,6 +133,7 @@ void RunningGunGameMode::PostUpdate()
 	}
 
 	if (ResetRequested) {
+		UnsubscribeFromEvents();
 		WorldContext.ClearEntities();
 		ObjectPoolContext->Clear();
 		ResetRequested = false;
@@ -132,7 +141,7 @@ void RunningGunGameMode::PostUpdate()
 	}
 }
 
-void RunningGunGameMode::OnWin()
+void RunningGunGameMode::OnWin(Entity* _boss)
 {
 	Win = true;
 	if (PlayerEntity) {
@@ -141,9 +150,48 @@ void RunningGunGameMode::OnWin()
 	SetStatusText("You Win!");
 }
 
+void RunningGunGameMode::OnLose(Entity* _player)
+{
+	Lose = true;
+	SetStatusText("Game Over");
+
+	// Schedule reset after delay
+	Services.ScheduleTimer(3.0f, [this]() {
+		RequestReset();
+	});
+}
+
 void RunningGunGameMode::RequestReset()
 {
 	ResetRequested = true;
+}
+
+void RunningGunGameMode::SubscribeToEvents()
+{
+	auto& _events = Services.GetGameStateEvents();
+
+	PlayerDiedHandle = _events.OnPlayerDied.Subscribe([this](Entity* _player) {
+		OnLose(_player);
+	});
+
+	BossDiedHandle = _events.OnBossDied.Subscribe([this](Entity* _boss) {
+		OnWin(_boss);
+	});
+}
+
+void RunningGunGameMode::UnsubscribeFromEvents()
+{
+	auto& _events = Services.GetGameStateEvents();
+
+	if (PlayerDiedHandle != 0) {
+		_events.OnPlayerDied.Unsubscribe(PlayerDiedHandle);
+		PlayerDiedHandle = 0;
+	}
+
+	if (BossDiedHandle != 0) {
+		_events.OnBossDied.Unsubscribe(BossDiedHandle);
+		BossDiedHandle = 0;
+	}
 }
 
 void RunningGunGameMode::SetStatusText(const std::string& _text)

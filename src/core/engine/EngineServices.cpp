@@ -44,6 +44,11 @@ InputManager& EngineServices::GetInput() const
 	return *InputContext;
 }
 
+GameStateEvents& EngineServices::GetGameStateEvents()
+{
+	return StateEvents;
+}
+
 float EngineServices::GetElapsedTime() const
 {
 	return WorldContext.GetElapsedTime();
