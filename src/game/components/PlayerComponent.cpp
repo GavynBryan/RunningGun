@@ -6,6 +6,7 @@
 #include <core/InputManager.h>
 #include <core/engine/GameServiceHost.h>
 #include <core/engine/InputService.h>
+#include <core/engine/ObjectPoolService.h>
 #include <core/engine/RunnerService.h>
 
 PlayerComponent::PlayerComponent(Entity& _entity, GameServiceHost& _context, const PlayerInputConfig& _inputConfig)
@@ -13,7 +14,6 @@ PlayerComponent::PlayerComponent(Entity& _entity, GameServiceHost& _context, con
 	Lives(5),
 	PlayerSpeed(350),
 	Animator(nullptr),
-	Bullets(_context),
 	BulletOffset(32, 18),
 	LastShotTime(0),
 	IsInvulnerable(false),
@@ -27,7 +27,6 @@ PlayerComponent::PlayerComponent(Entity& _entity, GameServiceHost& _context, con
 {
 	//set initial direction (right)
 	ParentEntity.SetDirection(1, 0);
-	SetupBullets();
 }
 
 
@@ -76,18 +75,6 @@ void PlayerComponent::HandleAnimations()
 	}
 
 }
-//load up the bullets into the object pool
-void PlayerComponent::SetupBullets()
-{
-	for (int _index = 0; _index < 20; _index++) {
-		auto _projectile = std::make_unique<Entity>(Context, "sprites/bullet.png", 16, 16);
-		std::unique_ptr<ProjectileComponent> _projectileComponent(new ProjectileComponent(*_projectile, Context, 400.0f, ParentEntity));
-
-		_projectile->AttachComponent(std::move(_projectileComponent));
-		_projectile->SetTag(bullet);
-		Bullets.FeedObject(std::move(_projectile));
-	}
-}
 
 void PlayerComponent::ShootBullet()
 {
@@ -96,7 +83,7 @@ void PlayerComponent::ShootBullet()
 	if (_currentTime - BulletCoolDown > LastShotTime) {
 		LastShotTime = _currentTime;
 		//borrow bullet from object pool
-		auto _bullet = Bullets.BorrowObject();
+		auto* _bullet = Context.Get<ObjectPoolService>().FetchPrefab("bullet");
 
 		//set position based off of player's direction
 		auto _position = ParentEntity.GetPosition();
@@ -104,6 +91,9 @@ void PlayerComponent::ShootBullet()
 		_position.x = _xOrigin + (ParentEntity.GetDirection().x * BulletOffset.x);
 		_position.y += BulletOffset.y;
 		if (_bullet != nullptr) {
+			if (auto* _projectileComponent = _bullet->GetComponent<ProjectileComponent>()) {
+				_projectileComponent->Activate(&ParentEntity);
+			}
 			_bullet->SetPosition(_position);
 		}
 		if (ParentEntity.GetVelocity().x == 0) {

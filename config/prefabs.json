@@ -50,6 +50,28 @@
         {"type": "patrol_ai", "params": {"speed": 150}},
         {"type": "physics", "params": {}}
       ]
+    },
+    {
+      "id": "bullet",
+      "texture": "sprites/bullet.png",
+      "width": 16,
+      "height": 16,
+      "position": [0, 0],
+      "tag": "bullet",
+      "components": [
+        {"type": "projectile", "params": {"speed": 400, "lifeSpan": 3.0}}
+      ]
+    },
+    {
+      "id": "waves",
+      "texture": "sprites/waves.png",
+      "width": 32,
+      "height": 32,
+      "position": [0, 0],
+      "tag": "enemy_bullet",
+      "components": [
+        {"type": "projectile", "params": {"speed": 400, "lifeSpan": 3.0}}
+      ]
     }
   ]
 }

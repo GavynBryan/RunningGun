@@ -1,8 +1,8 @@
 #include <game/RunningGunGameMode.h>
-#include <core/ObjectPool.h>
 #include <core/PrefabSystem.h>
 #include <core/UI/UIManager.h>
 #include <core/World.h>
+#include <core/engine/ObjectPoolService.h>
 #include <core/engine/RenderService.h>
 #include <core/engine/RunnerService.h>
 #include <core/engine/TimerService.h>
@@ -18,7 +18,6 @@ RunningGunGameMode::RunningGunGameMode(SDL_Renderer* _renderer, GameServiceHost&
 	HealthBar(nullptr),
 	StatusTextUI(nullptr),
 	GameFont(nullptr),
-	ObjectPoolContext(new ObjectPool(_services)),
 	PlayerEntity(nullptr),
 	BullEntity(nullptr),
 	PlayerComponentRef(nullptr),
@@ -81,12 +80,6 @@ void RunningGunGameMode::BuildScene()
 	BullComponentRef = BullEntity->GetComponent<BullComponent>();
 	WorldContext.AddObject(std::move(_bull));
 
-	for (int _index = 0; _index < 3; _index++) {
-		auto _scorpion = Prefabs.Instantiate("scorpion");
-		assert(_scorpion);
-		ObjectPoolContext->FeedObject(std::move(_scorpion));
-	}
-
 	LastSpawn1Time = 0.0f;
 	LastSpawn2Time = 0.0f;
 	Services.Get<RunnerService>().ResetClock();
@@ -122,19 +115,19 @@ void RunningGunGameMode::PostUpdate()
 {
 	if (!Win && !Lose) {
 		if (Services.Get<RunnerService>().GetElapsedTime() - LastSpawn1Time > SpawnScorpion1Interval) {
-			auto _scorpion1 = ObjectPoolContext->BorrowObject();
-			if (_scorpion1 != nullptr) {
-				_scorpion1->SetPosition(50, 20);
-				_scorpion1->SetDirection(1, 0);
+			auto* _scorpion = Services.Get<ObjectPoolService>().FetchPrefab("scorpion");
+			if (_scorpion != nullptr) {
+				_scorpion->SetPosition(50, 20);
+				_scorpion->SetDirection(1, 0);
 			}
 			LastSpawn1Time = Services.Get<RunnerService>().GetElapsedTime();
 		}
 
 		if (Services.Get<RunnerService>().GetElapsedTime() - LastSpawn2Time > SpawnScorpion2Interval) {
-			auto _scorpion2 = ObjectPoolContext->BorrowObject();
-			if (_scorpion2 != nullptr) {
-				_scorpion2->SetPosition(400, 20);
-				_scorpion2->SetDirection(-1, 0);
+			auto* _scorpion = Services.Get<ObjectPoolService>().FetchPrefab("scorpion");
+			if (_scorpion != nullptr) {
+				_scorpion->SetPosition(400, 20);
+				_scorpion->SetDirection(-1, 0);
 			}
 			LastSpawn2Time = Services.Get<RunnerService>().GetElapsedTime();
 		}
@@ -143,7 +136,7 @@ void RunningGunGameMode::PostUpdate()
 	if (ResetRequested) {
 		UnsubscribeFromEvents();
 		WorldContext.ClearEntities();
-		ObjectPoolContext->Clear();
+		Services.Get<ObjectPoolService>().ClearPools();
 		ResetRequested = false;
 		BuildScene();
 	}
