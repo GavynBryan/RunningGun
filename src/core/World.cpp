@@ -8,7 +8,6 @@
 World::World(GameServiceHost& _services)
 	:Services(_services),
 	CameraTarget(nullptr),
-	CollisionTree(Rectf(0.0f, 0.0f, 800.0f, 600.0f)),
 	Mode(nullptr),
 	UI(new UIManager(800.0f, 600.0f))
 {
@@ -87,33 +86,6 @@ void World::Update()
 
 	for (auto& _entity : Entities) {
 		_entity->Update();
-	}
-
-	CollisionTree.Clear();
-	for (auto& _entity : Entities) {
-		if (_entity->IsEnabled()) {
-			CollisionTree.Insert(_entity.get());
-		}
-	}
-
-	for (auto& _entity : Entities) {
-		if (!_entity->IsEnabled()) {
-			continue;
-		}
-		CollisionCandidates.clear();
-		CollisionTree.Query(_entity->GetBoundingRect(), CollisionCandidates);
-		for (auto* _other : CollisionCandidates) {
-			if (_other == _entity.get()) {
-				continue;
-			}
-			if (!_other->IsEnabled()) {
-				continue;
-			}
-			if (_entity.get() < _other && _entity->Collision(_other)) {
-				_entity->OnCollide(*_other);
-				_other->OnCollide(*_entity.get());
-			}
-		}
 	}
 
 	if (UI) {
