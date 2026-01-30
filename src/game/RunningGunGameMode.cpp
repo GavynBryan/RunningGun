@@ -3,6 +3,7 @@
 #include <core/PrefabSystem.h>
 #include <core/UI/UIManager.h>
 #include <core/World.h>
+#include <game/components/BullComponent.h>
 #include <game/components/PlayerComponent.h>
 #include <cassert>
 
@@ -16,18 +17,24 @@ RunningGunGameMode::RunningGunGameMode(SDL_Renderer* _renderer, EngineServices& 
 	GameFont(nullptr),
 	ObjectPoolContext(new ObjectPool(_services)),
 	PlayerEntity(nullptr),
+	BullEntity(nullptr),
 	PlayerComponentRef(nullptr),
+	BullComponentRef(nullptr),
 	SpawnScorpion1Interval(10.0f),
 	LastSpawn1Time(0.0f),
 	SpawnScorpion2Interval(11.0f),
 	LastSpawn2Time(0.0f),
 	Win(false),
-	ResetRequested(false)
+	Lose(false),
+	ResetRequested(false),
+	PlayerDiedHandle(0),
+	BossDiedHandle(0)
 {
 }
 
 RunningGunGameMode::~RunningGunGameMode()
 {
+	UnsubscribeFromEvents();
 	if (GameFont) {
 		TTF_CloseFont(GameFont);
 	}
@@ -67,6 +74,8 @@ void RunningGunGameMode::BuildScene()
 
 	auto _bull = Prefabs.Instantiate("bull");
 	assert(_bull);
+	BullEntity = _bull.get();
+	BullComponentRef = BullEntity->GetComponent<BullComponent>();
 	Services.Instantiate(std::move(_bull));
 
 	for (int _index = 0; _index < 3; _index++) {
@@ -79,6 +88,9 @@ void RunningGunGameMode::BuildScene()
 	LastSpawn2Time = 0.0f;
 	WorldContext.ResetElapsedTime();
 	Win = false;
+	Lose = false;
+
+	SubscribeToEvents();
 
 	if (UIManager* _ui = WorldContext.GetUI()) {
 		_ui->Clear();
@@ -104,7 +116,7 @@ void RunningGunGameMode::Update()
 
 void RunningGunGameMode::PostUpdate()
 {
-	if (!Win) {
+	if (!Win && !Lose) {
 		if (Services.GetElapsedTime() - LastSpawn1Time > SpawnScorpion1Interval) {
 			auto _scorpion1 = ObjectPoolContext->BorrowObject();
 			if (_scorpion1 != nullptr) {
@@ -125,6 +137,7 @@ void RunningGunGameMode::PostUpdate()
 	}
 
 	if (ResetRequested) {
+		UnsubscribeFromEvents();
 		WorldContext.ClearEntities();
 		ObjectPoolContext->Clear();
 		ResetRequested = false;
@@ -132,7 +145,7 @@ void RunningGunGameMode::PostUpdate()
 	}
 }
 
-void RunningGunGameMode::OnWin()
+void RunningGunGameMode::OnWin(Entity* _boss)
 {
 	Win = true;
 	if (PlayerEntity) {
@@ -141,9 +154,48 @@ void RunningGunGameMode::OnWin()
 	SetStatusText("You Win!");
 }
 
+void RunningGunGameMode::OnLose(Entity* _player)
+{
+	Lose = true;
+	SetStatusText("Game Over");
+
+	// Schedule reset after delay
+	Services.ScheduleTimer(3.0f, [this]() {
+		RequestReset();
+	});
+}
+
 void RunningGunGameMode::RequestReset()
 {
 	ResetRequested = true;
+}
+
+void RunningGunGameMode::SubscribeToEvents()
+{
+	if (PlayerComponentRef) {
+		PlayerDiedHandle = PlayerComponentRef->OnDied.Subscribe([this](Entity* _player) {
+			OnLose(_player);
+		});
+	}
+
+	if (BullComponentRef) {
+		BossDiedHandle = BullComponentRef->OnDied.Subscribe([this](Entity* _boss) {
+			OnWin(_boss);
+		});
+	}
+}
+
+void RunningGunGameMode::UnsubscribeFromEvents()
+{
+	if (PlayerComponentRef && PlayerDiedHandle != 0) {
+		PlayerComponentRef->OnDied.Unsubscribe(PlayerDiedHandle);
+		PlayerDiedHandle = 0;
+	}
+
+	if (BullComponentRef && BossDiedHandle != 0) {
+		BullComponentRef->OnDied.Unsubscribe(BossDiedHandle);
+		BossDiedHandle = 0;
+	}
 }
 
 void RunningGunGameMode::SetStatusText(const std::string& _text)

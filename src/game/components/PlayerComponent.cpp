@@ -184,9 +184,9 @@ void PlayerComponent::OnDeath()
 {
 	IsInputEnabled = false;
 	Freeze();
-	Context.ScheduleTimer(DeathResetDelay, [&context = Context]() {
-		context.Reset();
-	});
+
+	// Broadcast through component's own delegate
+	OnDied.Broadcast(&ParentEntity);
 }
 
 void PlayerComponent::OnVictory()
