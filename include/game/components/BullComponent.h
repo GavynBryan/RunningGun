@@ -3,6 +3,7 @@
 #include <memory>
 #include <string_view>
 #include <core/Component.h>
+#include <core/PropertyDescriptor.h>
 #include <core/animation/AnimationStateMachine.h>
 #include <core/Vec2.h>
 #include <core/events/MulticastDelegate.h>
@@ -15,9 +16,9 @@ class BullComponent :
 	public Component
 {
 public:
-	// ========== Serialization Metadata ==========
-	// This component has no configurable JSON properties.
+	// ========== Serialization ==========
 	static constexpr const char* TypeName = "bull";
+	static constexpr PropertyDescriptor Properties[] = {}; // No configurable properties
 	static std::unique_ptr<Component> Create(Entity& entity, GameServiceHost& context, std::string_view paramsJson);
 
 private:

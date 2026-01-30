@@ -2,6 +2,7 @@
 #include <memory>
 #include <string_view>
 #include <core/Component.h>
+#include <core/PropertyDescriptor.h>
 
 class AnimationStateMachine;
 class PhysicsComponent;
@@ -10,10 +11,11 @@ class PatrolAIComponent :
 	public Component
 {
 public:
-	// ========== Serialization Metadata ==========
-	// These properties can be configured via JSON when spawning this component:
-	//   - speed (float, default: 150.0): Movement speed of the patrol AI
+	// ========== Serialization ==========
 	static constexpr const char* TypeName = "patrol_ai";
+	static constexpr PropertyDescriptor Properties[] = {
+		{"speed", "float", "150.0", "Movement speed"},
+	};
 	static std::unique_ptr<Component> Create(Entity& entity, GameServiceHost& context, std::string_view paramsJson);
 
 private:

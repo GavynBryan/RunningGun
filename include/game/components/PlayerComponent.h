@@ -2,6 +2,7 @@
 #include <memory>
 #include <string_view>
 #include <core/Component.h>
+#include <core/PropertyDescriptor.h>
 #include <core/Vec2.h>
 #include <core/events/MulticastDelegate.h>
 
@@ -16,11 +17,12 @@ class PlayerComponent :
 	public Component
 {
 public:
-	// ========== Serialization Metadata ==========
-	// These properties can be configured via JSON when spawning this component:
-	//   - groundAcceleration (float, default: 2000.0): Acceleration when player is speeding up
-	//   - groundDeceleration (float, default: 3500.0): Deceleration when player is slowing down
+	// ========== Serialization ==========
 	static constexpr const char* TypeName = "player";
+	static constexpr PropertyDescriptor Properties[] = {
+		{"groundAcceleration", "float", "2000.0", "Acceleration when speeding up"},
+		{"groundDeceleration", "float", "3500.0", "Deceleration when slowing down"},
+	};
 	static std::unique_ptr<Component> Create(Entity& entity, GameServiceHost& context, std::string_view paramsJson);
 
 private:
