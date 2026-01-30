@@ -137,20 +137,20 @@ void PlayerComponent::HandleInput()
 	SetHorizontalVelocity(0);
 
 	// Movement - use held state for continuous movement
-	if (_input.IsKeyHeld(InputConfig.GetBinding(InputAction::MoveLeft))) {
+	if (InputConfig.IsActionHeld(InputAction::MoveLeft, _input)) {
 		MoveLeftActionHandle->Execute(*this);
 	}
-	if (_input.IsKeyHeld(InputConfig.GetBinding(InputAction::MoveRight))) {
+	if (InputConfig.IsActionHeld(InputAction::MoveRight, _input)) {
 		MoveRightActionHandle->Execute(*this);
 	}
 
 	// Jump - use pressed state to only jump on initial press
-	if (_input.IsKeyPressed(InputConfig.GetBinding(InputAction::Jump))) {
+	if (InputConfig.IsActionPressed(InputAction::Jump, _input)) {
 		JumpActionHandle->Execute(*this);
 	}
 
 	// Fire - use pressed state to only fire on initial press (not held)
-	if (_input.IsKeyPressed(InputConfig.GetBinding(InputAction::Shoot))) {
+	if (InputConfig.IsActionPressed(InputAction::Shoot, _input)) {
 		ShootActionHandle->Execute(*this);
 	}
 }

@@ -1,22 +1,17 @@
 #include <game/app/RunningGunApp.h>
 #include <core/engine/Engine.h>
-#include <core/InputManager.h>
 #include <game/RunningGunGameMode.h>
 #include <game/components/ComponentRegistration.h>
 #include <game/input/PlayerInputConfig.h>
 #include <cstdlib>
 #include <memory>
-#include <unordered_map>
 
 int RunningGunApp::Run()
 {
 	Engine _engine;
 	PlayerInputConfig _inputConfig;
-	std::unordered_map<std::string, SDL_Scancode> _bindings;
 
-	if (InputManager::LoadKeyBindings("config/controls.json", _bindings)) {
-		_inputConfig.ApplyBindings(_bindings);
-	}
+	_inputConfig.LoadBindings("config/controls.json");
 
 	RegisterDefaultComponents(_engine.GetPrefabs().GetRegistry(), _inputConfig);
 	_engine.GetPrefabs().LoadFromFile("config/prefabs.json", _engine.GetServices().GetTextureHandler());

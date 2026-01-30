@@ -1,5 +1,4 @@
 #include <core/InputManager.h>
-#include <core/Json.h>
 
 InputManager::InputManager() {
 	KeyStates.fill(ActionState::None);
@@ -41,37 +40,6 @@ void InputManager::EndFrame() {
 			KeyStates[_index] = ActionState::Held;
 		}
 	}
-}
-
-bool InputManager::LoadKeyBindings(const std::string& _path, std::unordered_map<std::string, SDL_Scancode>& _outBindings)
-{
-	auto _result = Json::ParseFile(_path);
-	if (_result.error()) {
-		return false;
-	}
-
-	simdjson::dom::element _root = _result.value();
-	auto _bindings = _root["bindings"].get_object();
-	if (_bindings.error()) {
-		return false;
-	}
-
-	for (auto _field : _bindings.value()) {
-		auto _keyName = _field.value.get_string();
-		if (_keyName.error()) {
-			continue;
-		}
-
-		std::string _keyStr(_keyName.value());
-		SDL_Scancode _scancode = SDL_GetScancodeFromName(_keyStr.c_str());
-		if (_scancode == SDL_SCANCODE_UNKNOWN) {
-			continue;
-		}
-
-		_outBindings[std::string(_field.key)] = _scancode;
-	}
-
-	return true;
 }
 
 bool InputManager::IsKeyPressed(SDL_Scancode _key) const {

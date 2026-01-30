@@ -1,8 +1,6 @@
 #pragma once
 #include <SDL3/SDL.h>
 #include <array>
-#include <string>
-#include <unordered_map>
 
 enum class ActionState {
     None,
@@ -28,8 +26,6 @@ public:
 
     // Call at the end of event processing to finalize states
     void EndFrame();
-
-    static bool LoadKeyBindings(const std::string& _path, std::unordered_map<std::string, SDL_Scancode>& _outBindings);
 
     // Query key states
     bool IsKeyPressed(SDL_Scancode _key) const;   // True only on the frame key was pressed
