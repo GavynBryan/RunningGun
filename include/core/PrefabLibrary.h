@@ -2,7 +2,6 @@
 
 #include <core/Entity.h>
 #include <core/Vec2.h>
-#include <rapidjson/document.h>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -20,7 +19,7 @@ struct AnimationDefinition
 struct ComponentDefinition
 {
 	std::string Type;
-	rapidjson::Value Params;
+	std::string ParamsJson;
 };
 
 struct PrefabDefinition
@@ -38,15 +37,12 @@ struct PrefabDefinition
 class PrefabLibrary
 {
 public:
-	PrefabLibrary();
-
-	void Reset();
-	rapidjson::Document& Document();
+	void Clear();
 	const PrefabDefinition* Find(const std::string& _id) const;
-	void Add(PrefabDefinition&& _definition);
+	void Add(PrefabDefinition _definition);
 	std::vector<std::string> GetTexturePaths() const;
+	size_t Count() const;
 
 private:
-	rapidjson::Document PrefabDocument;
 	std::unordered_map<std::string, PrefabDefinition> Definitions;
 };

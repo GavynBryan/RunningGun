@@ -1,9 +1,9 @@
 #include <core/ObjectPool.h>
-#include <core/engine/GameContext.h>
+#include <core/engine/GameplayServices.h>
 
 
 
-ObjectPool::ObjectPool(GameContext& _context)
+ObjectPool::ObjectPool(GameplayServices& _context)
 	:Context(_context)
 {
 }

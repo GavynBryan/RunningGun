@@ -1,9 +1,10 @@
 #include <game/components/PhysicsComponent.h>
+#include <algorithm>
 #include <iostream>
 
-PhysicsComponent::PhysicsComponent(Entity& _entity, GameContext& _context)
+PhysicsComponent::PhysicsComponent(Entity& _entity, GameplayServices& _context)
 	:Component(_entity, _context),
-	PhysContext(*_context.GetPhysics())
+	PhysContext(_context.GetPhysics())
 {
 	
 }

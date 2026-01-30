@@ -2,7 +2,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include <core/GameMode.h>
-#include <core/engine/GameContext.h>
+#include <core/engine/EngineServices.h>
 #include <core/UIHealthBar.h>
 #include <core/UIText.h>
 #include <memory>
@@ -12,12 +12,14 @@ class ObjectPool;
 class PlayerComponent;
 class World;
 class Entity;
+class PrefabStore;
 
 class RunningGunGameMode : public GameMode
 {
 private:
 	SDL_Renderer*				Renderer;
-	GameContext&				Context;
+	EngineServices&				Services;
+	PrefabStore&				Prefabs;
 	World&						WorldContext;
 
 	UIHealthBar*				HealthBar;
@@ -38,7 +40,7 @@ private:
 
 	void						SetStatusText(const std::string& _text);
 public:
-								RunningGunGameMode(SDL_Renderer* _renderer, GameContext& _context, World& _world);
+								RunningGunGameMode(SDL_Renderer* _renderer, EngineServices& _services, PrefabStore& _prefabs, World& _world);
 								~RunningGunGameMode() override;
 
 	void						Init() override;

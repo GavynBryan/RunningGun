@@ -3,10 +3,12 @@
 #include <core/Entity.h>
 #include <core/PrefabComponentRegistry.h>
 #include <core/PrefabLibrary.h>
+#include <core/engine/EngineServices.h>
+#include <SDL3/SDL.h>
 
-std::unique_ptr<Entity> PrefabFactory::CreateEntity(GameContext& _context, const PrefabDefinition& _definition, const PrefabComponentRegistry& _registry)
+std::unique_ptr<Entity> PrefabFactory::CreateEntity(EngineServices& _services, const PrefabDefinition& _definition, const PrefabComponentRegistry& _registry)
 {
-	std::unique_ptr<Entity> _entity(new Entity(_context, _definition.Texture, _definition.Width, _definition.Height));
+	std::unique_ptr<Entity> _entity(new Entity(_services, _definition.Texture, _definition.Width, _definition.Height));
 
 	if (!_definition.Animations.empty()) {
 		std::unique_ptr<AnimationStateMachine> _anim(new AnimationStateMachine());
@@ -24,7 +26,10 @@ std::unique_ptr<Entity> PrefabFactory::CreateEntity(GameContext& _context, const
 	for (const auto& _component : _definition.Components) {
 		const auto* _factory = _registry.Find(_component.Type);
 		if (_factory) {
-			_entity->AttachComponent((*_factory)(*_entity, _context, _component.Params));
+			auto _comp = (*_factory)(*_entity, _services, _component.ParamsJson);
+			if (_comp) {
+				_entity->AttachComponent(std::move(_comp));
+			}
 		}
 	}
 

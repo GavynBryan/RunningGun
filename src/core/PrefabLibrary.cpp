@@ -1,19 +1,8 @@
 #include <core/PrefabLibrary.h>
 
-PrefabLibrary::PrefabLibrary()
+void PrefabLibrary::Clear()
 {
-	Reset();
-}
-
-void PrefabLibrary::Reset()
-{
-	PrefabDocument.SetObject();
 	Definitions.clear();
-}
-
-rapidjson::Document& PrefabLibrary::Document()
-{
-	return PrefabDocument;
 }
 
 const PrefabDefinition* PrefabLibrary::Find(const std::string& _id) const
@@ -25,7 +14,7 @@ const PrefabDefinition* PrefabLibrary::Find(const std::string& _id) const
 	return &_iter->second;
 }
 
-void PrefabLibrary::Add(PrefabDefinition&& _definition)
+void PrefabLibrary::Add(PrefabDefinition _definition)
 {
 	if (_definition.Id.empty()) {
 		return;
@@ -41,4 +30,9 @@ std::vector<std::string> PrefabLibrary::GetTexturePaths() const
 		_paths.push_back(_pair.second.Texture);
 	}
 	return _paths;
+}
+
+size_t PrefabLibrary::Count() const
+{
+	return Definitions.size();
 }

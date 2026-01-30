@@ -2,7 +2,7 @@
 #include <core/Component.h>
 
 class Physics;
-class GameContext;
+class GameplayServices;
 
 class PhysicsComponent :
 	public Component
@@ -10,7 +10,7 @@ class PhysicsComponent :
 private:
 	Physics &PhysContext;
 public:
-	PhysicsComponent(Entity& _entity, GameContext& _context);
+	PhysicsComponent(Entity& _entity, GameplayServices& _context);
 	~PhysicsComponent();
 
 	void Update();

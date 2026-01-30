@@ -13,3 +13,13 @@ const PrefabComponentRegistry::Factory* PrefabComponentRegistry::Find(const std:
 	}
 	return &_iter->second;
 }
+
+bool PrefabComponentRegistry::Contains(const std::string& _type) const
+{
+	return Factories.find(_type) != Factories.end();
+}
+
+size_t PrefabComponentRegistry::Count() const
+{
+	return Factories.size();
+}

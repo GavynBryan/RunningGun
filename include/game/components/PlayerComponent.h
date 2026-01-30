@@ -3,6 +3,7 @@
 #include <core/ObjectPool.h>
 #include <core/Component.h>
 #include <core/Vec2.h>
+#include <game/input/PlayerInputConfig.h>
 
 constexpr auto BulletCoolDown = .3f;
 constexpr auto InvulnerabilityDuration = 1.0f;
@@ -33,9 +34,10 @@ private:
 	std::unique_ptr<PlayerAction>	MoveRightActionHandle;
 	std::unique_ptr<PlayerAction>	JumpActionHandle;
 	std::unique_ptr<PlayerAction>	ShootActionHandle;
+	const PlayerInputConfig&		InputConfig;
 
 public:
-									PlayerComponent(Entity& _entity, GameContext& _context);
+									PlayerComponent(Entity& _entity, GameplayServices& _context, const PlayerInputConfig& _inputConfig);
 									~PlayerComponent();
 
 

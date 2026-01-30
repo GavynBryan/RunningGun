@@ -1,12 +1,10 @@
-#include <core/engine/Game.h>
+#include <core/engine/Engine.h>
 #include <core/GameMode.h>
-#include <game/RunningGunGameMode.h>
+#include <core/ResourceHandler.h>
 #include <core/World.h>
 #include <core/Camera.h>
-#include <core/Prefabs.h>
-#include <string.h>
 
-Game::Game()
+Engine::Engine()
 	:Window(nullptr),
 	Renderer(nullptr),
 	WorldContext(nullptr),
@@ -29,25 +27,19 @@ Game::Game()
 		return;
 	}
 
-	WorldContext = new World(Renderer, Context);
+	WorldContext = new World(Renderer, Services);
 
 	std::unique_ptr<ResourceHandler> _textureHandler(new ResourceHandler(Renderer));
 	std::unique_ptr<Physics> _physicsManager(new Physics());
 	std::unique_ptr<Camera> _camera(new Camera(800.0f, 600.0f));
-	Context.SetTextureHandler(std::move(_textureHandler));
-	Context.SetPhysics(std::move(_physicsManager));
-	Context.SetCamera(std::move(_camera));
-	Context.SetWorld(WorldContext);
-
-	InputManagerContext.LoadBindings("config/controls.json");
-	Prefabs::RegisterDefaultComponents();
-	Prefabs::LoadDefinitions(Context, "config/prefabs.json");
-
-	Mode = std::make_unique<RunningGunGameMode>(Renderer, Context, *WorldContext);
-	WorldContext->SetGameMode(Mode.get());
+	Services.SetTextureHandler(std::move(_textureHandler));
+	Services.SetPhysics(std::move(_physicsManager));
+	Services.SetCamera(std::move(_camera));
+	Services.SetWorld(WorldContext);
+	Services.SetInput(&InputManagerContext);
 }
 
-Game::~Game()
+Engine::~Engine()
 {
 	delete WorldContext;
 	if (Renderer) {
@@ -59,8 +51,12 @@ Game::~Game()
 	SDL_Quit();
 }
 
-void Game::Run()
+void Engine::Run()
 {
+	if (!Mode) {
+		SDL_Log("Engine cannot run without a game mode.");
+		return;
+	}
 	Uint64 _lastTime = SDL_GetPerformanceCounter();
 	Uint64 _frequency = SDL_GetPerformanceFrequency();
 
@@ -89,7 +85,7 @@ void Game::Run()
 		// End input frame
 		InputManagerContext.EndFrame();
 
-		Context.SetDeltaTime(_deltaTime);
+		Services.SetDeltaTime(_deltaTime);
 
 		// Clear screen
 		SDL_SetRenderDrawColor(Renderer, 0, 0, 0, 255);
@@ -109,5 +105,33 @@ void Game::Run()
 
 		// Frame rate limiting (approximately 120 FPS)
 		SDL_Delay(8);
+	}
+}
+
+World& Engine::GetWorld()
+{
+	return *WorldContext;
+}
+
+EngineServices& Engine::GetServices()
+{
+	return Services;
+}
+
+InputManager& Engine::GetInputManager()
+{
+	return InputManagerContext;
+}
+
+PrefabStore& Engine::GetPrefabs()
+{
+	return Prefabs;
+}
+
+void Engine::SetGameMode(std::unique_ptr<GameMode> _mode)
+{
+	Mode = std::move(_mode);
+	if (WorldContext) {
+		WorldContext->SetGameMode(Mode.get());
 	}
 }

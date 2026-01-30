@@ -5,7 +5,7 @@
 #include <core/Entity.h>
 #include <core/InputManager.h>
 
-PlayerComponent::PlayerComponent(Entity& _entity, GameContext& _context)
+PlayerComponent::PlayerComponent(Entity& _entity, GameplayServices& _context, const PlayerInputConfig& _inputConfig)
 	:Component(_entity, _context),
 	Lives(5),
 	PlayerSpeed(350),
@@ -19,7 +19,8 @@ PlayerComponent::PlayerComponent(Entity& _entity, GameContext& _context)
 	MoveLeftActionHandle(std::make_unique<MoveLeftAction>()),
 	MoveRightActionHandle(std::make_unique<MoveRightAction>()),
 	JumpActionHandle(std::make_unique<JumpAction>()),
-	ShootActionHandle(std::make_unique<ShootAction>())
+	ShootActionHandle(std::make_unique<ShootAction>()),
+	InputConfig(_inputConfig)
 {
 	//set initial direction (right)
 	ParentEntity.SetDirection(1, 0);
@@ -76,7 +77,7 @@ void PlayerComponent::HandleAnimations()
 void PlayerComponent::SetupBullets()
 {
 	for (int _index = 0; _index < 20; _index++) {
-		std::unique_ptr<Entity>_projectile(new Entity(Context, "sprites/bullet.png", 16, 16));
+		auto _projectile = Context.CreateEntity("sprites/bullet.png", 16, 16);
 		std::unique_ptr<ProjectileComponent> _projectileComponent(new ProjectileComponent(*_projectile, Context, 400.0f, ParentEntity));
 
 		_projectile->AttachComponent(std::move(_projectileComponent));
@@ -131,25 +132,25 @@ void PlayerComponent::SetVerticalVelocity(float y)
 
 void PlayerComponent::HandleInput()
 {
-	auto& _input = InputManager::Instance();
+	auto& _input = Context.GetInput();
 
 	SetHorizontalVelocity(0);
 
 	// Movement - use held state for continuous movement
-	if (_input.IsActionHeld(InputAction::MoveLeft)) {
+	if (_input.IsKeyHeld(InputConfig.GetBinding(InputAction::MoveLeft))) {
 		MoveLeftActionHandle->Execute(*this);
 	}
-	if (_input.IsActionHeld(InputAction::MoveRight)) {
+	if (_input.IsKeyHeld(InputConfig.GetBinding(InputAction::MoveRight))) {
 		MoveRightActionHandle->Execute(*this);
 	}
 
 	// Jump - use pressed state to only jump on initial press
-	if (_input.IsActionPressed(InputAction::Jump)) {
+	if (_input.IsKeyPressed(InputConfig.GetBinding(InputAction::Jump))) {
 		JumpActionHandle->Execute(*this);
 	}
 
 	// Fire - use pressed state to only fire on initial press (not held)
-	if (_input.IsActionPressed(InputAction::Shoot)) {
+	if (_input.IsKeyPressed(InputConfig.GetBinding(InputAction::Shoot))) {
 		ShootActionHandle->Execute(*this);
 	}
 }

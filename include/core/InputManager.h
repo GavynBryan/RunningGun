@@ -2,6 +2,7 @@
 #include <SDL3/SDL.h>
 #include <array>
 #include <string>
+#include <unordered_map>
 
 enum class ActionState {
     None,
@@ -10,30 +11,14 @@ enum class ActionState {
     Released   // Key was just released this frame
 };
 
-enum class InputAction {
-    MoveLeft,
-    MoveRight,
-    Jump,
-    Shoot,
-    Count
-};
-
 class InputManager {
 private:
-    static InputManager* InstancePtr;
-
-    std::array<ActionState, static_cast<size_t>(InputAction::Count)> ActionStates;
-    std::array<bool, static_cast<size_t>(InputAction::Count)> CurrentActions;
-    std::array<SDL_Scancode, static_cast<size_t>(InputAction::Count)> ActionBindings;
-
-    bool TryGetAction(SDL_Scancode _key, InputAction& _action) const;
-    size_t GetActionIndex(InputAction _action) const;
+    std::array<ActionState, SDL_NUM_SCANCODES> KeyStates;
+    std::array<bool, SDL_NUM_SCANCODES> CurrentKeys;
 
 public:
     InputManager();
     ~InputManager();
-
-    static InputManager& Instance();
 
     // Call at the beginning of each frame before processing events
     void BeginFrame();
@@ -44,15 +29,13 @@ public:
     // Call at the end of event processing to finalize states
     void EndFrame();
 
-    // Action bindings
-    void BindAction(InputAction _action, SDL_Scancode _key);
-    bool LoadBindings(const std::string& _path);
+    static bool LoadKeyBindings(const std::string& _path, std::unordered_map<std::string, SDL_Scancode>& _outBindings);
 
-    // Query action states
-    bool IsActionPressed(InputAction _action) const;   // True only on the frame action was pressed
-    bool IsActionHeld(InputAction _action) const;      // True while action is down (including press frame)
-    bool IsActionReleased(InputAction _action) const;  // True only on the frame action was released
-    bool IsActionDown(InputAction _action) const;      // Alias for IsActionHeld
+    // Query key states
+    bool IsKeyPressed(SDL_Scancode _key) const;   // True only on the frame key was pressed
+    bool IsKeyHeld(SDL_Scancode _key) const;      // True while key is down (including press frame)
+    bool IsKeyReleased(SDL_Scancode _key) const;  // True only on the frame key was released
+    bool IsKeyDown(SDL_Scancode _key) const;      // Alias for IsKeyHeld
 
-    ActionState GetActionState(InputAction _action) const;
+    ActionState GetKeyState(SDL_Scancode _key) const;
 };
