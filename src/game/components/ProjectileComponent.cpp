@@ -1,9 +1,22 @@
 #include <game/components/ProjectileComponent.h>
+#include <core/Json.h>
 #include <core/engine/GameServiceHost.h>
 #include <core/engine/RunnerService.h>
 #include <game/components/PhysicsComponent.h>
 
-
+std::unique_ptr<Component> ProjectileComponent::Create(Entity& entity, GameServiceHost& context, std::string_view paramsJson)
+{
+	float speed = 400.0f;
+	float lifeSpan = 3.0f;
+	if (!paramsJson.empty()) {
+		auto result = Json::Parse(std::string(paramsJson));
+		if (!result.error()) {
+			speed = static_cast<float>(Json::GetDouble(result.value(), "speed", speed));
+			lifeSpan = static_cast<float>(Json::GetDouble(result.value(), "lifeSpan", lifeSpan));
+		}
+	}
+	return std::make_unique<ProjectileComponent>(entity, context, speed, lifeSpan);
+}
 
 ProjectileComponent::ProjectileComponent(Entity& _entity, GameServiceHost& _context, float _speed, float _lifeSpan)
 	:Component(_entity, _context),

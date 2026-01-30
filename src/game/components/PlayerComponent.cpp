@@ -3,13 +3,31 @@
 #include <game/components/ProjectileComponent.h>
 #include <game/actions/PlayerActions.h>
 #include <core/Entity.h>
+#include <core/Json.h>
 #include <core/engine/GameServiceHost.h>
 #include <core/engine/InputService.h>
 #include <core/engine/ObjectPoolService.h>
 #include <core/engine/RunnerService.h>
 #include <core/MathUtils.h>
 
-PlayerComponent::PlayerComponent(Entity& _entity, GameServiceHost& _context, const PlayerInputConfig& _inputConfig)
+std::unique_ptr<Component> PlayerComponent::Create(Entity& entity, GameServiceHost& context, std::string_view paramsJson)
+{
+	float groundAcceleration = 2000.0f;
+	float groundDeceleration = 3500.0f;
+	if (!paramsJson.empty()) {
+		auto result = Json::Parse(std::string(paramsJson));
+		if (!result.error()) {
+			groundAcceleration = static_cast<float>(Json::GetDouble(result.value(), "groundAcceleration", groundAcceleration));
+			groundDeceleration = static_cast<float>(Json::GetDouble(result.value(), "groundDeceleration", groundDeceleration));
+		}
+	}
+	auto component = std::make_unique<PlayerComponent>(entity, context);
+	component->SetGroundAcceleration(groundAcceleration);
+	component->SetGroundDeceleration(groundDeceleration);
+	return component;
+}
+
+PlayerComponent::PlayerComponent(Entity& _entity, GameServiceHost& _context)
 	:Component(_entity, _context),
 	Lives(5),
 	PlayerSpeed(350),
@@ -26,8 +44,7 @@ PlayerComponent::PlayerComponent(Entity& _entity, GameServiceHost& _context, con
 	MoveLeftActionHandle(std::make_unique<MoveLeftAction>()),
 	MoveRightActionHandle(std::make_unique<MoveRightAction>()),
 	JumpActionHandle(std::make_unique<JumpAction>()),
-	ShootActionHandle(std::make_unique<ShootAction>()),
-	InputConfig(_inputConfig)
+	ShootActionHandle(std::make_unique<ShootAction>())
 {
 	//set initial direction (right)
 	ParentEntity.SetDirection(1, 0);
@@ -174,25 +191,27 @@ void PlayerComponent::SetVerticalVelocity(float y)
 
 void PlayerComponent::HandleInput()
 {
-	auto& _input = Context.Get<InputService>().GetInput();
+	auto& inputService = Context.Get<InputService>();
+	auto& _input = inputService.GetInput();
+	const auto& inputConfig = inputService.GetPlayerInputConfig();
 
 	MovementIntent = Vec2(0.0f, 0.0f);
 
 	// Movement - use held state for continuous movement
-	if (_input.IsKeyHeld(InputConfig.GetBinding(InputAction::MoveLeft))) {
+	if (_input.IsKeyHeld(inputConfig.GetBinding(InputAction::MoveLeft))) {
 		MoveLeftActionHandle->Execute(*this);
 	}
-	if (_input.IsKeyHeld(InputConfig.GetBinding(InputAction::MoveRight))) {
+	if (_input.IsKeyHeld(inputConfig.GetBinding(InputAction::MoveRight))) {
 		MoveRightActionHandle->Execute(*this);
 	}
 
 	// Jump - use pressed state to only jump on initial press
-	if (_input.IsKeyPressed(InputConfig.GetBinding(InputAction::Jump))) {
+	if (_input.IsKeyPressed(inputConfig.GetBinding(InputAction::Jump))) {
 		JumpActionHandle->Execute(*this);
 	}
 
 	// Fire - use pressed state to only fire on initial press (not held)
-	if (_input.IsKeyPressed(InputConfig.GetBinding(InputAction::Shoot))) {
+	if (_input.IsKeyPressed(inputConfig.GetBinding(InputAction::Shoot))) {
 		ShootActionHandle->Execute(*this);
 	}
 

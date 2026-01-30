@@ -5,7 +5,10 @@
 #include <core/engine/ObjectPoolService.h>
 #include <memory>
 
-
+std::unique_ptr<Component> BullComponent::Create(Entity& entity, GameServiceHost& context, [[maybe_unused]] std::string_view paramsJson)
+{
+	return std::make_unique<BullComponent>(entity, context);
+}
 
 BullComponent::BullComponent(Entity& _entity, GameServiceHost& _context)
 	:Component(_entity, _context),

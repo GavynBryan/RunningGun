@@ -1,9 +1,22 @@
 #include <game/components/PatrolAIComponent.h>
 #include <core/Entity.h>
+#include <core/Json.h>
 #include <core/engine/GameServiceHost.h>
 #include <core/engine/RunnerService.h>
 #include <core/animation/AnimationStateMachine.h>
 #include <game/components/PhysicsComponent.h>
+
+std::unique_ptr<Component> PatrolAIComponent::Create(Entity& entity, GameServiceHost& context, std::string_view paramsJson)
+{
+	float speed = 150.0f;
+	if (!paramsJson.empty()) {
+		auto result = Json::Parse(std::string(paramsJson));
+		if (!result.error()) {
+			speed = static_cast<float>(Json::GetDouble(result.value(), "speed", speed));
+		}
+	}
+	return std::make_unique<PatrolAIComponent>(entity, context, speed);
+}
 
 PatrolAIComponent::PatrolAIComponent(Entity& _entity, GameServiceHost& _context, float _speed)
 	:Component(_entity, _context),

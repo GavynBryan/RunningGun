@@ -1,5 +1,7 @@
 #pragma once
 #include <map>
+#include <memory>
+#include <string_view>
 #include <core/Component.h>
 #include <core/animation/AnimationStateMachine.h>
 #include <core/Vec2.h>
@@ -12,6 +14,12 @@ typedef std::unique_ptr<BullState> BullStatePtr;
 class BullComponent :
 	public Component
 {
+public:
+	// ========== Serialization Metadata ==========
+	// This component has no configurable JSON properties.
+	static constexpr const char* TypeName = "bull";
+	static std::unique_ptr<Component> Create(Entity& entity, GameServiceHost& context, std::string_view paramsJson);
+
 private:
 	std::map<std::string, BullStatePtr> States;
 	AnimationStateMachine*				Animator;

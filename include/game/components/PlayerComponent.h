@@ -1,9 +1,9 @@
 #pragma once
 #include <memory>
+#include <string_view>
 #include <core/Component.h>
 #include <core/Vec2.h>
 #include <core/events/MulticastDelegate.h>
-#include <game/input/PlayerInputConfig.h>
 
 constexpr auto BulletCoolDown = .3f;
 constexpr auto InvulnerabilityDuration = 1.0f;
@@ -15,6 +15,14 @@ class PhysicsComponent;
 class PlayerComponent :
 	public Component
 {
+public:
+	// ========== Serialization Metadata ==========
+	// These properties can be configured via JSON when spawning this component:
+	//   - groundAcceleration (float, default: 2000.0): Acceleration when player is speeding up
+	//   - groundDeceleration (float, default: 3500.0): Deceleration when player is slowing down
+	static constexpr const char* TypeName = "player";
+	static std::unique_ptr<Component> Create(Entity& entity, GameServiceHost& context, std::string_view paramsJson);
+
 private:
 	uint8_t Lives;
 	float PlayerSpeed;
@@ -37,10 +45,9 @@ private:
 	std::unique_ptr<PlayerAction>	MoveRightActionHandle;
 	std::unique_ptr<PlayerAction>	JumpActionHandle;
 	std::unique_ptr<PlayerAction>	ShootActionHandle;
-	const PlayerInputConfig&		InputConfig;
 
 public:
-									PlayerComponent(Entity& _entity, GameServiceHost& _context, const PlayerInputConfig& _inputConfig);
+									PlayerComponent(Entity& _entity, GameServiceHost& _context);
 									~PlayerComponent();
 
 

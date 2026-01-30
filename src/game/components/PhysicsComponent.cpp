@@ -1,9 +1,24 @@
 #include <game/components/PhysicsComponent.h>
+#include <core/Json.h>
 #include <core/engine/GameServiceHost.h>
 #include <core/engine/PhysicsService.h>
 #include <core/engine/RunnerService.h>
 #include <algorithm>
 #include <cmath>
+
+std::unique_ptr<Component> PhysicsComponent::Create(Entity& entity, GameServiceHost& context, std::string_view paramsJson)
+{
+	float gravityScale = 1.0f;
+	if (!paramsJson.empty()) {
+		auto result = Json::Parse(std::string(paramsJson));
+		if (!result.error()) {
+			gravityScale = static_cast<float>(Json::GetDouble(result.value(), "gravityScale", gravityScale));
+		}
+	}
+	auto component = std::make_unique<PhysicsComponent>(entity, context);
+	component->SetGravityScale(gravityScale);
+	return component;
+}
 
 PhysicsComponent::PhysicsComponent(Entity& _entity, GameServiceHost& _context)
 	:Component(_entity, _context),

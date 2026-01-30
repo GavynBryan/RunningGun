@@ -1,4 +1,6 @@
 #pragma once
+#include <memory>
+#include <string_view>
 #include <core/Component.h>
 #include <core/Vec2.h>
 
@@ -8,6 +10,13 @@ class PhysicsService;
 class PhysicsComponent :
 	public Component
 {
+public:
+	// ========== Serialization Metadata ==========
+	// These properties can be configured via JSON when spawning this component:
+	//   - gravityScale (float, default: 1.0): Multiplier for gravity effect on this entity
+	static constexpr const char* TypeName = "physics";
+	static std::unique_ptr<Component> Create(Entity& entity, GameServiceHost& context, std::string_view paramsJson);
+
 private:
 	PhysicsService& PhysContext;
 	Vec2 Velocity;

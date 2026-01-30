@@ -1,6 +1,7 @@
 #include <game/app/RunningGunApp.h>
 #include <core/engine/Engine.h>
 #include <core/InputManager.h>
+#include <core/engine/InputService.h>
 #include <core/engine/RenderService.h>
 #include <game/RunningGunGameMode.h>
 #include <game/components/ComponentRegistration.h>
@@ -12,14 +13,16 @@
 int RunningGunApp::Run()
 {
 	Engine _engine;
-	PlayerInputConfig _inputConfig;
-	std::unordered_map<std::string, SDL_Scancode> _bindings;
 
+	// Configure player input bindings via the InputService
+	std::unordered_map<std::string, SDL_Scancode> _bindings;
 	if (InputManager::LoadKeyBindings("config/controls.json", _bindings)) {
+		PlayerInputConfig _inputConfig;
 		_inputConfig.ApplyBindings(_bindings);
+		_engine.GetServices().Get<InputService>().SetPlayerInputConfig(_inputConfig);
 	}
 
-	RegisterDefaultComponents(_engine.GetPrefabs().GetRegistry(), _inputConfig);
+	RegisterDefaultComponents(_engine.GetPrefabs().GetRegistry());
 	_engine.GetPrefabs().LoadFromFile("config/prefabs.json", _engine.GetServices().Get<RenderService>().GetTextureHandler());
 
 	_engine.SetGameMode(std::make_unique<RunningGunGameMode>(
