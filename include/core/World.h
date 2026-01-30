@@ -2,7 +2,6 @@
 #include <SDL3/SDL.h>
 #include <core/Entity.h>
 #include <core/engine/GameServiceHost.h>
-#include <core/QuadTree.h>
 #include <core/Sprite.h>
 #include <core/UI/UIManager.h>
 #include <memory>
@@ -24,8 +23,6 @@ private:
 	std::vector<Entity::Ptr>	AddQueue;
 
 	Entity*						CameraTarget;
-	QuadTree					CollisionTree;
-	std::vector<Entity*>		CollisionCandidates;
 	void						UpdateCamera();
 
 public:
@@ -49,4 +46,5 @@ public:
 	void						PostUpdate();
 
 	void						Render();
+	const std::vector<Entity::Ptr>& GetEntities() const { return Entities; }
 };
