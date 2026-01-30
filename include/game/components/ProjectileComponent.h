@@ -1,6 +1,8 @@
 #pragma once
 #include <core/Component.h>
 
+class PhysicsComponent;
+
 class ProjectileComponent
 	:public Component
 {
@@ -10,6 +12,7 @@ private:
 	float		LifeSpan = 3.0;
 
 	Entity*	Shooter = nullptr;
+	PhysicsComponent* PhysicsHandle = nullptr;
 public:
 	ProjectileComponent(Entity& _entity, GameServiceHost& _context, float _speed, float _lifeSpan = 3.0f);
 	~ProjectileComponent();

@@ -6,7 +6,7 @@
 class MoveLeftAction final : public BasePlayerAction {
 public:
 	void Execute(PlayerComponent& player) override {
-		player.SetHorizontalVelocity(-player.GetPlayerSpeed());
+		player.SetMovementIntentX(-1.0f);
 	}
 
 	float GetCooldownSeconds() const override {
@@ -21,7 +21,7 @@ public:
 class MoveRightAction final : public BasePlayerAction {
 public:
 	void Execute(PlayerComponent& player) override {
-		player.SetHorizontalVelocity(player.GetPlayerSpeed());
+		player.SetMovementIntentX(1.0f);
 	}
 
 	float GetCooldownSeconds() const override {
@@ -37,7 +37,7 @@ class JumpAction final : public BasePlayerAction {
 public:
 	void Execute(PlayerComponent& player) override {
 		if (player.IsGrounded()) {
-			player.SetVerticalVelocity(-JumpSpeed);
+			player.RequestJump(JumpSpeed);
 		}
 	}
 

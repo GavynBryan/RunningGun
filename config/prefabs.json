@@ -59,7 +59,8 @@
       "position": [0, 0],
       "tag": "bullet",
       "components": [
-        {"type": "projectile", "params": {"speed": 400, "lifeSpan": 3.0}}
+        {"type": "projectile", "params": {"speed": 400, "lifeSpan": 3.0}},
+        {"type": "physics", "params": {"gravityScale": 0.0}}
       ]
     },
     {
@@ -70,7 +71,8 @@
       "position": [0, 0],
       "tag": "enemy_bullet",
       "components": [
-        {"type": "projectile", "params": {"speed": 400, "lifeSpan": 3.0}}
+        {"type": "projectile", "params": {"speed": 400, "lifeSpan": 3.0}},
+        {"type": "physics", "params": {"gravityScale": 0.0}}
       ]
     }
   ]

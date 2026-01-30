@@ -23,7 +23,6 @@ class Entity
 {
 protected:
 	Vec2				Position;
-	Vec2				Velocity;
 	Vec2				Direction;
 
 	Sprite				Sprite;
@@ -62,8 +61,6 @@ public:
 
 	void				SetPosition(float _x, float _y);
 	void				SetPosition(Vec2 _pos);
-	void				SetVelocity(float _x, float _y);
-	void				SetVelocity(Vec2 _vel);
 	void				SetDirection(Vec2 _dir);
 	void				SetDirection(float _x, float _y);
 
@@ -72,11 +69,9 @@ public:
 	ENTITY_TAG			GetTag() { return Tag; }
 	AnimationStateMachine*	GetAnimator(){ return Animator.get(); }
 	bool				IsEnabled() { return Activated; }
-	bool				IsGrounded();
 	void				OnCollide(Entity& _other);
 
 	Vec2				GetPosition() { return Position; }
-	Vec2				GetVelocity() { return Velocity; }
 	Vec2				GetDirection() { return Direction; }
 	Rectf				GetBoundingRect() { return Sprite.GetGlobalBounds(); }
 	bool				Collision(Entity* _entity) { return _entity->GetBoundingRect().Intersects(GetBoundingRect()); }

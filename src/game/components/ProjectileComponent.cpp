@@ -1,7 +1,7 @@
-#include <iostream>
 #include <game/components/ProjectileComponent.h>
 #include <core/engine/GameServiceHost.h>
 #include <core/engine/RunnerService.h>
+#include <game/components/PhysicsComponent.h>
 
 
 
@@ -20,6 +20,7 @@ ProjectileComponent::~ProjectileComponent()
 void ProjectileComponent::Start()
 {
 	SpawnTime = Context.Get<RunnerService>().GetElapsedTime();
+	PhysicsHandle = ParentEntity.GetComponent<PhysicsComponent>();
 	if (Shooter) {
 		ParentEntity.SetDirection(Shooter->GetDirection());
 	}
@@ -31,7 +32,9 @@ void ProjectileComponent::Update()
 		ParentEntity.Disable();
 		return;
 	}
-	ParentEntity.SetVelocity((ParentEntity.GetDirection() * Speed));
+	if (PhysicsHandle) {
+		PhysicsHandle->SetVelocity((ParentEntity.GetDirection() * Speed));
+	}
 }
 
 void ProjectileComponent::PostUpdate()

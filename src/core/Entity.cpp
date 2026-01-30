@@ -1,16 +1,11 @@
-#include <iostream>
-#include <cmath>
 #include <core/Entity.h>
 #include <core/engine/GameServiceHost.h>
-#include <core/engine/PhysicsService.h>
 #include <core/engine/RenderService.h>
-#include <core/engine/RunnerService.h>
 #include <core/Camera.h>
 
 
 Entity::Entity(GameServiceHost& _services, std::string _texture, float _width, float _height)
 	:Position(0,0),
-	Velocity(0,0),
 	Activated(true),
 	Services(_services)
 {
@@ -68,7 +63,6 @@ void Entity::Update()
 {
 	if (Activated) {
 		UpdateComponents();
-		Position += (Velocity * Services.Get<RunnerService>().GetDeltaTime());
 	}
 }
 
@@ -103,15 +97,6 @@ void Entity::SetPosition(Vec2 _pos)
 	Sprite.SetPosition(Position);
 }
 
-void Entity::SetVelocity(float _x, float _y)
-{
-	Velocity.x = _x; Velocity.y = _y;
-}
-
-void Entity::SetVelocity(Vec2 _vel)
-{
-	Velocity = _vel;
-}
 
 void Entity::SetDirection(Vec2 _dir)
 {
@@ -126,11 +111,6 @@ void Entity::SetDirection(float _x, float _y)
 void Entity::AssignAnimator(std::unique_ptr<AnimationStateMachine> _animator)
 {
 	Animator = std::move(_animator);
-}
-
-bool Entity::IsGrounded()
-{
-	return (std::abs(Position.y - Services.Get<PhysicsService>().GetGroundLevel())) <= 0.3f;
 }
 
 void Entity::OnCollide(Entity& _other)

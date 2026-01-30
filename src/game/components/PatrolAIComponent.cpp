@@ -3,10 +3,12 @@
 #include <core/engine/GameServiceHost.h>
 #include <core/engine/RunnerService.h>
 #include <core/animation/AnimationStateMachine.h>
+#include <game/components/PhysicsComponent.h>
 
 PatrolAIComponent::PatrolAIComponent(Entity& _entity, GameServiceHost& _context, float _speed)
 	:Component(_entity, _context),
-	MoveSpeed(_speed)
+	MoveSpeed(_speed),
+	PhysicsHandle(nullptr)
 {
 }
 
@@ -20,15 +22,16 @@ void PatrolAIComponent::Start()
 	Lives = 2;
 	Animator = ParentEntity.GetAnimator();
 	LastTurnAround = Context.Get<RunnerService>().GetElapsedTime();
+	PhysicsHandle = ParentEntity.GetComponent<PhysicsComponent>();
 }
 
 void PatrolAIComponent::Update()
 {
-	if (ParentEntity.IsGrounded()) {
+	if (PhysicsHandle && PhysicsHandle->IsGrounded()) {
 		Vec2 _patrolVelocity = ParentEntity.GetDirection();
-		_patrolVelocity.y = ParentEntity.GetVelocity().y;
+		_patrolVelocity.y = PhysicsHandle->GetVelocity().y;
 		_patrolVelocity.x *= MoveSpeed;
-		ParentEntity.SetVelocity(_patrolVelocity);
+		PhysicsHandle->SetVelocity(_patrolVelocity);
 		float _currentTime = Context.Get<RunnerService>().GetElapsedTime();
 
 		if (_currentTime - Interval > LastTurnAround) {
@@ -36,7 +39,9 @@ void PatrolAIComponent::Update()
 			LastTurnAround = _currentTime;
 		}
 	}
-	else { ParentEntity.SetVelocity(0, ParentEntity.GetVelocity().y); }
+	else if (PhysicsHandle) {
+		PhysicsHandle->SetVelocity(0.0f, PhysicsHandle->GetVelocity().y);
+	}
 }
 
 void PatrolAIComponent::PostUpdate()
