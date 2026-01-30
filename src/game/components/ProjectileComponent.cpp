@@ -1,10 +1,10 @@
 #include <iostream>
 #include <game/components/ProjectileComponent.h>
-#include <core/engine/GameContext.h>
+#include <core/engine/GameplayServices.h>
 
 
 
-ProjectileComponent::ProjectileComponent(Entity& _entity, GameContext& _context, float _speed, Entity& _shooter)
+ProjectileComponent::ProjectileComponent(Entity& _entity, GameplayServices& _context, float _speed, Entity& _shooter)
 	:Component(_entity, _context),
 	Speed(_speed),
 	Shooter(_shooter)

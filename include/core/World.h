@@ -1,7 +1,7 @@
 #pragma once
 #include <SDL3/SDL.h>
 #include <core/Entity.h>
-#include <core/engine/GameContext.h>
+#include <core/engine/EngineServices.h>
 #include <core/QuadTree.h>
 #include <core/Sprite.h>
 #include <core/Timer.h>
@@ -17,7 +17,7 @@ private:
 
 private:
 	SDL_Renderer*				Renderer;
-	GameContext&				Context;
+	EngineServices&				Services;
 	GameMode*					Mode;
 	Sprite						Background;
 	std::unique_ptr<UIManager>	UI;
@@ -37,7 +37,7 @@ private:
 	void						UpdateCamera();
 
 public:
-								World(SDL_Renderer* renderer, GameContext& _context);
+								World(SDL_Renderer* renderer, EngineServices& _services);
 								~World();
 
 	void						SetGameMode(GameMode* _mode);

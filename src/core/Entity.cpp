@@ -1,19 +1,19 @@
 #include <iostream>
 #include <cmath>
 #include <core/Entity.h>
-#include <core/engine/GameContext.h>
+#include <core/engine/EngineServices.h>
 #include <core/Camera.h>
 
 
-Entity::Entity(GameContext& _context, std::string _texture, float _width, float _height)
+Entity::Entity(EngineServices& _services, std::string _texture, float _width, float _height)
 	:Position(0,0),
 	Velocity(0,0),
 	Activated(true),
-	Context(_context)
+	Services(_services)
 {
 	//load resource handler from service
-	auto _handler = Context.GetTextureHandler();
-	Sprite.SetTexture(_handler->Get(_texture));
+	auto& _handler = Services.GetTextureHandler();
+	Sprite.SetTexture(_handler.Get(_texture));
 	Sprite.SetTextureRect(Recti(0, 0, static_cast<int>(_width), static_cast<int>(_height)));
 }
 
@@ -65,7 +65,7 @@ void Entity::Update()
 {
 	if (Activated) {
 		UpdateComponents();
-		Position += (Velocity * Context.DeltaTime());
+		Position += (Velocity * Services.DeltaTime());
 	}
 }
 
@@ -127,7 +127,7 @@ void Entity::AssignAnimator(std::unique_ptr<AnimationStateMachine> _animator)
 
 bool Entity::IsGrounded()
 {
-	return (std::abs(Position.y - Context.GetPhysics()->GetGroundLevel())) <= 0.3f;
+	return (std::abs(Position.y - Services.GetPhysics().GetGroundLevel())) <= 0.3f;
 }
 
 void Entity::OnCollide(Entity& _other)

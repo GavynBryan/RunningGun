@@ -3,9 +3,9 @@
 #include <core/Camera.h>
 #include <algorithm>
 
-World::World(SDL_Renderer* renderer, GameContext& _context)
+World::World(SDL_Renderer* renderer, EngineServices& _services)
 	:Renderer(renderer),
-	Context(_context),
+	Services(_services),
 	GameStartTime(0),
 	CameraTarget(nullptr),
 	CollisionTree(Rectf(0.0f, 0.0f, 800.0f, 600.0f)),
@@ -85,11 +85,11 @@ void World::UpdateTimers()
 
 void World::UpdateCamera()
 {
-	Camera* _camera = Context.GetCamera();
+	Camera* _camera = &Services.GetCamera();
 	if (_camera && CameraTarget && CameraTarget->IsEnabled()) {
 		Vec2 _targetPos = CameraTarget->GetPosition();
 		_camera->SetTarget(_targetPos + Vec2(32, 32));
-		_camera->Update(Context.DeltaTime());
+		_camera->Update(Services.DeltaTime());
 	}
 }
 
@@ -160,7 +160,7 @@ void World::Update()
 	}
 
 	if (UI) {
-		UI->Update(Context.DeltaTime());
+		UI->Update(Services.DeltaTime());
 	}
 }
 
@@ -173,7 +173,7 @@ void World::PostUpdate()
 
 void World::Render()
 {
-	Camera* _camera = Context.GetCamera();
+	Camera* _camera = &Services.GetCamera();
 
 	// Render world elements with camera transform
 	Background.Render(Renderer, _camera);
