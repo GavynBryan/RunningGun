@@ -18,10 +18,6 @@ void PhysicsService::Update()
 		return;
 	}
 
-	if (CollisionCandidates.capacity() < entities.size()) {
-		CollisionCandidates.reserve(entities.size());
-	}
-
 	CollisionTree.Clear();
 	for (const auto& entity : entities) {
 		if (entity->IsEnabled()) {
