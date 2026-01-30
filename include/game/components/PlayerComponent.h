@@ -51,7 +51,7 @@ public:
 	void							HandleAnimations();
 
 	void							ShootBullet();
-	int								GetHealth() { return Lives; }
+	int								GetHealth() const { return Lives; }
 	float							GetPlayerSpeed() const { return PlayerSpeed; }
 	void							SetGroundAcceleration(float acceleration) { GroundAcceleration = acceleration; }
 	void							SetGroundDeceleration(float deceleration) { GroundDeceleration = deceleration; }
