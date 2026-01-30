@@ -16,7 +16,11 @@ void PhysicsService::Update()
 	if (entities.empty()) {
 		return;
 	}
+	UpdateEntityCollisions(entities);
+}
 
+void PhysicsService::UpdateEntityCollisions(const std::vector<Entity::Ptr>& entities)
+{
 	CollisionTree.Clear();
 	for (const auto& entity : entities) {
 		if (entity->IsEnabled()) {
