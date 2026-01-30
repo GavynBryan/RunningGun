@@ -7,6 +7,7 @@
 #include <core/engine/PhysicsService.h>
 #include <core/engine/RenderService.h>
 #include <core/engine/RunnerService.h>
+#include <core/engine/ServiceOrder.h>
 #include <core/engine/TimerService.h>
 #include <core/engine/WorldService.h>
 
@@ -32,13 +33,13 @@ Engine::Engine()
 		return;
 	}
 
-	Services.AddService<RunnerService>(0);
-	Services.AddService<TimerService>(10);
-	Services.AddService<InputService>(20, InputManagerContext);
-	Services.AddService<PhysicsService>(30);
-	Services.AddService<RenderService>(40, Renderer, std::make_unique<ResourceHandler>(Renderer), std::make_unique<Camera>(800.0f, 600.0f));
-	Services.AddService<WorldService>(50);
-	Services.AddService<ObjectPoolService>(60, Prefabs);
+	Services.AddService<RunnerService>(ServiceOrder::Runner);
+	Services.AddService<TimerService>(ServiceOrder::Timer);
+	Services.AddService<InputService>(ServiceOrder::Input, InputManagerContext);
+	Services.AddService<PhysicsService>(ServiceOrder::Physics);
+	Services.AddService<RenderService>(ServiceOrder::Render, Renderer, std::make_unique<ResourceHandler>(Renderer), std::make_unique<Camera>(800.0f, 600.0f));
+	Services.AddService<WorldService>(ServiceOrder::World);
+	Services.AddService<ObjectPoolService>(ServiceOrder::ObjectPool, Prefabs);
 
 	Prefabs.SetServices(Services);
 }

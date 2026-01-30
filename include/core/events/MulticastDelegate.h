@@ -63,13 +63,16 @@ public:
 
 	/**
 	 * Broadcast the event to all subscribed listeners.
+	 * Safe to call Subscribe/Unsubscribe from within callbacks.
 	 * @param _args The arguments to pass to each subscribed callback.
 	 */
-	void Broadcast(Args... _args)
+	void Broadcast(Args&&... _args)
 	{
-		for (const auto& _sub : Subscriptions)
+		// Copy subscriptions to allow safe modification during iteration
+		auto _snapshot = Subscriptions;
+		for (const auto& _sub : _snapshot)
 		{
-			_sub.Callback(_args...);
+			_sub.Callback(std::forward<Args>(_args)...);
 		}
 	}
 

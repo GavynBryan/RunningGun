@@ -2,6 +2,7 @@
 
 #include <core/engine/IService.h>
 #include <cassert>
+#include <stdexcept>
 #include <typeindex>
 #include <unordered_map>
 #include <vector>
@@ -16,6 +17,12 @@ public:
 
 	template <typename T>
 	T& Get() const;
+
+	template <typename T>
+	T* TryGet() const;
+
+	template <typename T>
+	bool Has() const;
 
 	void Init();
 	void Update();
@@ -58,7 +65,28 @@ T& GameServiceHost::AddService(int order, Args&&... args)
 template <typename T>
 T& GameServiceHost::Get() const
 {
+	static_assert(std::is_base_of<IService, T>::value, "T must derive from IService");
 	auto iter = Registry.find(std::type_index(typeid(T)));
-	assert(iter != Registry.end());
+	if (iter == Registry.end()) {
+		throw std::runtime_error("Service not registered: " + std::string(typeid(T).name()));
+	}
 	return *static_cast<T*>(iter->second);
+}
+
+template <typename T>
+T* GameServiceHost::TryGet() const
+{
+	static_assert(std::is_base_of<IService, T>::value, "T must derive from IService");
+	auto iter = Registry.find(std::type_index(typeid(T)));
+	if (iter == Registry.end()) {
+		return nullptr;
+	}
+	return static_cast<T*>(iter->second);
+}
+
+template <typename T>
+bool GameServiceHost::Has() const
+{
+	static_assert(std::is_base_of<IService, T>::value, "T must derive from IService");
+	return Registry.find(std::type_index(typeid(T))) != Registry.end();
 }

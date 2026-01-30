@@ -11,18 +11,22 @@ constexpr auto DeathResetDelay = 3.0f;
 constexpr auto JumpSpeed = 500.0f;
 
 class PlayerAction;
-
+class PhysicsComponent;
 class PlayerComponent :
 	public Component
 {
 private:
 	uint8_t Lives;
 	float PlayerSpeed;
+	float GroundAcceleration;
+	float GroundDeceleration;
 
 	AnimationStateMachine*				Animator;
+	PhysicsComponent*					PhysicsHandle;
 
 	Vec2							BulletOffset;
 	float							LastShotTime;
+	Vec2							MovementIntent;
 
 	// Event-based flags and timers
 	bool							IsInvulnerable;
@@ -47,9 +51,14 @@ public:
 	void							HandleAnimations();
 
 	void							ShootBullet();
-	int								GetHealth() { return Lives; }
+	int								GetHealth() const { return Lives; }
 	float							GetPlayerSpeed() const { return PlayerSpeed; }
-	bool							IsGrounded() const { return ParentEntity.IsGrounded(); }
+	void							SetGroundAcceleration(float acceleration) { GroundAcceleration = acceleration; }
+	void							SetGroundDeceleration(float deceleration) { GroundDeceleration = deceleration; }
+	bool							IsGrounded() const;
+	void							SetMovementIntentX(float x);
+	void							RequestJump(float jumpSpeed);
+	void							ApplyMovementIntent();
 	void							SetHorizontalVelocity(float x);
 	void							SetVerticalVelocity(float y);
 

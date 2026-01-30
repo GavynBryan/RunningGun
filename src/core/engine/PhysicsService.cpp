@@ -3,10 +3,23 @@
 #include <core/engine/WorldService.h>
 
 PhysicsService::PhysicsService()
-	: Gravity(0.0f, 1000.0f),
-	GroundLevel(460.0f),
-	CollisionTree(Rectf(0.0f, 0.0f, 800.0f, 600.0f))
+	: PhysicsService(PhysicsConfig{})
 {
+}
+
+PhysicsService::PhysicsService(const PhysicsConfig& config)
+	: Gravity(config.Gravity),
+	TerminalVelocity(config.TerminalVelocity),
+	GroundLevel(config.GroundLevel),
+	WorldBounds(config.WorldBounds),
+	CollisionTree(config.WorldBounds)
+{
+}
+
+void PhysicsService::SetWorldBounds(const Rectf& bounds)
+{
+	WorldBounds = bounds;
+	CollisionTree = QuadTree(bounds);
 }
 
 void PhysicsService::Update()

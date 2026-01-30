@@ -3,6 +3,7 @@
 #include <core/Camera.h>
 #include <core/engine/RenderService.h>
 #include <core/engine/RunnerService.h>
+#include <core/engine/ObjectPoolService.h>
 #include <algorithm>
 
 World::World(GameServiceHost& _services)
@@ -30,6 +31,8 @@ void World::AddObject(std::unique_ptr<Entity> _entity)
 
 void World::ClearEntities()
 {
+	// Clear object pools first to prevent dangling pointers
+	Services.Get<ObjectPoolService>().ClearPools();
 	Entities.clear();
 	AddQueue.clear();
 }
