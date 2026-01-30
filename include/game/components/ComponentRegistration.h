@@ -1,6 +1,6 @@
 #pragma once
 
 class PlayerInputConfig;
-class PrefabComponentRegistry;
+class ComponentRegistry;
 
-void RegisterDefaultComponents(PrefabComponentRegistry& _registry, const PlayerInputConfig& _inputConfig);
+void RegisterDefaultComponents(ComponentRegistry& registry, const PlayerInputConfig& inputConfig);

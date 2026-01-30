@@ -2,7 +2,7 @@
 #include <SDL3/SDL.h>
 #include <memory>
 #include <core/engine/EngineServices.h>
-#include <core/engine/PrefabStore.h>
+#include <core/PrefabSystem.h>
 #include <core/Physics.h>
 #include <core/InputManager.h>
 
@@ -22,7 +22,7 @@ private:
 private:
 	EngineServices							Services;
 	InputManager							InputManagerContext;
-	PrefabStore								Prefabs;
+	PrefabSystem							Prefabs;
 
 public:
 	void	Run();
@@ -32,7 +32,7 @@ public:
 	World& GetWorld();
 	EngineServices& GetServices();
 	InputManager& GetInputManager();
-	PrefabStore& GetPrefabs();
+	PrefabSystem& GetPrefabs();
 
 	void SetGameMode(std::unique_ptr<GameMode> _mode);
 

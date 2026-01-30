@@ -10,14 +10,14 @@ class Component;
 class Entity;
 class GameplayServices;
 
-class PrefabComponentRegistry
+class ComponentRegistry
 {
 public:
 	using Factory = std::function<std::unique_ptr<Component>(Entity&, GameplayServices&, std::string_view)>;
 
-	void Register(const std::string& _type, Factory _factory);
-	const Factory* Find(const std::string& _type) const;
-	bool Contains(const std::string& _type) const;
+	void Register(std::string_view type, Factory factory);
+	const Factory* Find(std::string_view type) const;
+	bool Contains(std::string_view type) const;
 	size_t Count() const;
 
 private:

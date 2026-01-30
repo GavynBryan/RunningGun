@@ -37,6 +37,8 @@ Engine::Engine()
 	Services.SetCamera(std::move(_camera));
 	Services.SetWorld(WorldContext);
 	Services.SetInput(&InputManagerContext);
+
+	Prefabs.SetServices(Services);
 }
 
 Engine::~Engine()
@@ -123,7 +125,7 @@ InputManager& Engine::GetInputManager()
 	return InputManagerContext;
 }
 
-PrefabStore& Engine::GetPrefabs()
+PrefabSystem& Engine::GetPrefabs()
 {
 	return Prefabs;
 }
