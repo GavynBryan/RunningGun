@@ -1,10 +1,11 @@
 #include <iostream>
 #include <game/components/ProjectileComponent.h>
-#include <core/engine/GameplayServices.h>
+#include <core/engine/GameServiceHost.h>
+#include <core/engine/RunnerService.h>
 
 
 
-ProjectileComponent::ProjectileComponent(Entity& _entity, GameplayServices& _context, float _speed, Entity& _shooter)
+ProjectileComponent::ProjectileComponent(Entity& _entity, GameServiceHost& _context, float _speed, Entity& _shooter)
 	:Component(_entity, _context),
 	Speed(_speed),
 	Shooter(_shooter)
@@ -18,13 +19,13 @@ ProjectileComponent::~ProjectileComponent()
 
 void ProjectileComponent::Start()
 {
-	SpawnTime = Context.GetElapsedTime();
+	SpawnTime = Context.Get<RunnerService>().GetElapsedTime();
 	ParentEntity.SetDirection(Shooter.GetDirection());
 }
 
 void ProjectileComponent::Update()
 {
-	if (Context.GetElapsedTime() > SpawnTime + LifeSpan){
+	if (Context.Get<RunnerService>().GetElapsedTime() > SpawnTime + LifeSpan){
 		ParentEntity.Disable();
 		return;
 	}

@@ -160,7 +160,6 @@
     <ClInclude Include="include\core\QuadTree.h" />
     <ClInclude Include="include\core\ResourceHandler.h" />
     <ClInclude Include="include\core\Locator.h" />
-    <ClInclude Include="include\core\Physics.h" />
     <ClInclude Include="include\game\components\ComponentRegistration.h" />
     <ClInclude Include="include\game\input\InputActions.h" />
     <ClInclude Include="include\game\input\PlayerInputConfig.h" />
@@ -215,7 +214,6 @@
     <ClCompile Include="src\PlayerComponent.cpp" />
     <ClCompile Include="src\ProjectileComponent.cpp" />
     <ClCompile Include="src\Locator.cpp" />
-    <ClCompile Include="src\Physics.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

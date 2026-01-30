@@ -2,7 +2,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 #include <core/GameMode.h>
-#include <core/engine/EngineServices.h>
+#include <core/engine/GameServiceHost.h>
 #include <core/events/MulticastDelegate.h>
 #include <core/UIHealthBar.h>
 #include <core/UIText.h>
@@ -20,7 +20,7 @@ class RunningGunGameMode : public GameMode
 {
 private:
 	SDL_Renderer*				Renderer;
-	EngineServices&				Services;
+	GameServiceHost&			Services;
 	PrefabSystem&				Prefabs;
 	World&						WorldContext;
 
@@ -51,7 +51,7 @@ private:
 	void						UnsubscribeFromEvents();
 
 public:
-								RunningGunGameMode(SDL_Renderer* _renderer, EngineServices& _services, PrefabSystem& _prefabs, World& _world);
+								RunningGunGameMode(SDL_Renderer* _renderer, GameServiceHost& _services, PrefabSystem& _prefabs, World& _world);
 								~RunningGunGameMode() override;
 
 	void						Init() override;

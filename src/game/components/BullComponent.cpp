@@ -1,9 +1,12 @@
 #include <game/components/BullComponent.h>
 #include <game/components/ProjectileComponent.h>
+#include <core/Entity.h>
+#include <core/engine/GameServiceHost.h>
+#include <memory>
 
 
 
-BullComponent::BullComponent(Entity& _entity, GameplayServices& _context)
+BullComponent::BullComponent(Entity& _entity, GameServiceHost& _context)
 	:Component(_entity, _context),
 	Offset1(0,32),
 	Offset2(0,55),
@@ -44,7 +47,7 @@ void BullComponent::PostUpdate()
 void BullComponent::SetupProjectiles()
 {
 	for (int _index = 0; _index < 10; _index++) {
-			auto _projectile = Context.CreateEntity("sprites/waves.png", 32, 32);
+			auto _projectile = std::make_unique<Entity>(Context, "sprites/waves.png", 32, 32);
 			std::unique_ptr<ProjectileComponent> _projectileComponent(new ProjectileComponent(*_projectile, Context, 400.0f, ParentEntity));
 
 		_projectile->AttachComponent(std::move(_projectileComponent));

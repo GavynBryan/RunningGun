@@ -1,10 +1,13 @@
 #include <game/components/PhysicsComponent.h>
+#include <core/engine/GameServiceHost.h>
+#include <core/engine/PhysicsService.h>
+#include <core/engine/RunnerService.h>
 #include <algorithm>
 #include <iostream>
 
-PhysicsComponent::PhysicsComponent(Entity& _entity, GameplayServices& _context)
+PhysicsComponent::PhysicsComponent(Entity& _entity, GameServiceHost& _context)
 	:Component(_entity, _context),
-	PhysContext(_context.GetPhysics())
+	PhysContext(_context.Get<PhysicsService>())
 {
 	
 }
@@ -19,7 +22,7 @@ void PhysicsComponent::Update()
 	float _gravity = PhysContext.GetGravity().y;
 	float _currentVelocity = ParentEntity.GetVelocity().y;
 	if (_currentVelocity < _gravity) {
-		float _result = _currentVelocity + _gravity * (Context.DeltaTime());
+		float _result = _currentVelocity + _gravity * (Context.Get<RunnerService>().GetDeltaTime());
 		_result = std::min(_result, _gravity);
 		ParentEntity.SetVelocity(ParentEntity.GetVelocity().x, _result);
 	}

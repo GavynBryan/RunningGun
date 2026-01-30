@@ -1,18 +1,18 @@
 #pragma once
 class Entity;
-class GameplayServices;
+class GameServiceHost;
 
 class Component
 {
 protected:
 	Entity&	ParentEntity;
-	GameplayServices&	Context;
+	GameServiceHost&	Context;
 	bool	Active;
 public:
-	Component(Entity& _entity, GameplayServices& _context);
+	Component(Entity& _entity, GameServiceHost& _context);
 	~Component();
 
-	GameplayServices& GetContext() { return Context; }
+	GameServiceHost& GetContext() { return Context; }
 
 	virtual void	Start();
 	virtual void	Update();

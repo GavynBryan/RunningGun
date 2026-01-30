@@ -1,8 +1,9 @@
 #include <core/Component.h>
+#include <core/engine/GameServiceHost.h>
 
 
 
-Component::Component(Entity& _entity, GameplayServices& _context)
+Component::Component(Entity& _entity, GameServiceHost& _context)
 	:ParentEntity(_entity),
 	Context(_context),
 	Active(true)

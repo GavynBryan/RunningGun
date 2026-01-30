@@ -8,7 +8,7 @@
 #include <core/animation/AnimationStateMachine.h>
 #include <core/Component.h>
 
-class EngineServices;
+class GameServiceHost;
 class Camera;
 
 enum ENTITY_TAG {
@@ -34,10 +34,10 @@ protected:
 	bool				Activated;
 
 	std::unique_ptr<AnimationStateMachine>	Animator;
-	EngineServices&						Services;
+	GameServiceHost&					Services;
 
 public:
-	Entity(EngineServices& _services, std::string _texture, float _width, float _height);
+	Entity(GameServiceHost& _services, std::string _texture, float _width, float _height);
 	~Entity();
 
 	typedef std::unique_ptr<Entity> Ptr;
@@ -82,7 +82,7 @@ public:
 	bool				Collision(Entity* _entity) { return _entity->GetBoundingRect().Intersects(GetBoundingRect()); }
 
 	Sprite&				GetSprite() { return Sprite; }
-	EngineServices&		GetServices() { return Services; }
+	GameServiceHost&		GetServices() { return Services; }
 };
 
 template<typename Comp>

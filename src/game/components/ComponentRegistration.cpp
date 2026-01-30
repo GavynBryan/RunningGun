@@ -1,6 +1,6 @@
 #include <game/components/ComponentRegistration.h>
 #include <core/ComponentRegistry.h>
-#include <core/engine/GameplayServices.h>
+#include <core/engine/GameServiceHost.h>
 #include <core/Entity.h>
 #include <core/Json.h>
 #include <game/components/BullComponent.h>
@@ -13,13 +13,13 @@
 
 void RegisterDefaultComponents(ComponentRegistry& registry, const PlayerInputConfig& inputConfig)
 {
-	registry.Register("player", [&inputConfig](Entity& entity, GameplayServices& context, std::string_view) {
+	registry.Register("player", [&inputConfig](Entity& entity, GameServiceHost& context, std::string_view) {
 		return std::make_unique<PlayerComponent>(entity, context, inputConfig);
 	});
-	registry.Register("physics", [](Entity& entity, GameplayServices& context, std::string_view) {
+	registry.Register("physics", [](Entity& entity, GameServiceHost& context, std::string_view) {
 		return std::make_unique<PhysicsComponent>(entity, context);
 	});
-	registry.Register("patrol_ai", [](Entity& entity, GameplayServices& context, std::string_view paramsJson) {
+	registry.Register("patrol_ai", [](Entity& entity, GameServiceHost& context, std::string_view paramsJson) {
 		float speed = 150.0f;
 		if (!paramsJson.empty()) {
 			auto result = Json::Parse(std::string(paramsJson));
@@ -29,7 +29,7 @@ void RegisterDefaultComponents(ComponentRegistry& registry, const PlayerInputCon
 		}
 		return std::make_unique<PatrolAIComponent>(entity, context, speed);
 	});
-	registry.Register("bull", [](Entity& entity, GameplayServices& context, std::string_view) {
+	registry.Register("bull", [](Entity& entity, GameServiceHost& context, std::string_view) {
 		return std::make_unique<BullComponent>(entity, context);
 	});
 }
