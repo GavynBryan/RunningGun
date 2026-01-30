@@ -1,8 +1,9 @@
 #include <core/PrefabSystem.h>
 #include <core/animation/Animation.h>
-#include <core/engine/EngineServices.h>
+#include <core/engine/GameplayServices.h>
 #include <core/Json.h>
 #include <core/ResourceHandler.h>
+#include <cassert>
 
 namespace {
 	bool TryParseVec2(simdjson::dom::element value, Vec2& out)
@@ -113,6 +114,11 @@ namespace {
 	}
 }
 
+void PrefabSystem::SetServices(GameplayServices& services)
+{
+	Services = &services;
+}
+
 ComponentRegistry& PrefabSystem::GetRegistry()
 {
 	return Registry;
@@ -211,18 +217,20 @@ const PrefabDefinition* PrefabSystem::Find(std::string_view id) const
 	return &iter->second;
 }
 
-std::unique_ptr<Entity> PrefabSystem::Instantiate(std::string_view id, EngineServices& services) const
+std::unique_ptr<Entity> PrefabSystem::Instantiate(std::string_view id) const
 {
 	const PrefabDefinition* definition = Find(id);
 	if (!definition) {
 		return nullptr;
 	}
-	return Instantiate(*definition, services);
+	return Instantiate(*definition);
 }
 
-std::unique_ptr<Entity> PrefabSystem::Instantiate(const PrefabDefinition& definition, EngineServices& services) const
+std::unique_ptr<Entity> PrefabSystem::Instantiate(const PrefabDefinition& definition) const
 {
-	auto entity = std::make_unique<Entity>(services, definition.Texture, definition.Width, definition.Height);
+	assert(Services && "PrefabSystem::SetServices must be called before Instantiate");
+
+	auto entity = std::make_unique<Entity>(*Services, definition.Texture, definition.Width, definition.Height);
 
 	if (!definition.Animations.empty()) {
 		auto anim = std::make_unique<AnimationStateMachine>();
@@ -240,7 +248,7 @@ std::unique_ptr<Entity> PrefabSystem::Instantiate(const PrefabDefinition& defini
 	for (const auto& component : definition.Components) {
 		const auto* factory = Registry.Find(component.Type);
 		if (factory) {
-			auto comp = (*factory)(*entity, services, component.ParamsJson);
+			auto comp = (*factory)(*entity, *Services, component.ParamsJson);
 			if (comp) {
 				entity->AttachComponent(std::move(comp));
 			}

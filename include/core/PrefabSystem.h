@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <vector>
 
-class EngineServices;
+class GameplayServices;
 class ResourceHandler;
 
 struct AnimationDefinition
@@ -43,6 +43,8 @@ struct PrefabDefinition
 class PrefabSystem
 {
 public:
+	void SetServices(GameplayServices& services);
+
 	ComponentRegistry& GetRegistry();
 	const ComponentRegistry& GetRegistry() const;
 
@@ -51,8 +53,8 @@ public:
 
 	const PrefabDefinition* Find(std::string_view id) const;
 
-	std::unique_ptr<Entity> Instantiate(std::string_view id, EngineServices& services) const;
-	std::unique_ptr<Entity> Instantiate(const PrefabDefinition& definition, EngineServices& services) const;
+	std::unique_ptr<Entity> Instantiate(std::string_view id) const;
+	std::unique_ptr<Entity> Instantiate(const PrefabDefinition& definition) const;
 
 	std::vector<std::string> GetTexturePaths() const;
 	size_t Count() const;
@@ -61,4 +63,5 @@ public:
 private:
 	ComponentRegistry Registry;
 	std::unordered_map<std::string, PrefabDefinition> Definitions;
+	GameplayServices* Services = nullptr;
 };

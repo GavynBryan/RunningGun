@@ -58,19 +58,19 @@ void RunningGunGameMode::Init()
 void RunningGunGameMode::BuildScene()
 {
 	auto& _handler = Services.GetTextureHandler();
-	auto _player = Prefabs.Instantiate("player", Services);
+	auto _player = Prefabs.Instantiate("player");
 	assert(_player);
 	PlayerEntity = _player.get();
 	PlayerComponentRef = PlayerEntity->GetComponent<PlayerComponent>();
 	Services.Instantiate(std::move(_player));
 	WorldContext.SetCameraTarget(PlayerEntity);
 
-	auto _bull = Prefabs.Instantiate("bull", Services);
+	auto _bull = Prefabs.Instantiate("bull");
 	assert(_bull);
 	Services.Instantiate(std::move(_bull));
 
 	for (int _index = 0; _index < 3; _index++) {
-		auto _scorpion = Prefabs.Instantiate("scorpion", Services);
+		auto _scorpion = Prefabs.Instantiate("scorpion");
 		assert(_scorpion);
 		ObjectPoolContext->FeedObject(std::move(_scorpion));
 	}
