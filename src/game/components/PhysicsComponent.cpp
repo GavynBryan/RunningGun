@@ -28,10 +28,11 @@ void PhysicsComponent::Update()
 		AccumulatedAcceleration = Vec2(0.0f, 0.0f);
 	}
 
-	float _gravity = PhysContext.GetGravity().y * GravityScale;
-	if (_gravity > 0.0f && Velocity.y < _gravity) {
-		float _result = Velocity.y + _gravity * _deltaTime;
-		Velocity.y = std::min(_result, _gravity);
+	const float _gravityAccel = PhysContext.GetGravity().y * GravityScale;
+	const float _terminalVelocity = PhysContext.GetTerminalVelocity();
+	if (_gravityAccel > 0.0f && Velocity.y < _terminalVelocity) {
+		float _result = Velocity.y + _gravityAccel * _deltaTime;
+		Velocity.y = std::min(_result, _terminalVelocity);
 	}
 
 	auto _position = ParentEntity.GetPosition();
@@ -42,10 +43,10 @@ void PhysicsComponent::Update()
 void PhysicsComponent::PostUpdate()
 {
 	auto _position = ParentEntity.GetPosition();
+	const auto& _bounds = PhysContext.GetWorldBounds();
 
-	_position.x = std::min(_position.x, 600.0f);
-	_position.x = std::max(_position.x, 0.0f);
-	//_position.y = std::max(_position.y, 0.0f);
+	_position.x = std::max(_position.x, _bounds.x);
+	_position.x = std::min(_position.x, _bounds.x + _bounds.w - ParentEntity.GetWidth());
 	_position.y = std::min(_position.y, PhysContext.GetGroundLevel());
 	ParentEntity.SetPosition(_position);
 }
