@@ -1,23 +1,23 @@
 #pragma once
 
-#include <core/engine/IService.h>
 #include <memory>
 
 class GameMode;
+class GameServiceHost;
 class World;
 
-class WorldService final : public IService
+class WorldService final
 {
 public:
-	void Init() override;
-	void Update() override;
+	explicit WorldService(GameServiceHost& services);
 
 	void SetGameMode(GameMode* mode);
 	GameMode* GetGameMode() const { return Mode; }
 
 	World& GetWorld() const;
 
-	void ResetScene();
+	bool IsSceneInitialized() const { return SceneInitialized; }
+	void SetSceneInitialized(bool value) { SceneInitialized = value; }
 
 private:
 	std::unique_ptr<World> WorldContext;

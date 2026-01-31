@@ -7,14 +7,20 @@
 #include <core/engine/PhysicsService.h>
 #include <core/engine/RenderService.h>
 #include <core/engine/RunnerService.h>
-#include <core/engine/ServiceOrder.h>
+#include <core/engine/SystemOrder.h>
 #include <core/engine/TimerService.h>
 #include <core/engine/WorldService.h>
+#include <core/systems/RunnerSystem.h>
+#include <core/systems/TimerSystem.h>
+#include <core/systems/PhysicsSystem.h>
+#include <core/systems/WorldSystem.h>
+#include <core/systems/PoolMaintenanceSystem.h>
 
 Engine::Engine()
-	:Window(nullptr),
+	: Window(nullptr),
 	Renderer(nullptr),
-	Quit(false)
+	Quit(false),
+	Systems(Services)
 {
 	if (!SDL_Init(SDL_INIT_VIDEO)) {
 		SDL_Log("Failed to initialize SDL: %s", SDL_GetError());
@@ -33,19 +39,29 @@ Engine::Engine()
 		return;
 	}
 
-	Services.AddService<RunnerService>(ServiceOrder::Runner);
-	Services.AddService<TimerService>(ServiceOrder::Timer);
-	Services.AddService<InputService>(ServiceOrder::Input, InputManagerContext);
-	Services.AddService<PhysicsService>(ServiceOrder::Physics);
-	Services.AddService<RenderService>(ServiceOrder::Render, Renderer, std::make_unique<ResourceHandler>(Renderer), std::make_unique<Camera>(800.0f, 600.0f));
-	Services.AddService<WorldService>(ServiceOrder::World);
-	Services.AddService<ObjectPoolService>(ServiceOrder::ObjectPool, Prefabs);
+	// Register services (pure data/context objects)
+	Services.AddService<RunnerService>();
+	Services.AddService<TimerService>(Services);
+	Services.AddService<InputService>(InputManagerContext);
+	Services.AddService<PhysicsService>();
+	Services.AddService<RenderService>(Renderer, std::make_unique<ResourceHandler>(Renderer), std::make_unique<Camera>(800.0f, 600.0f));
+	Services.AddService<WorldService>(Services);
+	Services.AddService<ObjectPoolService>(Services, Prefabs);
+
+	// Register systems (logic)
+	Systems.AddSystem<RunnerSystem>(SystemOrder::Runner);
+	Systems.AddSystem<TimerSystem>(SystemOrder::Timer);
+	Systems.AddSystem<PhysicsSystem>(SystemOrder::Physics);
+	Systems.AddSystem<WorldSystem>(SystemOrder::World);
+	Systems.AddSystem<PoolMaintenanceSystem>(SystemOrder::PoolMaintenance);
 
 	Prefabs.SetServices(Services);
 }
 
 Engine::~Engine()
 {
+	Systems.Shutdown();
+
 	if (Renderer) {
 		SDL_DestroyRenderer(Renderer);
 	}
@@ -61,7 +77,7 @@ void Engine::Run()
 		SDL_Log("Engine cannot run without a game mode.");
 		return;
 	}
-	Services.Init();
+	Systems.Init();
 
 	while (!Quit) {
 		// Begin input frame
@@ -84,8 +100,8 @@ void Engine::Run()
 		SDL_SetRenderDrawColor(Renderer, 0, 0, 0, 255);
 		SDL_RenderClear(Renderer);
 
-		// Update and render
-		Services.Update();
+		// Update systems
+		Systems.Update();
 
 		// Present
 		SDL_RenderPresent(Renderer);
@@ -93,8 +109,6 @@ void Engine::Run()
 		// Frame rate limiting (approximately 120 FPS)
 		SDL_Delay(8);
 	}
-
-	Services.Shutdown();
 }
 
 World& Engine::GetWorld()
@@ -105,6 +119,11 @@ World& Engine::GetWorld()
 GameServiceHost& Engine::GetServices()
 {
 	return Services;
+}
+
+SystemHost& Engine::GetSystems()
+{
+	return Systems;
 }
 
 InputManager& Engine::GetInputManager()

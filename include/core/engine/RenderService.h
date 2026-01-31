@@ -1,13 +1,12 @@
 #pragma once
 
-#include <core/engine/IService.h>
 #include <memory>
 
 class Camera;
 class ResourceHandler;
 struct SDL_Renderer;
 
-class RenderService final : public IService
+class RenderService final
 {
 public:
 	RenderService(SDL_Renderer* renderer, std::unique_ptr<ResourceHandler> handler, std::unique_ptr<Camera> camera);

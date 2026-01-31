@@ -1,11 +1,10 @@
 #pragma once
 
-#include <core/engine/IService.h>
+#include <any>
 #include <cassert>
 #include <stdexcept>
 #include <typeindex>
 #include <unordered_map>
-#include <vector>
 #include <memory>
 #include <utility>
 
@@ -13,7 +12,7 @@ class GameServiceHost
 {
 public:
 	template <typename T, typename... Args>
-	T& AddService(int order, Args&&... args);
+	T& AddService(Args&&... args);
 
 	template <typename T>
 	T& Get() const;
@@ -24,69 +23,56 @@ public:
 	template <typename T>
 	bool Has() const;
 
-	void Init();
-	void Update();
-	void Shutdown();
-
 private:
 	struct ServiceEntry
 	{
-		int Order = 0;
-		std::unique_ptr<IService> Service;
+		std::any Service;
+		void* RawPtr = nullptr;
 	};
 
-	std::vector<ServiceEntry> Services;
-	std::unordered_map<std::type_index, IService*> Registry;
-	bool Initialized = false;
-
-	void SortServices();
+	std::unordered_map<std::type_index, ServiceEntry> Registry;
 };
 
 template <typename T, typename... Args>
-T& GameServiceHost::AddService(int order, Args&&... args)
+T& GameServiceHost::AddService(Args&&... args)
 {
-	auto service = std::make_unique<T>(std::forward<Args>(args)...);
-	service->SetHost(this);
-	auto* rawService = service.get();
-
 	auto typeIndex = std::type_index(typeid(T));
 	assert(Registry.find(typeIndex) == Registry.end());
-	Registry.emplace(typeIndex, rawService);
-	Services.push_back({order, std::move(service)});
 
-	if (Initialized) {
-		SortServices();
-		rawService->Init();
-	}
+	auto service = std::make_shared<T>(std::forward<Args>(args)...);
+	T* rawPtr = service.get();
 
-	return *static_cast<T*>(rawService);
+	ServiceEntry entry;
+	entry.Service = std::move(service);
+	entry.RawPtr = rawPtr;
+
+	Registry.emplace(typeIndex, std::move(entry));
+
+	return *rawPtr;
 }
 
 template <typename T>
 T& GameServiceHost::Get() const
 {
-	static_assert(std::is_base_of<IService, T>::value, "T must derive from IService");
 	auto iter = Registry.find(std::type_index(typeid(T)));
 	if (iter == Registry.end()) {
 		throw std::runtime_error("Service not registered: " + std::string(typeid(T).name()));
 	}
-	return *static_cast<T*>(iter->second);
+	return *static_cast<T*>(iter->second.RawPtr);
 }
 
 template <typename T>
 T* GameServiceHost::TryGet() const
 {
-	static_assert(std::is_base_of<IService, T>::value, "T must derive from IService");
 	auto iter = Registry.find(std::type_index(typeid(T)));
 	if (iter == Registry.end()) {
 		return nullptr;
 	}
-	return static_cast<T*>(iter->second);
+	return static_cast<T*>(iter->second.RawPtr);
 }
 
 template <typename T>
 bool GameServiceHost::Has() const
 {
-	static_assert(std::is_base_of<IService, T>::value, "T must derive from IService");
 	return Registry.find(std::type_index(typeid(T))) != Registry.end();
 }

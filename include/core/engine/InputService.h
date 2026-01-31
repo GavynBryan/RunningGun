@@ -1,11 +1,9 @@
 #pragma once
 
-#include <core/engine/IService.h>
-
 class InputManager;
 union SDL_Event;
 
-class InputService final : public IService
+class InputService final
 {
 public:
 	explicit InputService(InputManager& input);

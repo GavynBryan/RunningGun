@@ -2,8 +2,9 @@
 
 #include <core/QuadTree.h>
 #include <core/Vec2.h>
-#include <core/engine/IService.h>
 #include <vector>
+
+class Entity;
 
 struct PhysicsConfig
 {
@@ -13,13 +14,11 @@ struct PhysicsConfig
 	Rectf WorldBounds = Rectf(0.0f, 0.0f, 800.0f, 600.0f);
 };
 
-class PhysicsService final : public IService
+class PhysicsService final
 {
 public:
 	PhysicsService();
 	explicit PhysicsService(const PhysicsConfig& config);
-
-	void Update() override;
 
 	float GetGroundLevel() const { return GroundLevel; }
 	Vec2 GetGravity() const { return Gravity; }
@@ -31,9 +30,10 @@ public:
 	void SetGroundLevel(float level) { GroundLevel = level; }
 	void SetWorldBounds(const Rectf& bounds);
 
-private:
-	void UpdateEntityCollisions(const std::vector<Entity::Ptr>& entities);
+	QuadTree& GetCollisionTree() { return CollisionTree; }
+	std::vector<Entity*>& GetCollisionCandidates() { return CollisionCandidates; }
 
+private:
 	Vec2 Gravity;
 	float TerminalVelocity;
 	float GroundLevel;

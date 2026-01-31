@@ -1,30 +1,26 @@
 #pragma once
 
-#include <core/engine/IService.h>
 #include <unordered_map>
 #include <string>
 #include <string_view>
 #include <vector>
 
 class Entity;
+class GameServiceHost;
 class PrefabSystem;
+class World;
 
-class ObjectPoolService final : public IService
+class ObjectPoolService final
 {
 public:
 	static constexpr size_t DefaultPoolSize = 8;
 	static constexpr float MaintenanceIntervalSeconds = 60.0f;
 
-	explicit ObjectPoolService(PrefabSystem& prefabs);
-
-	void Init() override;
-	void Update() override;
-	void Shutdown() override;
+	ObjectPoolService(GameServiceHost& services, PrefabSystem& prefabs);
 
 	Entity* FetchPrefab(std::string_view prefabId);
 	void ClearPools();
 
-private:
 	struct Pool
 	{
 		std::string PrefabId;
@@ -33,10 +29,18 @@ private:
 		float NextMaintenanceTime = 0.0f;
 	};
 
+	std::unordered_map<std::string, Pool>& GetPools() { return Pools; }
+	const std::unordered_map<std::string, Pool>& GetPools() const { return Pools; }
+	PrefabSystem& GetPrefabs() { return Prefabs; }
+
+	Pool& GetOrCreatePool(std::string_view prefabId);
+	bool RunMaintenance(Pool& pool);
+
+private:
+	GameServiceHost& Services;
 	PrefabSystem& Prefabs;
 	std::unordered_map<std::string, Pool> Pools;
-	Pool& GetOrCreatePool(std::string_view prefabId);
+
 	Entity* AcquireFromPool(Pool& pool);
 	void EnsurePoolSize(Pool& pool, size_t newSize);
-	bool RunMaintenance(Pool& pool);
 };
