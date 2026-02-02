@@ -2,14 +2,14 @@
 #include <core/rendering/IRenderable.h>
 #include <algorithm>
 
-void RenderableRegistry::RegisterComponent(ActorComponent* component)
+void RenderableRegistry::Add(void* item)
 {
-	Register(dynamic_cast<IRenderable*>(component));
+	Register(static_cast<IRenderable*>(item));
 }
 
-void RenderableRegistry::UnregisterComponent(ActorComponent* component)
+void RenderableRegistry::Remove(void* item)
 {
-	Unregister(dynamic_cast<IRenderable*>(component));
+	Unregister(static_cast<IRenderable*>(item));
 }
 
 void RenderableRegistry::Register(IRenderable* renderable)

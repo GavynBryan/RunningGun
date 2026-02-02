@@ -1,7 +1,9 @@
 #pragma once
 
+#include <core/containers/BatchArray.h>
+
 class IGraphicsAPI;
-class RenderableRegistry;
+class IRenderable;
 class Camera;
 
 // Abstract interface for rendering strategies.
@@ -13,7 +15,7 @@ public:
 	virtual ~IRenderMode() = default;
 
 	// Render the entire scene
-	virtual void RenderScene(IGraphicsAPI& graphics, RenderableRegistry& registry, Camera& camera) = 0;
+	virtual void RenderScene(IGraphicsAPI& graphics, BatchArray<IRenderable>& renderables, Camera& camera) = 0;
 
 	// Mode identification
 	virtual const char* GetName() const = 0;

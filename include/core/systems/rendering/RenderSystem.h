@@ -1,10 +1,11 @@
 #pragma once
 
+#include <core/containers/BatchArray.h>
 #include <core/framework/ISystem.h>
 
 class GameServiceHost;
 class RenderContextService;
-class RenderableRegistry;
+class IRenderable;
 
 // System that triggers rendering each frame.
 // Iterates all render contexts and renders each with its own camera/render mode.
@@ -20,5 +21,5 @@ public:
 private:
 	GameServiceHost& Services;
 	RenderContextService* CachedContextService = nullptr;
-	RenderableRegistry* CachedRegistry = nullptr;
+	BatchArray<IRenderable>* CachedRenderables = nullptr;
 };

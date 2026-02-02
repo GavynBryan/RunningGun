@@ -24,7 +24,7 @@ class GameServiceHost;
 //   - Access property metadata (for serialization/editor)
 // 
 // Note: This class handles component TYPE registration and instantiation.
-// For runtime component INSTANCE tracking, see IComponentInstanceRegistry.
+// For runtime component INSTANCE tracking, see BatchArray.
 //=============================================================================
 class ComponentFactory
 {

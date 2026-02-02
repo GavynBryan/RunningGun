@@ -1,5 +1,6 @@
 #pragma once
 
+#include <core/containers/BatchArray.h>
 #include <core/framework/IService.h>
 #include <cassert>
 #include <stdexcept>
@@ -8,8 +9,6 @@
 #include <vector>
 #include <memory>
 #include <utility>
-
-class IComponentInstanceRegistry;
 
 class GameServiceHost
 {
@@ -27,34 +26,37 @@ public:
 	bool Has() const;
 
 	//=========================================================================
-	// Component Instance Registry Management
+	// BatchArray Management
 	// 
-	// Registries can be registered by the component/interface type they track.
-	// This allows components to find their registry without knowing the
-	// concrete registry class name.
+	// Batch arrays can be registered by the type they track.
+	// This allows components to find their array without knowing the
+	// concrete BatchArray class name.
 	// 
 	// Usage:
-	//     // Setup: register RenderableRegistry as the registry for IRenderable
-	//     services.AddService<RenderableRegistry>();
-	//     services.RegisterInstanceRegistry<IRenderable>(services.Get<RenderableRegistry>());
+	//     // Setup: add a batch array for IRenderable
+	//     services.AddBatchArray<IRenderable>();
 	//     
 	//     // Component lookup:
-	//     auto* registry = services.TryGetRegistry<IRenderable>();
+	//     auto* array = services.TryGetBatchArray<IRenderable>();
 	//=========================================================================
 
-	template <typename TComponent>
-	void RegisterInstanceRegistry(IComponentInstanceRegistry& registry);
+	// Add a BatchArray<T> as a service and register it for type T lookup
+	template <typename T>
+	BatchArray<T>& AddBatchArray();
 
 	template <typename TComponent>
-	IComponentInstanceRegistry* TryGetRegistry() const;
+	void RegisterBatchArray(IBatchArray& batchArray);
 
 	template <typename TComponent>
-	bool HasRegistry() const;
+	IBatchArray* TryGetBatchArray() const;
+
+	template <typename TComponent>
+	bool HasBatchArray() const;
 
 private:
 	std::vector<std::unique_ptr<IService>> Services;
 	std::unordered_map<std::type_index, IService*> Registry;
-	std::unordered_map<std::type_index, IComponentInstanceRegistry*> InstanceRegistries;
+	std::unordered_map<std::type_index, IBatchArray*> BatchArrays;
 };
 
 template <typename T, typename... Args>
@@ -103,26 +105,34 @@ bool GameServiceHost::Has() const
 	return Registry.find(std::type_index(typeid(T))) != Registry.end();
 }
 
-template <typename TComponent>
-void GameServiceHost::RegisterInstanceRegistry(IComponentInstanceRegistry& registry)
+template <typename T>
+BatchArray<T>& GameServiceHost::AddBatchArray()
 {
-	auto typeIndex = std::type_index(typeid(TComponent));
-	assert(InstanceRegistries.find(typeIndex) == InstanceRegistries.end());
-	InstanceRegistries.emplace(typeIndex, &registry);
+	auto& batchArray = AddService<BatchArray<T>>();
+	RegisterBatchArray<T>(batchArray);
+	return batchArray;
 }
 
 template <typename TComponent>
-IComponentInstanceRegistry* GameServiceHost::TryGetRegistry() const
+void GameServiceHost::RegisterBatchArray(IBatchArray& batchArray)
 {
-	auto iter = InstanceRegistries.find(std::type_index(typeid(TComponent)));
-	if (iter == InstanceRegistries.end()) {
+	auto typeIndex = std::type_index(typeid(TComponent));
+	assert(BatchArrays.find(typeIndex) == BatchArrays.end());
+	BatchArrays.emplace(typeIndex, &batchArray);
+}
+
+template <typename TComponent>
+IBatchArray* GameServiceHost::TryGetBatchArray() const
+{
+	auto iter = BatchArrays.find(std::type_index(typeid(TComponent)));
+	if (iter == BatchArrays.end()) {
 		return nullptr;
 	}
 	return iter->second;
 }
 
 template <typename TComponent>
-bool GameServiceHost::HasRegistry() const
+bool GameServiceHost::HasBatchArray() const
 {
-	return InstanceRegistries.find(std::type_index(typeid(TComponent))) != InstanceRegistries.end();
+	return BatchArrays.find(std::type_index(typeid(TComponent))) != BatchArrays.end();
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <core/services/component/IComponentInstanceRegistry.h>
+#include <core/containers/BatchArray.h>
 #include <vector>
 #include <unordered_map>
 
@@ -9,19 +9,19 @@ class IRenderable;
 //=============================================================================
 // RenderableRegistry
 // 
-// Component instance registry for IRenderable components.
+// Batch array for IRenderable components.
 // Stores renderables contiguously for cache-friendly iteration and supports
 // layer-based sorting for correct draw ordering.
 // 
-// Components register via TryRegisterToInstanceRegistry<IRenderable>().
-// Uses swap-and-pop for O(1) unregistration.
+// Components register via TryRegisterToBatchArray<IRenderable>().
+// Uses swap-and-pop for O(1) removal.
 //=============================================================================
-class RenderableRegistry final : public IComponentInstanceRegistry, public IService
+class RenderableRegistry final : public IBatchArray, public IService
 {
 public:
-	// IComponentInstanceRegistry interface
-	void RegisterComponent(ActorComponent* component) override;
-	void UnregisterComponent(ActorComponent* component) override;
+	// IBatchArray interface
+	void Add(void* item) override;
+	void Remove(void* item) override;
 	
 	// Direct register/unregister (typed)
 	void Register(IRenderable* renderable);

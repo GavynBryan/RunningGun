@@ -3,14 +3,14 @@
 #include <core/entity/Component.h>
 #include <core/rendering/IRenderable.h>
 
-class IComponentInstanceRegistry;
+class IBatchArray;
 
 //=============================================================================
 // SpriteComponent
 // 
 // Core component for 2D sprite rendering. Implements IRenderable interface.
 // Uses TextureHandle (backend-agnostic) instead of SDL_Texture*.
-// Registers with RenderableRegistry on construction (auto-unregisters via RAII).
+// Registers with BatchArray<IRenderable> on construction (auto-removes via RAII).
 //=============================================================================
 class SpriteComponent : public ActorComponent, public IRenderable
 {
@@ -68,7 +68,7 @@ public:
 	Rectf GetLocalBounds() const;
 
 private:
-	IComponentInstanceRegistry* Registry = nullptr;  // For MarkDirty() calls
+	IBatchArray* BatchArray = nullptr;  // For MarkDirty() calls
 	TextureHandle Texture;
 	Recti SourceRect = Recti(0, 0, 0, 0);
 	Vec2 Size = Vec2(0.0f, 0.0f);

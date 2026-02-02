@@ -7,6 +7,6 @@
 class RenderMode2D final : public IRenderMode
 {
 public:
-	void RenderScene(IGraphicsAPI& graphics, RenderableRegistry& registry, Camera& camera) override;
+	void RenderScene(IGraphicsAPI& graphics, BatchArray<IRenderable>& renderables, Camera& camera) override;
 	const char* GetName() const override { return "2D"; }
 };

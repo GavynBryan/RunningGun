@@ -6,7 +6,6 @@
 #include <core/rendering/TextureService.h>
 #include <core/rendering/RenderSystem.h>
 #include <core/rendering/RenderContextService.h>
-#include <core/rendering/RenderableRegistry.h>
 #include <core/rendering/IRenderable.h>
 #include <core/rendering/IRenderMode.h>
 #include <core/platform/PlatformService.h>
@@ -59,8 +58,7 @@ Engine::Engine()
 	Services.AddService<CollisionService>();
 	Services.AddService<TextureService>();
 	Services.AddService<RenderContextService>(Services.Get<LoggingService>());
-	Services.AddService<RenderableRegistry>();
-	Services.RegisterInstanceRegistry<IRenderable>(Services.Get<RenderableRegistry>());
+	Services.AddBatchArray<IRenderable>();
 	Services.AddService<WorldService>();
 	// Note: Components now self-register via ComponentFactory singleton - no service needed
 	Services.AddService<PrefabService>();

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <core/containers/BatchArray.h>
 #include <core/framework/IService.h>
 #include <core/logging/LoggingService.h>
 #include <core/rendering/RenderContext.h>
@@ -9,7 +10,7 @@
 #include <functional>
 
 class TextureService;
-class RenderableRegistry;
+class IRenderable;
 
 // Service that manages multiple render contexts.
 // Each context represents a window + renderer + camera + render mode combination.
@@ -59,7 +60,7 @@ public:
 	void ForEachContext(Func&& func) const;
 
 	// Render all contexts
-	void RenderAllContexts(RenderableRegistry& registry);
+	void RenderAllContexts(BatchArray<IRenderable>& renderables);
 
 	// Called when a window is closed to clean up associated context
 	void OnWindowClosed(WindowId windowId);

@@ -1,18 +1,15 @@
 #include <core/engine/rendering/modes/RenderMode25D.h>
 #include <core/engine/rendering/IGraphicsAPI.h>
 #include <core/engine/rendering/Camera.h>
-#include <core/services/rendering/RenderableRegistry.h>
 #include <core/rendering/IRenderable.h>
 #include <cmath>
 #include <algorithm>
 #include <vector>
 
-void RenderMode25D::RenderScene(IGraphicsAPI& graphics, RenderableRegistry& registry, Camera& camera)
+void RenderMode25D::RenderScene(IGraphicsAPI& graphics, BatchArray<IRenderable>& renderables, Camera& camera)
 {
 	// 2.5D raycaster rendering - simplified billboard sprite rendering
 	// This is a basic implementation - a full raycaster would include wall rendering
-
-	const auto& renderables = registry.GetRenderables();
 
 	// Get camera position and direction
 	Vec2 camPos = camera.GetPosition();
