@@ -1,5 +1,5 @@
 #pragma once
-#include <core/State.h>
+#include <core/entity/State.h>
 
 class BullComponent;
 
@@ -14,7 +14,6 @@ public:
 
 	virtual void EnterState();
 	virtual void Update();
-	virtual void PostUpdate();
 	virtual void ExitState();
 };
 
@@ -33,7 +32,6 @@ public:
 	~BullDefaultState();
 	void EnterState();
 	void Update();
-	void PostUpdate();
 	void ExitState();
 };
 
@@ -47,7 +45,6 @@ public:
 	~BullWave1State();
 	void EnterState();
 	void Update();
-	void PostUpdate();
 	void ExitState();
 
 	//void damage();
@@ -64,7 +61,6 @@ public:
 	~BullWave2State();
 	void EnterState();
 	void Update();
-	void PostUpdate();
 	void ExitState();
 
 	//void damage();

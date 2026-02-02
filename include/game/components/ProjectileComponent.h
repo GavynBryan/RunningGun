@@ -1,28 +1,32 @@
 #pragma once
-#include <core/Component.h>
+#include <core/entity/Component.h>
 
-class PhysicsComponent;
+class RigidBody2DComponent;
+class TimeService;
 
 class ProjectileComponent
-	:public Component
+	:public ActorComponent
 {
+public:
+	const char* GetName() const override { return "ProjectileComponent"; }
+
 private:
+	TimeService& Time;
 	float		Speed;
 	float		SpawnTime = 0;
 	float		LifeSpan = 3.0;
 
-	Entity*	Shooter = nullptr;
-	PhysicsComponent* PhysicsHandle = nullptr;
+	Actor*	Shooter = nullptr;
+	RigidBody2DComponent* PhysicsHandle = nullptr;
 public:
-	ProjectileComponent(Entity& _entity, GameServiceHost& _context, float _speed, float _lifeSpan = 3.0f);
+	ProjectileComponent(Actor& _entity, GameServiceHost& _context, float _speed, float _lifeSpan = 3.0f);
 	~ProjectileComponent();
 
 	void Start();
 	void Update();
-	void PostUpdate();
 
-	void Activate(Entity* _shooter);
-	void SetShooter(Entity* _shooter);
+	void Activate(Actor* _shooter);
+	void SetShooter(Actor* _shooter);
 
-	void OnCollide(Entity& _other);
+	void OnCollide(Actor& _other);
 };

@@ -1,4 +1,4 @@
-#include <core/UIHealthBar.h>
+#include <core/UI/UIHealthBar.h>
 #include <algorithm>
 
 UIHealthBar::UIHealthBar(SDL_Texture* _heartTexture, int _maxHearts)

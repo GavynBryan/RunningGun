@@ -1,6 +1,6 @@
 #pragma once
 
-#include <core/BasePlayerAction.h>
+#include <core/actions/BasePlayerAction.h>
 #include <game/components/PlayerComponent.h>
 
 class MoveLeftAction final : public BasePlayerAction {

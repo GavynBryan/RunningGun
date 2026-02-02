@@ -1,62 +1,55 @@
 #pragma once
-#include <SDL3/SDL.h>
-#include <SDL3_ttf/SDL_ttf.h>
-#include <core/GameMode.h>
-#include <core/engine/GameServiceHost.h>
+
+#include <core/gameplay/GameMode.h>
 #include <core/events/MulticastDelegate.h>
-#include <core/UIHealthBar.h>
-#include <core/UIText.h>
+#include <core/UI/UIHealthBar.h>
+#include <core/UI/UIText.h>
 #include <memory>
 #include <string>
 
+class SDL_Renderer;  // Forward declare if needed elsewhere.
+class TTF_Font;
 class BullComponent;
 class PlayerComponent;
-class World;
-class Entity;
-class PrefabSystem;
+class Actor;
 
-class RunningGunGameMode : public GameMode
-{
+class RunningGunGameMode : public GameMode {
 private:
-	SDL_Renderer*				Renderer;
-	GameServiceHost&			Services;
-	PrefabSystem&				Prefabs;
-	World&						WorldContext;
+    UIHealthBar* HealthBar = nullptr;
+    UIText* StatusTextUI = nullptr;
+    TTF_Font* GameFont = nullptr;
 
-	UIHealthBar*				HealthBar;
-	UIText*						StatusTextUI;
-	TTF_Font*					GameFont;
+    Actor* PlayerEntity = nullptr;
+    Actor* BullEntity = nullptr;
+    PlayerComponent* PlayerComponentRef = nullptr;
+    BullComponent* BullComponentRef = nullptr;
 
-	Entity*						PlayerEntity;
-	Entity*						BullEntity;
-	PlayerComponent*			PlayerComponentRef;
-	BullComponent*				BullComponentRef;
+    float SpawnScorpion1Interval = 10.0f;
+    float LastSpawn1Time = 0.0f;
+    float SpawnScorpion2Interval = 11.0f;
+    float LastSpawn2Time = 0.0f;
 
-	float						SpawnScorpion1Interval;
-	float						LastSpawn1Time;
-	float						SpawnScorpion2Interval;
-	float						LastSpawn2Time;
+    bool Win = false;
+    bool Lose = false;
+    bool ResetRequested = false;
 
-	bool						Win;
-	bool						Lose;
-	bool						ResetRequested;
+    DelegateHandle PlayerDiedHandle = 0;
+    DelegateHandle BossDiedHandle = 0;
 
-	DelegateHandle				PlayerDiedHandle;
-	DelegateHandle				BossDiedHandle;
-
-	void						SetStatusText(const std::string& _text);
-	void						SubscribeToEvents();
-	void						UnsubscribeFromEvents();
+    void SetStatusText(const std::string& text);
+    void SubscribeToEvents();
+    void UnsubscribeFromEvents();
 
 public:
-								RunningGunGameMode(SDL_Renderer* _renderer, GameServiceHost& _services, PrefabSystem& _prefabs, World& _world);
-								~RunningGunGameMode() override;
+    RunningGunGameMode(GameServiceHost& services);
+    ~RunningGunGameMode() override;
 
-	void						Init() override;
-	void						BuildScene() override;
-	void						Update() override;
-	void						PostUpdate() override;
-	void						OnWin(Entity* _boss);
-	void						OnLose(Entity* _player);
-	void						RequestReset() override;
+    void Init() override;
+    void BuildScene() override;
+    void Update() override;
+    void Shutdown() override;
+    void RequestReset() override;
+
+    void OnWin(Entity* boss);
+    void OnLose(Entity* player);
 };

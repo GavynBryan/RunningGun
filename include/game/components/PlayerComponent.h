@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
-#include <core/Component.h>
-#include <core/Vec2.h>
+#include <core/entity/Component.h>
+#include <core/math/Vec2.h>
 #include <core/events/MulticastDelegate.h>
 #include <game/input/PlayerInputConfig.h>
 
@@ -11,18 +11,30 @@ constexpr auto DeathResetDelay = 3.0f;
 constexpr auto JumpSpeed = 500.0f;
 
 class PlayerAction;
-class PhysicsComponent;
+class RigidBody2DComponent;
+class TimeService;
+class InputService;
+class ObjectPoolService;
+class AnimatorComponent;
+
 class PlayerComponent :
-	public Component
+	public ActorComponent
 {
+public:
+	const char* GetName() const override { return "PlayerComponent"; }
+
 private:
+	TimeService& Time;
+	InputService& Input;
+	ObjectPoolService& ObjectPool;
+
 	uint8_t Lives;
 	float PlayerSpeed;
 	float GroundAcceleration;
 	float GroundDeceleration;
 
-	AnimationStateMachine*				Animator;
-	PhysicsComponent*					PhysicsHandle;
+	AnimatorComponent*					Animator;
+	RigidBody2DComponent*						PhysicsHandle;
 
 	Vec2							BulletOffset;
 	float							LastShotTime;
@@ -40,13 +52,12 @@ private:
 	const PlayerInputConfig&		InputConfig;
 
 public:
-									PlayerComponent(Entity& _entity, GameServiceHost& _context, const PlayerInputConfig& _inputConfig);
+									PlayerComponent(Actor& _entity, GameServiceHost& _context, const PlayerInputConfig& _inputConfig);
 									~PlayerComponent();
 
 
 	void							Start();
 	void							Update();
-	void							PostUpdate();
 
 	void							HandleAnimations();
 
@@ -71,8 +82,8 @@ public:
 	void							OnDeath();
 	void							OnVictory();
 
-	void							OnCollide(Entity& _other);
+	void							OnCollide(Actor& _other);
 
 	// Events - GameMode subscribes to these
-	MulticastDelegate<Entity*>		OnDied;
+	MulticastDelegate<Actor*>		OnDied;
 };

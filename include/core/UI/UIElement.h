@@ -1,6 +1,6 @@
 #pragma once
 #include <SDL3/SDL.h>
-#include <core/Vec2.h>
+#include <core/math/Vec2.h>
 
 enum class UIAnchor {
 	TopLeft,

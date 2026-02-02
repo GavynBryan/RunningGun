@@ -1,4 +1,4 @@
-#include <core/UIText.h>
+#include <core/UI/UIText.h>
 
 UIText::UIText(SDL_Renderer* _renderer, TTF_Font* _font)
 	: Font(_font)

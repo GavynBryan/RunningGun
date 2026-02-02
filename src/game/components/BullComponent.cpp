@@ -1,24 +1,28 @@
 #include <game/components/BullComponent.h>
 #include <game/components/ProjectileComponent.h>
-#include <core/Entity.h>
-#include <core/engine/GameServiceHost.h>
-#include <core/engine/ObjectPoolService.h>
+#include <core/components/AnimatorComponent.h>
+#include <core/entity/Entity.h>
+#include <core/framework/GameServiceHost.h>
+#include <core/world/ObjectPoolService.h>
+#include <core/timing/TimeService.h>
 #include <memory>
 
 
 
-BullComponent::BullComponent(Entity& _entity, GameServiceHost& _context)
-	:Component(_entity, _context),
-	Offset1(0,32),
-	Offset2(0,55),
-	ProjectileOffset(Offset1),
-	Lives(45)
+BullComponent::BullComponent(Actor& _entity, GameServiceHost& _context)
+	: ActorComponent(_entity, _context)
+	, ObjectPool(_context.Get<ObjectPoolService>())
+	, Time(_context.Get<TimeService>())
+	, Offset1(0,32)
+	, Offset2(0,55)
+	, ProjectileOffset(Offset1)
+	, Lives(45)
 {
 	std::unique_ptr<BullDefaultState> _defaultState(new BullDefaultState(*this));
 
 	AddState("DefaultState", std::move(_defaultState));
 
-	ParentEntity.SetDirection(-1, 0);
+	Owner.SetDirection(-1, 0);
 
 }
 
@@ -30,7 +34,7 @@ BullComponent::~BullComponent()
 void BullComponent::Start()
 {
 	SwitchState("DefaultState");
-	Animator = ParentEntity.GetAnimator();
+	Animator = Owner.GetComponent<AnimatorComponent>();
 }
 
 void BullComponent::Update()
@@ -39,18 +43,14 @@ void BullComponent::Update()
 	Animator->PlayAnimation("default");
 }
 
-void BullComponent::PostUpdate()
-{
-}
-
 void BullComponent::Shoot()
 {
-	auto* _projectile = Context.Get<ObjectPoolService>().FetchPrefab("waves");
+	auto* _projectile = ObjectPool.FetchPrefab("waves");
 	if (_projectile != nullptr) {
 		if (auto* _projectileComponent = _projectile->GetComponent<ProjectileComponent>()) {
-			_projectileComponent->Activate(&ParentEntity);
+			_projectileComponent->Activate(&Owner);
 		}
-		_projectile->SetPosition(ParentEntity.GetPosition() + ProjectileOffset);
+		_projectile->SetPosition(Owner.GetPosition() + ProjectileOffset);
 		SwitchShootPositions();
 		Animator->PlayAnimation("shoot");
 	}
@@ -79,7 +79,7 @@ void BullComponent::SwitchState(const std::string& _id)
 	CurrentState->EnterState();
 }
 
-void BullComponent::OnCollide(Entity& _other)
+void BullComponent::OnCollide(Actor& _other)
 {
 	if (_other.GetTag() == bullet) {
 		Damage();
@@ -91,8 +91,8 @@ void BullComponent::Damage() {
 	Lives--;
 	if (Lives <= 0) {
 		// Broadcast through component's own delegate
-		OnDied.Broadcast(&ParentEntity);
+		OnDied.Broadcast(&Owner);
 		Animator->PlayAnimation("die");
-		ParentEntity.Disable();
+		Owner.Disable();
 	}
 }

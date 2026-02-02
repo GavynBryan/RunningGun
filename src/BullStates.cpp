@@ -1,6 +1,6 @@
 #include <BullStates.h>
 #include <game/components/BullComponent.h>
-#include <core/engine/RunnerService.h>
+#include <core/timing/TimeService.h>
 
 
 
@@ -14,7 +14,6 @@ BullState::~BullState()
 
 void BullState::EnterState(){}
 void BullState::Update(){}
-void BullState::PostUpdate(){}
 void BullState::ExitState(){}
 
 
@@ -34,16 +33,11 @@ void BullDefaultState::EnterState()
 
 void BullDefaultState::Update() 
 {
-	float _currentTime = BullRef.GetContext().Get<RunnerService>().GetElapsedTime();
+	float _currentTime = BullRef.GetTime().GetElapsedTime();
 	if (_currentTime - LastShot > ShootFrequency) {
 		BullRef.Shoot();
 		LastShot = _currentTime;
 	}
-}
-
-void BullDefaultState::PostUpdate() 
-{
-
 }
 
 void BullDefaultState::ExitState() 
@@ -66,10 +60,6 @@ void BullWave1State::Update() {
 
 }
 
-void BullWave1State::PostUpdate() {
-
-}
-
 void BullWave1State::ExitState() {
 
 }
@@ -86,10 +76,6 @@ void BullWave2State::EnterState() {
 
 }
 void BullWave2State::Update() {
-
-}
-
-void BullWave2State::PostUpdate() {
 
 }
 

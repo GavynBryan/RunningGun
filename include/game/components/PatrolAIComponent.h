@@ -1,31 +1,35 @@
 #pragma once
-#include <core/Component.h>
+#include <core/entity/Component.h>
 
-class AnimationStateMachine;
-class PhysicsComponent;
+class AnimatorComponent;
+class RigidBody2DComponent;
+class TimeService;
 
 class PatrolAIComponent :
-	public Component
+	public ActorComponent
 {
+public:
+	const char* GetName() const override { return "PatrolAIComponent"; }
+
 private:
+	TimeService& Time;
 	int Lives;
 	//Timestamp
 	float LastTurnAround = 0; 
 
 	float Interval = 1.5f;
 	float MoveSpeed;
-	AnimationStateMachine* Animator;
-	PhysicsComponent* PhysicsHandle;
+	AnimatorComponent* Animator;
+	RigidBody2DComponent* PhysicsHandle;
 public:
-	PatrolAIComponent(Entity& _entity, GameServiceHost& _context, float _speed);
+	PatrolAIComponent(Actor& _entity, GameServiceHost& _context, float _speed);
 	~PatrolAIComponent();
 
 	void Start();
 	void Update();
-	void PostUpdate();
 
 	void ChangeDirection();
-	void OnCollide(Entity& _other);
+	void OnCollide(Actor& _other);
 
 	void Damage();
 	void Die();

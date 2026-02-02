@@ -1,105 +1,145 @@
 #include <core/engine/Engine.h>
-#include <core/GameMode.h>
-#include <core/ResourceHandler.h>
-#include <core/Camera.h>
-#include <core/engine/InputService.h>
-#include <core/engine/ObjectPoolService.h>
-#include <core/engine/PhysicsService.h>
-#include <core/engine/RenderService.h>
-#include <core/engine/RunnerService.h>
-#include <core/engine/ServiceOrder.h>
-#include <core/engine/TimerService.h>
-#include <core/engine/WorldService.h>
+#include <core/gameplay/GameMode.h>
+#include <core/gameplay/GameModeService.h>
+#include <core/logging/LoggingService.h>
+#include <core/rendering/Camera.h>
+#include <core/rendering/TextureService.h>
+#include <core/rendering/RenderSystem.h>
+#include <core/rendering/RenderContextService.h>
+#include <core/rendering/IRenderMode.h>
+#include <core/platform/PlatformService.h>
+#include <core/platform/backends/SDLPlatformBackend.h>
+#include <core/rendering/backends/SDL3Renderer.h>
+#include <core/rendering/modes/RenderMode2D.h>
+#include <core/collision/CollisionService.h>
+#include <core/input/InputService.h>
+#include <core/world/ObjectPoolService.h>
+#include <core/collision/PhysicsService.h>
+#include <core/timing/TimeService.h>
+#include <core/world/WorldService.h>
+#include <core/actor/ActorService.h>
+#include <core/timing/ClockSystem.h>
+#include <core/collision/CollisionResponseSystem.h>
+#include <core/timing/TimerSystem.h>
+#include <core/collision/QuadTreeCollisionSystem.h>
+#include <core/world/WorldSystem.h>
+#include <core/actor/ActorSystem.h>
+#include <core/engine/framework/SystemOrder.h>
+#include <core/entity/ComponentRegistryService.h>
+#include <core/entity/PrefabService.h>
+#include <core/math/Vec2.h>
 
 Engine::Engine()
-	:Window(nullptr),
-	Renderer(nullptr),
-	Quit(false)
+	:Quit(false)
 {
-	if (!SDL_Init(SDL_INIT_VIDEO)) {
-		SDL_Log("Failed to initialize SDL: %s", SDL_GetError());
+	// Initialize logging first so it's available to all other services
+	Services.AddService<LoggingService>();
+
+	// Initialize platform (SDL handles video, input, audio, windows, events)
+	Services.AddService<PlatformService>(std::make_unique<SDLPlatformBackend>());
+	auto& platform = Services.Get<PlatformService>();
+
+	// Create the primary window
+	WindowConfig mainWindowConfig;
+	mainWindowConfig.Title = "Running Gun";
+	mainWindowConfig.Width = 800;
+	mainWindowConfig.Height = 600;
+
+	WindowId mainWindowId = platform.CreateWindow(mainWindowConfig);
+	if (mainWindowId == InvalidWindowId) {
+		SDL_Log("Failed to create main window");
 		return;
 	}
 
-	Window = SDL_CreateWindow("Running Gun", 800, 600, 0);
-	if (!Window) {
-		SDL_Log("Failed to create window: %s", SDL_GetError());
+	// Register services
+	Services.AddService<TimeService>();
+	Services.AddService<InputService>(InputManagerContext);
+	Services.AddService<PhysicsService>();
+	Services.AddService<CollisionService>();
+	Services.AddService<TextureService>();
+	Services.AddService<RenderContextService>(Services.Get<LoggingService>());
+	Services.AddService<WorldService>();
+	Services.AddService<ComponentRegistryService>();
+	Services.AddService<PrefabService>();
+	Services.AddService<ObjectPoolService>();
+	Services.AddService<GameModeService>();
+
+	// Connect platform to input service for event routing
+	platform.SetInputService(&Services.Get<InputService>());
+
+	// Subscribe to window close events to clean up render contexts
+	auto& contextService = Services.Get<RenderContextService>();
+	platform.OnWindowClosed().Subscribe([&contextService](WindowId windowId) {
+		contextService.OnWindowClosed(windowId);
+	});
+
+	// Create primary render context for the main window
+	WindowHandle* mainWindow = platform.GetPrimaryWindow();
+	auto renderer = std::make_unique<SDL3Renderer>(static_cast<SDL_Window*>(mainWindow->NativeHandle));
+	auto renderMode = std::make_unique<RenderMode2D>();
+	Camera mainCamera(800.0f, 600.0f);
+
+	RenderContextId mainContextId = contextService.CreateContext(
+		mainWindowId,
+		std::move(renderer),
+		std::move(renderMode),
+		mainCamera,
+		"Main"
+	);
+
+	if (mainContextId == InvalidRenderContextId) {
+		SDL_Log("Failed to create main render context");
 		return;
 	}
 
-	Renderer = SDL_CreateRenderer(Window, nullptr);
-	if (!Renderer) {
-		SDL_Log("Failed to create renderer: %s", SDL_GetError());
-		return;
-	}
+	// Connect texture service to primary context's graphics API
+	RenderContext* mainContext = contextService.GetPrimaryContext();
+	Services.Get<TextureService>().SetGraphics(mainContext->Graphics.get());
 
-	Services.AddService<RunnerService>(ServiceOrder::Runner);
-	Services.AddService<TimerService>(ServiceOrder::Timer);
-	Services.AddService<InputService>(ServiceOrder::Input, InputManagerContext);
-	Services.AddService<PhysicsService>(ServiceOrder::Physics);
-	Services.AddService<RenderService>(ServiceOrder::Render, Renderer, std::make_unique<ResourceHandler>(Renderer), std::make_unique<Camera>(800.0f, 600.0f));
-	Services.AddService<WorldService>(ServiceOrder::World);
-	Services.AddService<ObjectPoolService>(ServiceOrder::ObjectPool, Prefabs);
-
-	Prefabs.SetServices(Services);
+	// Register systems (logic - order matters)
+	Systems.AddSystem<ClockSystem>(SystemOrder::Clock, Services);
+	Systems.AddSystem<TimerSystem>(SystemOrder::Timer, Services);
+	Systems.AddSystem<QuadTreeCollisionSystem>(SystemOrder::Collision, Services);
+	Systems.AddSystem<CollisionResponseSystem>(SystemOrder::CollisionResponse, Services);
+	Systems.AddSystem<WorldSystem>(SystemOrder::World, Services);
+	Systems.AddSystem<RenderSystem>(SystemOrder::Render, Services);
 }
 
 Engine::~Engine()
 {
-	if (Renderer) {
-		SDL_DestroyRenderer(Renderer);
-	}
-	if (Window) {
-		SDL_DestroyWindow(Window);
-	}
-	SDL_Quit();
+	// Services are destroyed in reverse order of registration
+	// PlatformService destructor calls SDL_Quit()
 }
 
 void Engine::Run()
 {
-	if (!Mode) {
+	if (!Services.Get<GameModeService>().GetCurrentMode()) {
 		SDL_Log("Engine cannot run without a game mode.");
 		return;
 	}
-	Services.Init();
+	Systems.Init();
 
-	while (!Quit) {
-		// Begin input frame
-		auto& inputService = Services.Get<InputService>();
-		inputService.BeginFrame();
+	auto& platform = Services.Get<PlatformService>();
 
-		// Process events
-		SDL_Event _event;
-		while (SDL_PollEvent(&_event)) {
-			if (_event.type == SDL_EVENT_QUIT) {
-				Quit = true;
-			}
-			inputService.ProcessEvent(_event);
+	while (!Quit && platform.HasOpenWindows()) {
+		// Poll and process all platform events
+		if (platform.PollEvents()) {
+			Quit = true;
 		}
 
-		// End input frame
-		inputService.EndFrame();
-
-		// Clear screen
-		SDL_SetRenderDrawColor(Renderer, 0, 0, 0, 255);
-		SDL_RenderClear(Renderer);
-
-		// Update and render
-		Services.Update();
-
-		// Present
-		SDL_RenderPresent(Renderer);
+		// Update systems (RenderSystem calls RenderContextService::RenderAllContexts)
+		Systems.Update();
 
 		// Frame rate limiting (approximately 120 FPS)
 		SDL_Delay(8);
 	}
 
-	Services.Shutdown();
+	Systems.Shutdown();
 }
 
-World& Engine::GetWorld()
+WorldService& Engine::GetWorldService()
 {
-	return Services.Get<WorldService>().GetWorld();
+	return Services.Get<WorldService>();
 }
 
 GameServiceHost& Engine::GetServices()
@@ -112,13 +152,93 @@ InputManager& Engine::GetInputManager()
 	return InputManagerContext;
 }
 
-PrefabSystem& Engine::GetPrefabs()
+PrefabService& Engine::GetPrefabs()
 {
-	return Prefabs;
+	return Services.Get<PrefabService>();
 }
 
 void Engine::SetGameMode(std::unique_ptr<GameMode> _mode)
 {
-	Mode = std::move(_mode);
-	Services.Get<WorldService>().SetGameMode(Mode.get());
+	Services.Get<GameModeService>().SetGameMode(std::move(_mode));
+}
+
+RenderContextId Engine::CreateDebugWindow(
+	const WindowConfig& config,
+	std::unique_ptr<IRenderMode> renderMode,
+	const Vec2& cameraPosition)
+{
+	auto& platform = Services.Get<PlatformService>();
+	auto& contextService = Services.Get<RenderContextService>();
+	auto& textureService = Services.Get<TextureService>();
+
+	// Create the window
+	WindowId windowId = platform.CreateWindow(config);
+	if (windowId == InvalidWindowId) {
+		SDL_Log("Failed to create debug window");
+		return InvalidRenderContextId;
+	}
+
+	// Get the window handle
+	WindowHandle* window = platform.GetWindow(windowId);
+	if (!window) {
+		SDL_Log("Failed to get debug window handle");
+		return InvalidRenderContextId;
+	}
+
+	// Create renderer for this window
+	auto renderer = std::make_unique<SDL3Renderer>(static_cast<SDL_Window*>(window->NativeHandle));
+
+	// Set up camera at the specified position
+	Camera debugCamera(static_cast<float>(config.Width), static_cast<float>(config.Height));
+	debugCamera.SetPosition(cameraPosition);
+
+	// Create the render context
+	RenderContextId contextId = contextService.CreateContext(
+		windowId,
+		std::move(renderer),
+		std::move(renderMode),
+		debugCamera,
+		config.Title
+	);
+
+	if (contextId == InvalidRenderContextId) {
+		SDL_Log("Failed to create debug render context");
+		platform.DestroyWindow(windowId);
+		return InvalidRenderContextId;
+	}
+
+	// Sync textures from primary context to the new debug context
+	// SDL textures are renderer-specific, so we need to duplicate them
+	RenderContext* primaryContext = contextService.GetPrimaryContext();
+	RenderContext* debugContext = contextService.GetContext(contextId);
+	if (primaryContext && primaryContext->Graphics && debugContext && debugContext->Graphics) {
+		contextService.SyncTextures(*primaryContext->Graphics, *debugContext->Graphics, textureService);
+	}
+
+	return contextId;
+}
+
+void Engine::CloseDebugWindow(RenderContextId contextId)
+{
+	auto& contextService = Services.Get<RenderContextService>();
+	auto& platform = Services.Get<PlatformService>();
+
+	RenderContext* context = contextService.GetContext(contextId);
+	if (!context) {
+		return;
+	}
+
+	// Don't allow closing the primary context this way
+	if (contextId == contextService.GetPrimaryContextId()) {
+		SDL_Log("Cannot close primary render context via CloseDebugWindow");
+		return;
+	}
+
+	WindowId windowId = context->Window;
+	
+	// Destroy the context first (shuts down renderer)
+	contextService.DestroyContext(contextId);
+	
+	// Then destroy the window
+	platform.DestroyWindow(windowId);
 }

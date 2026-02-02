@@ -1,14 +1,15 @@
 #include <game/components/PatrolAIComponent.h>
-#include <core/Entity.h>
-#include <core/engine/GameServiceHost.h>
-#include <core/engine/RunnerService.h>
-#include <core/animation/AnimationStateMachine.h>
-#include <game/components/PhysicsComponent.h>
+#include <core/entity/Entity.h>
+#include <core/framework/GameServiceHost.h>
+#include <core/timing/TimeService.h>
+#include <core/components/AnimatorComponent.h>
+#include <core/components/RigidBody2D.h>
 
-PatrolAIComponent::PatrolAIComponent(Entity& _entity, GameServiceHost& _context, float _speed)
-	:Component(_entity, _context),
-	MoveSpeed(_speed),
-	PhysicsHandle(nullptr)
+PatrolAIComponent::PatrolAIComponent(Actor& _entity, GameServiceHost& _context, float _speed)
+	: ActorComponent(_entity, _context)
+	, Time(_context.Get<TimeService>())
+	, MoveSpeed(_speed)
+	, PhysicsHandle(nullptr)
 {
 }
 
@@ -20,19 +21,19 @@ PatrolAIComponent::~PatrolAIComponent()
 void PatrolAIComponent::Start()
 {
 	Lives = 2;
-	Animator = ParentEntity.GetAnimator();
-	LastTurnAround = Context.Get<RunnerService>().GetElapsedTime();
-	PhysicsHandle = ParentEntity.GetComponent<PhysicsComponent>();
+	Animator = Owner.GetComponent<AnimatorComponent>();
+	LastTurnAround = Time.GetElapsedTime();
+	PhysicsHandle = Owner.GetComponent<RigidBody2DComponent>();
 }
 
 void PatrolAIComponent::Update()
 {
 	if (PhysicsHandle && PhysicsHandle->IsGrounded()) {
-		Vec2 _patrolVelocity = ParentEntity.GetDirection();
+		Vec2 _patrolVelocity = Owner.GetDirection();
 		_patrolVelocity.y = PhysicsHandle->GetVelocity().y;
 		_patrolVelocity.x *= MoveSpeed;
 		PhysicsHandle->SetVelocity(_patrolVelocity);
-		float _currentTime = Context.Get<RunnerService>().GetElapsedTime();
+		float _currentTime = Time.GetElapsedTime();
 
 		if (_currentTime - Interval > LastTurnAround) {
 			ChangeDirection();
@@ -42,20 +43,17 @@ void PatrolAIComponent::Update()
 	else if (PhysicsHandle) {
 		PhysicsHandle->SetVelocity(0.0f, PhysicsHandle->GetVelocity().y);
 	}
-}
 
-void PatrolAIComponent::PostUpdate()
-{
-	ParentEntity.GetSprite().SetFlipX(ParentEntity.GetDirection().x < 0);
+	Owner.GetSprite().SetFlipX(Owner.GetDirection().x < 0);
 	Animator->PlayAnimation("idle");
 }
 
 void PatrolAIComponent::ChangeDirection()
 {
-	ParentEntity.SetDirection(ParentEntity.GetDirection() * -1.0f);
+	Owner.SetDirection(Owner.GetDirection() * -1.0f);
 }
 
-void PatrolAIComponent::OnCollide(Entity& _other)
+void PatrolAIComponent::OnCollide(Actor& _other)
 {
 	if (_other.GetTag() == bullet) {
 		Damage();
@@ -66,15 +64,15 @@ void PatrolAIComponent::Damage()
 {
 	Lives--;
 	if (Lives <= 0) {
-		ParentEntity.Disable();
+		Owner.Disable();
 		return;
 	}
-	ParentEntity.GetSprite().SetFlipX(ParentEntity.GetDirection().x < 0);
+	Owner.GetSprite().SetFlipX(Owner.GetDirection().x < 0);
 	Animator->PlayAnimation("damage");
 }
 
 //absolutely useless
 void PatrolAIComponent::Die()
 {
-	ParentEntity.Disable();
+	Owner.Disable();
 }

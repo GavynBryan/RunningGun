@@ -1,38 +1,47 @@
 #pragma once
-#include <SDL3/SDL.h>
 #include <memory>
-#include <core/engine/GameServiceHost.h>
-#include <core/PrefabSystem.h>
-#include <core/InputManager.h>
+#include <core/framework/GameServiceHost.h>
+#include <core/framework/SystemHost.h>
+#include <core/input/InputManager.h>
+#include <core/platform/PlatformService.h>
+#include <core/rendering/RenderContext.h>
 
-class World;
 class GameMode;
+class PrefabService;
+class WorldService;
+class IRenderMode;
+struct Vec2;
 
 class Engine
 {
 private:
-	SDL_Window*								Window;
-	SDL_Renderer*							Renderer;
 	bool									Quit;
 
-	std::unique_ptr<GameMode>				Mode;
-
-private:
 	GameServiceHost							Services;
+	SystemHost								Systems;
 	InputManager							InputManagerContext;
-	PrefabSystem							Prefabs;
 
 public:
 	void	Run();
 	void	QuitGame() { Quit = true; }
 
-	SDL_Renderer* GetRenderer() { return Renderer; }
-	World& GetWorld();
+	WorldService& GetWorldService();
 	GameServiceHost& GetServices();
 	InputManager& GetInputManager();
-	PrefabSystem& GetPrefabs();
+	PrefabService& GetPrefabs();
 
 	void SetGameMode(std::unique_ptr<GameMode> _mode);
+
+	// Create a debug window with independent camera and render mode
+	// Returns InvalidRenderContextId on failure
+	RenderContextId CreateDebugWindow(
+		const WindowConfig& config,
+		std::unique_ptr<IRenderMode> renderMode,
+		const Vec2& cameraPosition
+	);
+
+	// Close a debug window and its render context
+	void CloseDebugWindow(RenderContextId contextId);
 
 	Engine();
 	~Engine();

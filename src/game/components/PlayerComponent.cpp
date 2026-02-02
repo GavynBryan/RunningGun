@@ -1,36 +1,40 @@
 #include <game/components/PlayerComponent.h>
-#include <game/components/PhysicsComponent.h>
+#include <core/components/RigidBody2D.h>
+#include <core/components/AnimatorComponent.h>
 #include <game/components/ProjectileComponent.h>
 #include <game/actions/PlayerActions.h>
-#include <core/Entity.h>
-#include <core/engine/GameServiceHost.h>
-#include <core/engine/InputService.h>
-#include <core/engine/ObjectPoolService.h>
-#include <core/engine/RunnerService.h>
-#include <core/MathUtils.h>
+#include <core/entity/Entity.h>
+#include <core/framework/GameServiceHost.h>
+#include <core/input/InputService.h>
+#include <core/world/ObjectPoolService.h>
+#include <core/timing/TimeService.h>
+#include <core/math/MathUtils.h>
 
-PlayerComponent::PlayerComponent(Entity& _entity, GameServiceHost& _context, const PlayerInputConfig& _inputConfig)
-	:Component(_entity, _context),
-	Lives(5),
-	PlayerSpeed(350),
-	GroundAcceleration(2000.0f),
-	GroundDeceleration(3500.0f),
-	Animator(nullptr),
-	PhysicsHandle(nullptr),
-	BulletOffset(32, 18),
-	LastShotTime(0),
-	MovementIntent(0.0f, 0.0f),
-	IsInvulnerable(false),
-	InvulnerabilityEndTime(0),
-	IsInputEnabled(true),
-	MoveLeftActionHandle(std::make_unique<MoveLeftAction>()),
-	MoveRightActionHandle(std::make_unique<MoveRightAction>()),
-	JumpActionHandle(std::make_unique<JumpAction>()),
-	ShootActionHandle(std::make_unique<ShootAction>()),
-	InputConfig(_inputConfig)
+PlayerComponent::PlayerComponent(Actor& _entity, GameServiceHost& _context, const PlayerInputConfig& _inputConfig)
+	: ActorComponent(_entity, _context)
+	, Time(_context.Get<TimeService>())
+	, Input(_context.Get<InputService>())
+	, ObjectPool(_context.Get<ObjectPoolService>())
+	, Lives(5)
+	, PlayerSpeed(350)
+	, GroundAcceleration(2000.0f)
+	, GroundDeceleration(3500.0f)
+	, Animator(nullptr)
+	, PhysicsHandle(nullptr)
+	, BulletOffset(32, 18)
+	, LastShotTime(0)
+	, MovementIntent(0.0f, 0.0f)
+	, IsInvulnerable(false)
+	, InvulnerabilityEndTime(0)
+	, IsInputEnabled(true)
+	, MoveLeftActionHandle(std::make_unique<MoveLeftAction>())
+	, MoveRightActionHandle(std::make_unique<MoveRightAction>())
+	, JumpActionHandle(std::make_unique<JumpAction>())
+	, ShootActionHandle(std::make_unique<ShootAction>())
+	, InputConfig(_inputConfig)
 {
 	//set initial direction (right)
-	ParentEntity.SetDirection(1, 0);
+	Owner.SetDirection(1, 0);
 }
 
 
@@ -44,15 +48,15 @@ void PlayerComponent::Start()
 	IsInvulnerable = false;
 	IsInputEnabled = true;
 
-	Animator = ParentEntity.GetAnimator();
-	PhysicsHandle = ParentEntity.GetComponent<PhysicsComponent>();
+	Animator = Owner.GetComponent<AnimatorComponent>();
+	PhysicsHandle = Owner.GetComponent<RigidBody2DComponent>();
 }
 
 void PlayerComponent::Update()
 {
 	// Check invulnerability cooldown
 	if (IsInvulnerable) {
-		if (Context.Get<RunnerService>().GetElapsedTime() >= InvulnerabilityEndTime) {
+		if (Time.GetElapsedTime() >= InvulnerabilityEndTime) {
 			IsInvulnerable = false;
 		}
 	}
@@ -63,16 +67,12 @@ void PlayerComponent::Update()
 
 	ApplyMovementIntent();
 	HandleAnimations();
-}
-
-void PlayerComponent::PostUpdate()
-{
 	OrientDirection();
 }
 
 void PlayerComponent::HandleAnimations()
 {
-	ParentEntity.GetSprite().SetFlipX(ParentEntity.GetDirection().x < 0);
+	Owner.SetFlipX(Owner.GetDirection().x < 0);
 	Vec2 _velocity = PhysicsHandle ? PhysicsHandle->GetVelocity() : Vec2(0.0f, 0.0f);
 
 	if (_velocity.x != 0) {
@@ -86,25 +86,25 @@ void PlayerComponent::HandleAnimations()
 void PlayerComponent::ShootBullet()
 {
 	//update the shooting cooldown
-	auto _currentTime = Context.Get<RunnerService>().GetElapsedTime();
+	auto _currentTime = Time.GetElapsedTime();
 	if (_currentTime - BulletCoolDown > LastShotTime) {
 		LastShotTime = _currentTime;
 		//borrow bullet from object pool
-		auto* _bullet = Context.Get<ObjectPoolService>().FetchPrefab("bullet");
+		auto* _bullet = ObjectPool.FetchPrefab("bullet");
 
 		//set position based off of player's direction
-		auto _position = ParentEntity.GetPosition();
-		float _xOrigin = _position.x +(ParentEntity.GetBoundingRect().width / 2);
-		_position.x = _xOrigin + (ParentEntity.GetDirection().x * BulletOffset.x);
+		auto _position = Owner.GetPosition();
+		float _xOrigin = _position.x + (Owner.GetWidth() / 2);
+		_position.x = _xOrigin + (Owner.GetDirection().x * BulletOffset.x);
 		_position.y += BulletOffset.y;
 		if (_bullet != nullptr) {
 			if (auto* _projectileComponent = _bullet->GetComponent<ProjectileComponent>()) {
-				_projectileComponent->Activate(&ParentEntity);
+				_projectileComponent->Activate(&Owner);
 			}
 			_bullet->SetPosition(_position);
 		}
 		if (!PhysicsHandle || PhysicsHandle->GetVelocity().x == 0) {
-			ParentEntity.GetSprite().SetFlipX(ParentEntity.GetDirection().x < 0);
+			Owner.SetFlipX(Owner.GetDirection().x < 0);
 			Animator->PlayAnimation("shoot");
 		}
 	}
@@ -116,7 +116,7 @@ void PlayerComponent::OrientDirection()
 	if (PhysicsHandle && PhysicsHandle->GetVelocity().x != 0) {
 		Vec2 _direction = PhysicsHandle->GetVelocity();
 		_direction.y = 0;
-		ParentEntity.SetDirection(VectorMath::Normalize(_direction));
+		Owner.SetDirection(VectorMath::Normalize(_direction));
 	}
 }
 
@@ -142,7 +142,7 @@ void PlayerComponent::ApplyMovementIntent()
 	if (!PhysicsHandle) {
 		return;
 	}
-	const float _deltaTime = Context.Get<RunnerService>().GetDeltaTime();
+	const float _deltaTime = Time.GetDeltaTime();
 	if (_deltaTime <= 0.0f) {
 		return;
 	}
@@ -174,7 +174,7 @@ void PlayerComponent::SetVerticalVelocity(float y)
 
 void PlayerComponent::HandleInput()
 {
-	auto& _input = Context.Get<InputService>().GetInput();
+	auto& _input = Input.GetInput();
 
 	MovementIntent = Vec2(0.0f, 0.0f);
 
@@ -216,14 +216,14 @@ void PlayerComponent::OnDamage()
 	Lives--;
 
 	// Play damage animation
-	ParentEntity.GetSprite().SetFlipX(ParentEntity.GetDirection().x < 0);
+	Owner.SetFlipX(Owner.GetDirection().x < 0);
 	Animator->PlayAnimation("damage");
 
 	if (Lives <= 0) {
 		OnDeath();
 	} else {
 		IsInvulnerable = true;
-		InvulnerabilityEndTime = Context.Get<RunnerService>().GetElapsedTime() + InvulnerabilityDuration;
+		InvulnerabilityEndTime = Time.GetElapsedTime() + InvulnerabilityDuration;
 	}
 }
 
@@ -233,7 +233,7 @@ void PlayerComponent::OnDeath()
 	Freeze();
 
 	// Broadcast through component's own delegate
-	OnDied.Broadcast(&ParentEntity);
+	OnDied.Broadcast(&Owner);
 }
 
 void PlayerComponent::OnVictory()
@@ -242,7 +242,7 @@ void PlayerComponent::OnVictory()
 	Freeze();
 }
 
-void PlayerComponent::OnCollide(Entity& _other)
+void PlayerComponent::OnCollide(Actor& _other)
 {
 	if (_other.GetTag() == hazard || _other.GetTag() == enemy_bullet) {
 		OnDamage();
