@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 #include <core/base/Actor.h>
-#include <core/components/TransformComponent.h>
 #include <core/services/framework/GameServiceHost.h>
 #include <core/services/logging/LoggingService.h>
 #include <cmath>
@@ -235,26 +234,13 @@ TEST_F(ActorHierarchyTest, ReparentPreservesWorldPosition) {
     EXPECT_TRUE(NearEqual(localAfter, Vec2(-50.0f, 100.0f)));
 }
 
-// ============== TransformComponent Tests ==============
-
-TEST_F(ActorHierarchyTest, TransformHierarchySyncsWithActorHierarchy) {
-    Actor parent;
-    Actor child;
-
-    auto* parentTransform = parent.GetTransform();
-    auto* childTransform = child.GetTransform();
-
-    child.SetParent(&parent);
-
-    EXPECT_EQ(childTransform->GetParent(), parentTransform);
-}
+// ============== Transform Tests ==============
 
 TEST_F(ActorHierarchyTest, TransformLocalToWorldWorks) {
     Actor parent;
     parent.SetPosition(100.0f, 100.0f);
 
-    auto* transform = parent.GetTransform();
-    Vec2 worldPoint = transform->LocalToWorld(Vec2(50.0f, 50.0f));
+    Vec2 worldPoint = parent.LocalToWorld(Vec2(50.0f, 50.0f));
 
     EXPECT_TRUE(NearEqual(worldPoint, Vec2(150.0f, 150.0f)));
 }
@@ -263,8 +249,7 @@ TEST_F(ActorHierarchyTest, TransformWorldToLocalWorks) {
     Actor parent;
     parent.SetPosition(100.0f, 100.0f);
 
-    auto* transform = parent.GetTransform();
-    Vec2 localPoint = transform->WorldToLocal(Vec2(150.0f, 150.0f));
+    Vec2 localPoint = parent.WorldToLocal(Vec2(150.0f, 150.0f));
 
     EXPECT_TRUE(NearEqual(localPoint, Vec2(50.0f, 50.0f)));
 }
@@ -273,11 +258,11 @@ TEST_F(ActorHierarchyTest, ScaleInheritsFromParent) {
     Actor parent;
     Actor child;
 
-    parent.GetTransform()->SetLocalScale(2.0f, 2.0f);
+    parent.SetLocalScale(2.0f, 2.0f);
     child.SetParent(&parent);
-    child.GetTransform()->SetLocalScale(0.5f, 0.5f);
+    child.SetLocalScale(0.5f, 0.5f);
 
-    Vec2 worldScale = child.GetTransform()->GetScale();
+    Vec2 worldScale = child.GetScale();
     EXPECT_TRUE(NearEqual(worldScale, Vec2(1.0f, 1.0f)));
 }
 
@@ -285,11 +270,11 @@ TEST_F(ActorHierarchyTest, RotationInheritsFromParent) {
     Actor parent;
     Actor child;
 
-    parent.GetTransform()->SetLocalRotation(45.0f);
+    parent.SetLocalRotation(45.0f);
     child.SetParent(&parent);
-    child.GetTransform()->SetLocalRotation(30.0f);
+    child.SetLocalRotation(30.0f);
 
-    float worldRotation = child.GetTransform()->GetRotation();
+    float worldRotation = child.GetRotation();
     EXPECT_NEAR(worldRotation, 75.0f, 0.001f);
 }
 

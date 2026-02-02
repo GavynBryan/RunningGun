@@ -1,5 +1,4 @@
 #include <core/base/Actor.h>
-#include <core/components/TransformComponent.h>
 #include <core/components/SpriteComponent.h>
 #include <typeindex>
 #include <algorithm>
@@ -20,6 +19,8 @@ Actor::~Actor()
 	DetachAllChildren();
 }
 
+// ========== Component Management ==========
+
 void Actor::AttachComponent(std::unique_ptr<ActorComponent> comp)
 {
 	// Get type and raw pointer before moving
@@ -31,11 +32,6 @@ void Actor::AttachComponent(std::unique_ptr<ActorComponent> comp)
 
 	// Add to flat list for iteration order
 	AllComponents.push_back(rawPtr);
-
-	// Cache transform if this is a TransformComponent
-	if (!Transform) {
-		Transform = GetComponent<TransformComponent>();
-	}
 
 	// Notify subscribers of component change
 	OnComponentsChanged.Broadcast();
@@ -68,11 +64,6 @@ bool Actor::RemoveComponent(ActorComponent& comp)
 		AllComponents.end()
 	);
 
-	// Invalidate Transform cache if needed
-	if (target == Transform) {
-		Transform = nullptr;
-	}
-
 	// Remove from bucket (this destroys the component)
 	bucket.erase(compIt);
 
@@ -101,6 +92,11 @@ void Actor::SetParent(Actor* newParent, bool preserveWorldPosition)
 		return;
 	}
 
+	// Cache world transform before re-parenting
+	Vec2 worldPos = GetPosition();
+	Vec2 worldScale = GetScale();
+	float worldRot = GetRotation();
+
 	// Detach from current parent
 	if (Parent) {
 		Parent->RemoveChild(this);
@@ -113,15 +109,23 @@ void Actor::SetParent(Actor* newParent, bool preserveWorldPosition)
 		Parent->AddChild(this);
 	}
 
-	// Sync Transform hierarchy
-	EnsureTransform();
-	if (Transform) {
-		TransformComponent* parentTransform = nullptr;
+	// Preserve world transform by adjusting local values
+	if (preserveWorldPosition) {
 		if (Parent) {
-			const_cast<Actor*>(Parent)->EnsureTransform();
-			parentTransform = Parent->Transform;
+			LocalTransform.Position = WorldToLocal(worldPos);
+			// Approximate scale/rotation preservation
+			Vec2 parentScale = Parent->GetScale();
+			if (parentScale.x != 0.0f && parentScale.y != 0.0f) {
+				LocalTransform.Scale.x = worldScale.x / parentScale.x;
+				LocalTransform.Scale.y = worldScale.y / parentScale.y;
+			}
+			LocalTransform.Rotation = worldRot - Parent->GetRotation();
+		} else {
+			// Becoming root - local becomes world
+			LocalTransform.Position = worldPos;
+			LocalTransform.Scale = worldScale;
+			LocalTransform.Rotation = worldRot;
 		}
-		Transform->SetParent(parentTransform, preserveWorldPosition);
 	}
 
 	// Notify subscribers
@@ -179,12 +183,7 @@ void Actor::RemoveChild(Actor* child)
 	}
 }
 
-void Actor::EnsureTransform()
-{
-	if (!Transform) {
-		Transform = GetComponent<TransformComponent>();
-	}
-}
+// ========== Lifecycle ==========
 
 void Actor::StartComponents()
 {
@@ -202,7 +201,6 @@ void Actor::UpdateComponents()
 
 void Actor::Start()
 {
-	EnsureTransform();
 	if (Activated) {
 		StartComponents();
 	}
@@ -215,80 +213,95 @@ void Actor::Update()
 	}
 }
 
-void Actor::SetPosition(const Vec2& pos)
+// ========== World Position ==========
+
+void Actor::SetPosition(const Vec2& position)
 {
-	EnsureTransform();
-	if (Transform) {
-		Transform->SetPosition(pos);
+	if (Parent) {
+		LocalTransform.Position = Parent->WorldToLocal(position);
+	} else {
+		LocalTransform.Position = position;
 	}
 }
 
 void Actor::SetPosition(float x, float y)
 {
-	EnsureTransform();
-	if (Transform) {
-		Transform->SetPosition(x, y);
-	}
+	SetPosition(Vec2(x, y));
 }
 
 Vec2 Actor::GetPosition() const
 {
-	const_cast<Actor*>(this)->EnsureTransform();
-	if (Transform) {
-		return Transform->GetPosition();
-	}
-	return Vec2(0.0f, 0.0f);
+	return LocalToWorld(Vec2(0.0f, 0.0f));
 }
 
-void Actor::SetLocalPosition(const Vec2& pos)
+Vec2& Actor::GetPosition()
 {
-	EnsureTransform();
-	if (Transform) {
-		Transform->SetLocalPosition(pos);
-	}
+	CachedWorldPosition = LocalToWorld(Vec2(0.0f, 0.0f));
+	return CachedWorldPosition;
 }
 
-void Actor::SetLocalPosition(float x, float y)
+// ========== World Scale ==========
+
+Vec2 Actor::GetScale() const
 {
-	EnsureTransform();
-	if (Transform) {
-		Transform->SetLocalPosition(x, y);
+	if (Parent) {
+		Vec2 parentScale = Parent->GetScale();
+		return Vec2(LocalTransform.Scale.x * parentScale.x, LocalTransform.Scale.y * parentScale.y);
 	}
+	return LocalTransform.Scale;
 }
 
-Vec2 Actor::GetLocalPosition() const
+// ========== World Rotation ==========
+
+float Actor::GetRotation() const
 {
-	const_cast<Actor*>(this)->EnsureTransform();
-	if (Transform) {
-		return Transform->GetLocalPosition();
+	if (Parent) {
+		return LocalTransform.Rotation + Parent->GetRotation();
 	}
-	return Vec2(0.0f, 0.0f);
+	return LocalTransform.Rotation;
 }
 
-void Actor::SetDirection(const Vec2& dir)
+// ========== Transform2D ==========
+
+Transform2D Actor::GetTransform() const
 {
-	EnsureTransform();
-	if (Transform) {
-		Transform->SetDirection(dir);
-	}
+	return Transform2D(GetPosition(), GetScale(), GetRotation());
 }
 
-void Actor::SetDirection(float x, float y)
+Transform2D& Actor::GetTransform()
 {
-	EnsureTransform();
-	if (Transform) {
-		Transform->SetDirection(x, y);
-	}
+	CachedWorldTransform = Transform2D(GetPosition(), GetScale(), GetRotation());
+	return CachedWorldTransform;
 }
 
-Vec2 Actor::GetDirection() const
+// ========== Coordinate Transforms ==========
+
+Vec2 Actor::LocalToWorld(const Vec2& localPoint) const
 {
-	const_cast<Actor*>(this)->EnsureTransform();
-	if (Transform) {
-		return Transform->GetDirection();
+	// Use Transform2D's LocalToWorld for the local transform math
+	Vec2 translated = LocalTransform.LocalToWorld(localPoint);
+
+	// Recurse to parent if present
+	if (Parent) {
+		return Parent->LocalToWorld(translated);
 	}
-	return Vec2(1.0f, 0.0f);
+	return translated;
 }
+
+Vec2 Actor::WorldToLocal(const Vec2& worldPoint) const
+{
+	Vec2 point = worldPoint;
+
+	// Transform from parent space first
+	if (Parent) {
+		point = Parent->WorldToLocal(point);
+	}
+
+	// Use Transform2D's WorldToLocal for the local transform math
+	return LocalTransform.WorldToLocal(point);
+}
+
+// ========== Sprite Convenience ==========
 
 void Actor::SetFlipX(bool flip)
 {

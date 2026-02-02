@@ -2,8 +2,7 @@
 #include <core/engine/rendering/IGraphicsAPI.h>
 #include <core/engine/rendering/Camera.h>
 #include <core/services/rendering/RenderableRegistry.h>
-#include <core/components/SpriteComponent.h>
-#include <core/components/TransformComponent.h>
+#include <core/rendering/IRenderable.h>
 #include <cmath>
 #include <algorithm>
 #include <vector>
@@ -31,23 +30,23 @@ void RenderMode25D::RenderScene(IGraphicsAPI& graphics, RenderableRegistry& regi
 	// Collect visible sprites with distance
 	struct SpriteToDraw
 	{
-		const Renderable* renderable;
+		const IRenderable* renderable;
 		float distance;
 		float screenX;
 		float scale;
 	};
 	std::vector<SpriteToDraw> spritesToDraw;
 
-	for (const auto& renderable : renderables) {
-		if (!renderable.IsValid() || !renderable.Sprite->IsVisible()) {
+	for (const auto* renderable : renderables) {
+		if (!renderable || !renderable->IsVisible()) {
 			continue;
 		}
 
-		Vec2 spritePos = renderable.Transform->GetPosition();
+		Transform2D transform = renderable->GetTransform();
 		
 		// Relative position to camera
-		float relX = spritePos.x - camPos.x;
-		float relY = spritePos.y - camPos.y;
+		float relX = transform.Position.x - camPos.x;
+		float relY = transform.Position.y - camPos.y;
 
 		// Transform sprite with inverse camera matrix
 		float invDet = 1.0f / (planeX * dirY - dirX * planeY);
@@ -66,7 +65,7 @@ void RenderMode25D::RenderScene(IGraphicsAPI& graphics, RenderableRegistry& regi
 		float scale = viewSize.y / transformY;
 
 		spritesToDraw.push_back({
-			&renderable,
+			renderable,
 			transformY,
 			screenX,
 			scale
@@ -82,8 +81,8 @@ void RenderMode25D::RenderScene(IGraphicsAPI& graphics, RenderableRegistry& regi
 
 	// Render sprites
 	for (const auto& sprite : spritesToDraw) {
-		SpriteComponent* spriteComp = sprite.renderable->Sprite;
-		Vec2 spriteSize = spriteComp->GetSize();
+		const IRenderable* renderable = sprite.renderable;
+		Vec2 spriteSize = renderable->GetSize();
 
 		float spriteWidth = spriteSize.x * sprite.scale;
 		float spriteHeight = spriteSize.y * sprite.scale;
@@ -92,12 +91,19 @@ void RenderMode25D::RenderScene(IGraphicsAPI& graphics, RenderableRegistry& regi
 		float drawY = (viewSize.y - spriteHeight) / 2.0f;
 
 		SpriteRenderParams params;
-		params.SourceRect = spriteComp->GetSourceRect();
+		if (renderable->HasSourceRect()) {
+			const auto& src = renderable->GetSourceRect();
+			params.SourceRect = Rectf(
+				static_cast<float>(src.x),
+				static_cast<float>(src.y),
+				static_cast<float>(src.width),
+				static_cast<float>(src.height)
+			);
+		}
 		params.DestRect = Rectf(drawX, drawY, spriteWidth, spriteHeight);
-		params.FlipX = spriteComp->GetFlipX();
-		params.FlipY = spriteComp->GetFlipY();
-		params.Tint = spriteComp->GetTint();
+		params.FlipX = renderable->GetFlipX();
+		params.FlipY = renderable->GetFlipY();
 
-		graphics.DrawSprite(spriteComp->GetTexture(), params);
+		graphics.DrawSprite(renderable->GetTexture(), params);
 	}
 }

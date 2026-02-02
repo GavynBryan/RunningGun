@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <core/base/Actor.h>
-#include <core/components/TransformComponent.h>
+#include <core/components/SpriteComponent.h>
 #include <core/services/framework/GameServiceHost.h>
 #include <core/services/logging/LoggingService.h>
 
@@ -21,12 +21,15 @@ TEST_F(ActorTest, DefaultConstruction) {
     EXPECT_EQ(actor.GetTag(), ACTOR_TAG::player);
 }
 
-TEST_F(ActorTest, GetTransformReturnsTransformComponent) {
+TEST_F(ActorTest, DefaultTransformValues) {
     Actor actor;
     
-    // Actor should auto-create a transform
-    auto* transform = actor.GetTransform();
-    EXPECT_NE(transform, nullptr);
+    // Actor has embedded transform with default values
+    EXPECT_FLOAT_EQ(actor.GetPosition().x, 0.0f);
+    EXPECT_FLOAT_EQ(actor.GetPosition().y, 0.0f);
+    EXPECT_FLOAT_EQ(actor.GetScale().x, 1.0f);
+    EXPECT_FLOAT_EQ(actor.GetScale().y, 1.0f);
+    EXPECT_FLOAT_EQ(actor.GetRotation(), 0.0f);
 }
 
 TEST_F(ActorTest, SetAndGetPosition) {
@@ -84,19 +87,19 @@ TEST_F(ActorTest, SetTag) {
 TEST_F(ActorTest, AttachComponent) {
     Actor actor;
     
-    auto transform = std::make_unique<TransformComponent>(actor, Services);
-    TransformComponent* rawPtr = transform.get();
+    auto sprite = std::make_unique<SpriteComponent>(actor, Services);
+    SpriteComponent* rawPtr = sprite.get();
     
-    actor.AttachComponent(std::move(transform));
+    actor.AttachComponent(std::move(sprite));
     
-    TransformComponent* retrieved = actor.GetComponent<TransformComponent>();
+    SpriteComponent* retrieved = actor.GetComponent<SpriteComponent>();
     EXPECT_EQ(retrieved, rawPtr);
 }
 
 TEST_F(ActorTest, GetComponentReturnsNullWhenNotPresent) {
     Actor actor;
     
-    // Assuming no SpriteComponent attached
+    // No SpriteComponent attached yet
     auto* sprite = actor.GetSprite();
     EXPECT_EQ(sprite, nullptr);
 }
@@ -109,122 +112,119 @@ TEST_F(ActorTest, OnComponentsChangedBroadcasts) {
         callCount++;
     });
     
-    auto transform = std::make_unique<TransformComponent>(actor, Services);
-    actor.AttachComponent(std::move(transform));
+    auto sprite = std::make_unique<SpriteComponent>(actor, Services);
+    actor.AttachComponent(std::move(sprite));
     
     EXPECT_EQ(callCount, 1);
 }
 
-// ============= TransformComponent Tests =============
+// ============= Actor Transform Tests =============
 
-class TransformComponentTest : public ::testing::Test
-{
-protected:
-    void SetUp() override {
-        Services.AddService<LoggingService>();
-        TestActor = std::make_unique<Actor>();
-    }
-
-    GameServiceHost Services;
-    std::unique_ptr<Actor> TestActor;
-};
-
-TEST_F(TransformComponentTest, DefaultValues) {
-    TransformComponent transform(*TestActor, Services);
+TEST_F(ActorTest, TransformDefaultValues) {
+    Actor actor;
     
-    EXPECT_FLOAT_EQ(transform.GetPosition().x, 0.0f);
-    EXPECT_FLOAT_EQ(transform.GetPosition().y, 0.0f);
-    EXPECT_FLOAT_EQ(transform.GetDirection().x, 1.0f);  // Default facing right
-    EXPECT_FLOAT_EQ(transform.GetDirection().y, 0.0f);
-    EXPECT_FLOAT_EQ(transform.GetScale().x, 1.0f);
-    EXPECT_FLOAT_EQ(transform.GetScale().y, 1.0f);
-    EXPECT_FLOAT_EQ(transform.GetRotation(), 0.0f);
+    EXPECT_FLOAT_EQ(actor.GetPosition().x, 0.0f);
+    EXPECT_FLOAT_EQ(actor.GetPosition().y, 0.0f);
+    EXPECT_FLOAT_EQ(actor.GetDirection().x, 1.0f);  // Default facing right
+    EXPECT_FLOAT_EQ(actor.GetDirection().y, 0.0f);
+    EXPECT_FLOAT_EQ(actor.GetScale().x, 1.0f);
+    EXPECT_FLOAT_EQ(actor.GetScale().y, 1.0f);
+    EXPECT_FLOAT_EQ(actor.GetRotation(), 0.0f);
 }
 
-TEST_F(TransformComponentTest, SetPosition) {
-    TransformComponent transform(*TestActor, Services);
+TEST_F(ActorTest, TransformSetPosition) {
+    Actor actor;
     
-    transform.SetPosition(100.0f, 200.0f);
+    actor.SetPosition(100.0f, 200.0f);
     
-    EXPECT_FLOAT_EQ(transform.GetPosition().x, 100.0f);
-    EXPECT_FLOAT_EQ(transform.GetPosition().y, 200.0f);
+    EXPECT_FLOAT_EQ(actor.GetPosition().x, 100.0f);
+    EXPECT_FLOAT_EQ(actor.GetPosition().y, 200.0f);
 }
 
-TEST_F(TransformComponentTest, SetPositionVec2) {
-    TransformComponent transform(*TestActor, Services);
+TEST_F(ActorTest, TransformSetPositionVec2) {
+    Actor actor;
     
-    transform.SetPosition(Vec2(50.0f, 75.0f));
+    actor.SetPosition(Vec2(50.0f, 75.0f));
     
-    EXPECT_FLOAT_EQ(transform.GetPosition().x, 50.0f);
-    EXPECT_FLOAT_EQ(transform.GetPosition().y, 75.0f);
+    EXPECT_FLOAT_EQ(actor.GetPosition().x, 50.0f);
+    EXPECT_FLOAT_EQ(actor.GetPosition().y, 75.0f);
 }
 
-TEST_F(TransformComponentTest, Translate) {
-    TransformComponent transform(*TestActor, Services);
-    transform.SetPosition(10.0f, 20.0f);
+TEST_F(ActorTest, TransformTranslate) {
+    Actor actor;
+    actor.SetPosition(10.0f, 20.0f);
     
-    transform.Translate(5.0f, 10.0f);
+    actor.Translate(5.0f, 10.0f);
     
-    EXPECT_FLOAT_EQ(transform.GetPosition().x, 15.0f);
-    EXPECT_FLOAT_EQ(transform.GetPosition().y, 30.0f);
+    EXPECT_FLOAT_EQ(actor.GetPosition().x, 15.0f);
+    EXPECT_FLOAT_EQ(actor.GetPosition().y, 30.0f);
 }
 
-TEST_F(TransformComponentTest, TranslateVec2) {
-    TransformComponent transform(*TestActor, Services);
-    transform.SetPosition(10.0f, 20.0f);
+TEST_F(ActorTest, TransformTranslateVec2) {
+    Actor actor;
+    actor.SetPosition(10.0f, 20.0f);
     
-    transform.Translate(Vec2(-5.0f, -10.0f));
+    actor.Translate(Vec2(-5.0f, -10.0f));
     
-    EXPECT_FLOAT_EQ(transform.GetPosition().x, 5.0f);
-    EXPECT_FLOAT_EQ(transform.GetPosition().y, 10.0f);
+    EXPECT_FLOAT_EQ(actor.GetPosition().x, 5.0f);
+    EXPECT_FLOAT_EQ(actor.GetPosition().y, 10.0f);
 }
 
-TEST_F(TransformComponentTest, SetDirection) {
-    TransformComponent transform(*TestActor, Services);
+TEST_F(ActorTest, TransformSetDirection) {
+    Actor actor;
     
-    transform.SetDirection(-1.0f, 0.0f);
+    actor.SetDirection(-1.0f, 0.0f);
     
-    EXPECT_FLOAT_EQ(transform.GetDirection().x, -1.0f);
-    EXPECT_FLOAT_EQ(transform.GetDirection().y, 0.0f);
+    EXPECT_FLOAT_EQ(actor.GetDirection().x, -1.0f);
+    EXPECT_FLOAT_EQ(actor.GetDirection().y, 0.0f);
 }
 
-TEST_F(TransformComponentTest, SetUniformScale) {
-    TransformComponent transform(*TestActor, Services);
+TEST_F(ActorTest, TransformSetUniformScale) {
+    Actor actor;
     
-    transform.SetScale(2.0f);
+    actor.SetScale(2.0f);
     
-    EXPECT_FLOAT_EQ(transform.GetScale().x, 2.0f);
-    EXPECT_FLOAT_EQ(transform.GetScale().y, 2.0f);
+    EXPECT_FLOAT_EQ(actor.GetScale().x, 2.0f);
+    EXPECT_FLOAT_EQ(actor.GetScale().y, 2.0f);
 }
 
-TEST_F(TransformComponentTest, SetNonUniformScale) {
-    TransformComponent transform(*TestActor, Services);
+TEST_F(ActorTest, TransformSetNonUniformScale) {
+    Actor actor;
     
-    transform.SetScale(2.0f, 3.0f);
+    actor.SetScale(2.0f, 3.0f);
     
-    EXPECT_FLOAT_EQ(transform.GetScale().x, 2.0f);
-    EXPECT_FLOAT_EQ(transform.GetScale().y, 3.0f);
+    EXPECT_FLOAT_EQ(actor.GetScale().x, 2.0f);
+    EXPECT_FLOAT_EQ(actor.GetScale().y, 3.0f);
 }
 
-TEST_F(TransformComponentTest, SetRotation) {
-    TransformComponent transform(*TestActor, Services);
+TEST_F(ActorTest, TransformSetRotation) {
+    Actor actor;
     
-    transform.SetRotation(45.0f);
+    actor.SetRotation(45.0f);
     
-    EXPECT_FLOAT_EQ(transform.GetRotation(), 45.0f);
+    EXPECT_FLOAT_EQ(actor.GetRotation(), 45.0f);
 }
 
-TEST_F(TransformComponentTest, Rotate) {
-    TransformComponent transform(*TestActor, Services);
-    transform.SetRotation(10.0f);
+TEST_F(ActorTest, TransformRotate) {
+    Actor actor;
+    actor.SetRotation(10.0f);
     
-    transform.Rotate(15.0f);
+    actor.Rotate(15.0f);
     
-    EXPECT_FLOAT_EQ(transform.GetRotation(), 25.0f);
+    EXPECT_FLOAT_EQ(actor.GetRotation(), 25.0f);
 }
 
-TEST_F(TransformComponentTest, GetName) {
-    TransformComponent transform(*TestActor, Services);
+TEST_F(ActorTest, GetTransform2DReturnsCorrectValues) {
+    Actor actor;
+    actor.SetPosition(100.0f, 200.0f);
+    actor.SetScale(2.0f, 3.0f);
+    actor.SetRotation(45.0f);
     
-    EXPECT_STREQ(transform.GetName(), "Transform");
+    Transform2D transform = actor.GetTransform();
+    
+    EXPECT_FLOAT_EQ(transform.Position.x, 100.0f);
+    EXPECT_FLOAT_EQ(transform.Position.y, 200.0f);
+    EXPECT_FLOAT_EQ(transform.Scale.x, 2.0f);
+    EXPECT_FLOAT_EQ(transform.Scale.y, 3.0f);
+    EXPECT_FLOAT_EQ(transform.Rotation, 45.0f);
 }

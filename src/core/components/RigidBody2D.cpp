@@ -5,7 +5,7 @@
 #include <core/collision/PhysicsService.h>
 #include <core/timing/TimeService.h>
 #include <core/world/WorldService.h>
-#include <core/services/component/ComponentRegistry.h>
+#include <core/services/component/ComponentFactory.h>
 #include <algorithm>
 #include <cmath>
 

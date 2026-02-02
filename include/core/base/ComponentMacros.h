@@ -41,8 +41,8 @@
 #include <core/serialization/ComponentMeta.h>
 #include <core/util/Json.h>
 
-// Forward declare the registry for auto-registration
-class ComponentRegistry;
+// Forward declare the factory for auto-registration
+class ComponentFactory;
 
 //-----------------------------------------------------------------------------
 // Auto-registration helper template
@@ -51,7 +51,7 @@ class ComponentRegistry;
 template<typename T>
 struct ComponentAutoRegister
 {
-	ComponentAutoRegister();  // Defined after ComponentRegistry is available
+	ComponentAutoRegister();  // Defined after ComponentFactory is available
 };
 
 //-----------------------------------------------------------------------------

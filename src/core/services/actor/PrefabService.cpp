@@ -4,7 +4,6 @@
 #include <core/services/rendering/TextureService.h>
 #include <core/services/animation/AnimationClipLibrary.h>
 #include <core/base/Actor.h>
-#include <core/components/TransformComponent.h>
 #include <core/components/SpriteComponent.h>
 #include <core/components/AnimatorComponent.h>
 #include <core/util/Json.h>
