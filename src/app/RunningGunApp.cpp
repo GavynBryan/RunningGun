@@ -1,4 +1,4 @@
-#include <game/app/RunningGunApp.h>
+#include <app/RunningGunApp.h>
 #include <core/engine/Engine.h>
 #include <core/input/InputManager.h>
 #include <core/rendering/TextureService.h>

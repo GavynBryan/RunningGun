@@ -1,4 +1,4 @@
-#include <game/app/RunningGunApp.h>
+#include <app/RunningGunApp.h>
 
 int main()
 {

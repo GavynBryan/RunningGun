@@ -5,7 +5,7 @@
 #include <core/math/Vec2.h>
 #include <core/events/MulticastDelegate.h>
 
-#include <BullStates.h>
+#include <game/BullStates.h>
 
 typedef std::unique_ptr<BullState> BullStatePtr;
 
