@@ -12,11 +12,15 @@ class GameServiceHost;
 
 // Tracks all actors in the game world with optional caching by Tag and Component type.
 // Handles adding/removing actors via queues to avoid iterator invalidation.
+// Subscribes to actor OnComponentsChanged for automatic cache invalidation.
 class ActorService final : public IService
 {
 public:
     ActorService();
     ~ActorService();
+
+    // Called each frame to rebuild caches if dirty
+    void Update();
 
     // Queue an actor for addition (processed during FlushAddQueue)
     void AddActor(std::unique_ptr<Actor> actor);
@@ -36,45 +40,46 @@ public:
     // Access all active actors
     const std::vector<Actor::Ptr>& GetActors() const { return Actors; }
 
-    // --- Tag-based queries ---
-    std::vector<Actor*> GetActorsByTag(ACTOR_TAG tag) const;
+    // --- Tag-based queries (use cached data) ---
+    const std::vector<Actor*>& GetActorsByTag(ACTOR_TAG tag) const;
     Actor* GetFirstActorByTag(ACTOR_TAG tag) const;
 
-    // --- Component-based queries (cached) ---
+    // --- Component-based queries (use cached data) ---
     template <typename Comp>
-    std::vector<Actor*> GetActorsWithComponent() const;
+    const std::vector<Actor*>& GetActorsWithComponent();
 
     template <typename Comp>
-    Actor* GetFirstActorWithComponent() const;
-
-    // Rebuild component caches (call after bulk actor changes)
-    void RebuildCaches();
-
-    // Invalidate caches (called automatically when actors change)
-    void InvalidateCaches() { CachesDirty = true; }
+    Actor* GetFirstActorWithComponent();
 
 private:
-    void EnsureCachesValid() const;
-    void RebuildTagCache() const;
-    void RebuildComponentCache() const;
+    void RebuildCachesIfDirty();
+    void RebuildTagCache();
+    void RebuildComponentCache();
+    void MarkCachesDirty() { CachesDirty = true; }
 
     std::vector<Actor::Ptr> Actors;
     std::vector<Actor::Ptr> AddQueue;
     std::unordered_set<Actor*> RemoveSet;
 
-    // Caches - mutable for lazy rebuild on const queries
-    mutable bool CachesDirty = true;
-    mutable std::unordered_map<ACTOR_TAG, std::vector<Actor*>> TagCache;
-    mutable std::unordered_map<std::type_index, std::vector<Actor*>> ComponentCache;
+    // Subscription handles for component change events
+    std::unordered_map<Actor*, DelegateHandle> ComponentChangeHandles;
+
+    // Dirty flag - set by component change callback, cleared after rebuild
+    bool CachesDirty = true;
+
+    // Caches
+    std::unordered_map<ACTOR_TAG, std::vector<Actor*>> TagCache;
+    std::unordered_map<std::type_index, std::vector<Actor*>> ComponentCache;
+
+    // Empty vector for returning references when no results
+    static const std::vector<Actor*> EmptyActorList;
 };
 
 // Template implementations
 
 template <typename Comp>
-std::vector<Actor*> ActorService::GetActorsWithComponent() const
+const std::vector<Actor*>& ActorService::GetActorsWithComponent()
 {
-    EnsureCachesValid();
-
     std::type_index typeIdx(typeid(Comp));
     auto it = ComponentCache.find(typeIdx);
     if (it != ComponentCache.end()) {
@@ -83,17 +88,22 @@ std::vector<Actor*> ActorService::GetActorsWithComponent() const
 
     // Not in cache yet - build for this component type
     std::vector<Actor*> result;
+    result.reserve(Actors.size() / 4); // Reasonable initial capacity
     for (const auto& actor : Actors) {
         if (actor->GetComponent<Comp>() != nullptr) {
             result.push_back(actor.get());
         }
     }
-    ComponentCache[typeIdx] = result;
-    return result;
+    auto [insertedIt, _] = ComponentCache.emplace(typeIdx, std::move(result));
+    return insertedIt->second;
 }
 
 template <typename Comp>
-Actor* ActorService::GetFirstActorWithComponent() const
+Actor* ActorService::GetFirstActorWithComponent()
+{
+    const auto& actors = GetActorsWithComponent<Comp>();
+    return actors.empty() ? nullptr : actors.front();
+}
 {
     auto actors = GetActorsWithComponent<Comp>();
     return actors.empty() ? nullptr : actors.front();

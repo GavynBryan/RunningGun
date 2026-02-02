@@ -3,8 +3,11 @@
 #include <vector>
 #include <memory>
 #include <cassert>
+#include <typeindex>
+#include <unordered_map>
 #include <core/math/Vec2.h>
 #include <core/entity/Component.h>
+#include <core/events/MulticastDelegate.h>
 
 class TransformComponent;
 class SpriteComponent;
@@ -17,10 +20,17 @@ enum ACTOR_TAG {
 	pickup
 };
 
+// Type alias for component storage
+using ComponentList = std::vector<std::unique_ptr<ActorComponent>>;
+
 class Actor
 {
 protected:
-	std::vector<std::unique_ptr<ActorComponent>> Components;
+	// Type-indexed map owns all components - O(1) lookup by type
+	std::unordered_map<std::type_index, ComponentList> ComponentsByType;
+
+	// Flat list for iteration order (Start/Update) - raw pointers, not owning
+	std::vector<ActorComponent*> AllComponents;
 
 	ACTOR_TAG			Tag = player;
 	bool				Activated = true;
@@ -37,11 +47,28 @@ public:
 	// Component management
 	void AttachComponent(std::unique_ptr<ActorComponent> comp);
 
+	// Remove a specific component by reference
+	bool RemoveComponent(ActorComponent& comp);
+
+	// Event broadcast when components are added/removed
+	MulticastDelegate<> OnComponentsChanged;
+
+	// Remove all components of a type
+	template <typename Comp>
+	size_t RemoveComponents();
+
 	template <typename Comp>
 	Comp* GetComponent();
 
 	template <typename Comp>
 	const Comp* GetComponent() const;
+
+	// Get all components of a type (for actors with multiple components of same type)
+	template <typename Comp>
+	std::vector<Comp*> GetComponents();
+
+	template <typename Comp>
+	std::vector<const Comp*> GetComponents() const;
 
 	// Lifecycle
 	virtual void Start();
@@ -92,20 +119,77 @@ private:
 
 template<typename Comp>
 Comp* Actor::GetComponent() {
-	for (auto& component : Components) {
-		if (auto* result = dynamic_cast<Comp*>(component.get())) {
-			return result;
-		}
+	auto it = ComponentsByType.find(std::type_index(typeid(Comp)));
+	if (it != ComponentsByType.end() && !it->second.empty()) {
+		return static_cast<Comp*>(it->second.front().get());
 	}
 	return nullptr;
 }
 
 template<typename Comp>
 const Comp* Actor::GetComponent() const {
-	for (const auto& component : Components) {
-		if (const auto* result = dynamic_cast<const Comp*>(component.get())) {
-			return result;
-		}
+	auto it = ComponentsByType.find(std::type_index(typeid(Comp)));
+	if (it != ComponentsByType.end() && !it->second.empty()) {
+		return static_cast<const Comp*>(it->second.front().get());
 	}
 	return nullptr;
+}
+
+template<typename Comp>
+std::vector<Comp*> Actor::GetComponents() {
+	std::vector<Comp*> results;
+	auto it = ComponentsByType.find(std::type_index(typeid(Comp)));
+	if (it != ComponentsByType.end()) {
+		results.reserve(it->second.size());
+		for (auto& comp : it->second) {
+			results.push_back(static_cast<Comp*>(comp.get()));
+		}
+	}
+	return results;
+}
+
+template<typename Comp>
+std::vector<const Comp*> Actor::GetComponents() const {
+	std::vector<const Comp*> results;
+	auto it = ComponentsByType.find(std::type_index(typeid(Comp)));
+	if (it != ComponentsByType.end()) {
+		results.reserve(it->second.size());
+		for (const auto& comp : it->second) {
+			results.push_back(static_cast<const Comp*>(comp.get()));
+		}
+	}
+	return results;
+}
+
+template<typename Comp>
+size_t Actor::RemoveComponents() {
+	std::type_index typeIdx(typeid(Comp));
+	auto it = ComponentsByType.find(typeIdx);
+	if (it == ComponentsByType.end()) {
+		return 0;
+	}
+
+	size_t count = it->second.size();
+
+	// Remove from AllComponents list
+	for (auto& comp : it->second) {
+		ActorComponent* rawPtr = comp.get();
+		AllComponents.erase(
+			std::remove(AllComponents.begin(), AllComponents.end(), rawPtr),
+			AllComponents.end()
+		);
+
+		// Invalidate Transform cache if needed
+		if (rawPtr == Transform) {
+			Transform = nullptr;
+		}
+	}
+
+	// Remove the entire type bucket
+	ComponentsByType.erase(it);
+
+	// Notify subscribers of component change
+	OnComponentsChanged.Broadcast();
+
+	return count;
 }

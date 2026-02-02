@@ -2,20 +2,49 @@
 #include <core/engine/framework/GameServiceHost.h>
 #include <algorithm>
 
+const std::vector<Actor*> ActorService::EmptyActorList;
+
 ActorService::ActorService() = default;
-ActorService::~ActorService() = default;
+
+ActorService::~ActorService()
+{
+    // Unsubscribe from all actors to be safe (actors may outlive service in edge cases)
+    for (auto& [actor, handle] : ComponentChangeHandles) {
+        actor->OnComponentsChanged.Unsubscribe(handle);
+    }
+}
+
+void ActorService::Update()
+{
+    RebuildCachesIfDirty();
+}
 
 void ActorService::AddActor(std::unique_ptr<Actor> actor)
 {
+    Actor* rawPtr = actor.get();
+
+    // Subscribe to component changes
+    DelegateHandle handle = actor->OnComponentsChanged.Subscribe([this]() {
+        MarkCachesDirty();
+    });
+    ComponentChangeHandles[rawPtr] = handle;
+
     AddQueue.push_back(std::move(actor));
-    InvalidateCaches();
+    CachesDirty = true;
 }
 
 void ActorService::RemoveActor(Actor* actor)
 {
     if (actor) {
+        // Unsubscribe from component changes
+        auto it = ComponentChangeHandles.find(actor);
+        if (it != ComponentChangeHandles.end()) {
+            actor->OnComponentsChanged.Unsubscribe(it->second);
+            ComponentChangeHandles.erase(it);
+        }
+
         RemoveSet.insert(actor);
-        InvalidateCaches();
+        CachesDirty = true;
     }
 }
 
@@ -46,48 +75,45 @@ void ActorService::FlushRemoveQueue()
 
 void ActorService::ClearAll()
 {
+    // Unsubscribe from all actors
+    for (auto& [actor, handle] : ComponentChangeHandles) {
+        actor->OnComponentsChanged.Unsubscribe(handle);
+    }
+    ComponentChangeHandles.clear();
+
     Actors.clear();
     AddQueue.clear();
     RemoveSet.clear();
-    InvalidateCaches();
+    CachesDirty = true;
 }
 
-std::vector<Actor*> ActorService::GetActorsByTag(ACTOR_TAG tag) const
+const std::vector<Actor*>& ActorService::GetActorsByTag(ACTOR_TAG tag) const
 {
-    EnsureCachesValid();
-
     auto it = TagCache.find(tag);
     if (it != TagCache.end()) {
         return it->second;
     }
-    return {};
+    return EmptyActorList;
 }
 
 Actor* ActorService::GetFirstActorByTag(ACTOR_TAG tag) const
 {
-    auto actors = GetActorsByTag(tag);
+    const auto& actors = GetActorsByTag(tag);
     return actors.empty() ? nullptr : actors.front();
 }
 
-void ActorService::RebuildCaches()
-{
-    CachesDirty = true;
-    EnsureCachesValid();
-}
-
-void ActorService::EnsureCachesValid() const
+void ActorService::RebuildCachesIfDirty()
 {
     if (!CachesDirty) {
         return;
     }
 
     RebuildTagCache();
-    // ComponentCache is rebuilt lazily per-type in GetActorsWithComponent
-    ComponentCache.clear();
+    RebuildComponentCache();
     CachesDirty = false;
 }
 
-void ActorService::RebuildTagCache() const
+void ActorService::RebuildTagCache()
 {
     TagCache.clear();
     for (const auto& actor : Actors) {
@@ -95,9 +121,8 @@ void ActorService::RebuildTagCache() const
     }
 }
 
-void ActorService::RebuildComponentCache() const
+void ActorService::RebuildComponentCache()
 {
-    // This is called lazily from GetActorsWithComponent<T>()
-    // Full rebuild not typically needed since we cache per-type on demand
+    // Clear all cached component queries - they'll be rebuilt lazily on next access
     ComponentCache.clear();
 }
