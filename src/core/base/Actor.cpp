@@ -10,6 +10,14 @@ Actor::Actor()
 
 Actor::~Actor()
 {
+	// Detach from parent
+	if (Parent) {
+		Parent->RemoveChild(this);
+		Parent = nullptr;
+	}
+
+	// Detach all children (they become root-level)
+	DetachAllChildren();
 }
 
 void Actor::AttachComponent(std::unique_ptr<ActorComponent> comp)
@@ -79,6 +87,98 @@ bool Actor::RemoveComponent(ActorComponent& comp)
 	return true;
 }
 
+// ========== Hierarchy Management ==========
+
+void Actor::SetParent(Actor* newParent, bool preserveWorldPosition)
+{
+	// No-op if same parent
+	if (Parent == newParent) {
+		return;
+	}
+
+	// Prevent circular hierarchy
+	if (newParent && newParent->IsDescendantOf(this)) {
+		return;
+	}
+
+	// Detach from current parent
+	if (Parent) {
+		Parent->RemoveChild(this);
+	}
+
+	Parent = newParent;
+
+	// Attach to new parent
+	if (Parent) {
+		Parent->AddChild(this);
+	}
+
+	// Sync Transform hierarchy
+	EnsureTransform();
+	if (Transform) {
+		TransformComponent* parentTransform = nullptr;
+		if (Parent) {
+			const_cast<Actor*>(Parent)->EnsureTransform();
+			parentTransform = Parent->Transform;
+		}
+		Transform->SetParent(parentTransform, preserveWorldPosition);
+	}
+
+	// Notify subscribers
+	OnHierarchyChanged.Broadcast();
+}
+
+void Actor::DetachAllChildren()
+{
+	// Copy vector since SetParent modifies Children
+	std::vector<Actor*> childrenCopy = Children;
+	for (auto* child : childrenCopy) {
+		child->SetParent(nullptr, true);
+	}
+}
+
+bool Actor::IsDescendantOf(const Actor* ancestor) const
+{
+	const Actor* current = Parent;
+	while (current) {
+		if (current == ancestor) {
+			return true;
+		}
+		current = current->Parent;
+	}
+	return false;
+}
+
+void Actor::SetEnabledRecursive(bool enabled)
+{
+	if (enabled) {
+		Enable();
+	} else {
+		Disable();
+	}
+
+	for (auto* child : Children) {
+		child->SetEnabledRecursive(enabled);
+	}
+}
+
+void Actor::AddChild(Actor* child)
+{
+	if (child && std::find(Children.begin(), Children.end(), child) == Children.end()) {
+		Children.push_back(child);
+		OnHierarchyChanged.Broadcast();
+	}
+}
+
+void Actor::RemoveChild(Actor* child)
+{
+	auto it = std::find(Children.begin(), Children.end(), child);
+	if (it != Children.end()) {
+		Children.erase(it);
+		OnHierarchyChanged.Broadcast();
+	}
+}
+
 void Actor::EnsureTransform()
 {
 	if (!Transform) {
@@ -136,6 +236,31 @@ Vec2 Actor::GetPosition() const
 	const_cast<Actor*>(this)->EnsureTransform();
 	if (Transform) {
 		return Transform->GetPosition();
+	}
+	return Vec2(0.0f, 0.0f);
+}
+
+void Actor::SetLocalPosition(const Vec2& pos)
+{
+	EnsureTransform();
+	if (Transform) {
+		Transform->SetLocalPosition(pos);
+	}
+}
+
+void Actor::SetLocalPosition(float x, float y)
+{
+	EnsureTransform();
+	if (Transform) {
+		Transform->SetLocalPosition(x, y);
+	}
+}
+
+Vec2 Actor::GetLocalPosition() const
+{
+	const_cast<Actor*>(this)->EnsureTransform();
+	if (Transform) {
+		return Transform->GetLocalPosition();
 	}
 	return Vec2(0.0f, 0.0f);
 }

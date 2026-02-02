@@ -35,17 +35,26 @@ void ActorService::AddActor(std::unique_ptr<Actor> actor)
 
 void ActorService::RemoveActor(Actor* actor)
 {
-    if (actor) {
-        // Unsubscribe from component changes
-        auto it = ComponentChangeHandles.find(actor);
-        if (it != ComponentChangeHandles.end()) {
-            actor->OnComponentsChanged.Unsubscribe(it->second);
-            ComponentChangeHandles.erase(it);
-        }
-
-        RemoveSet.insert(actor);
-        CachesDirty = true;
+    if (!actor) {
+        return;
     }
+
+    // Recursively mark children for removal first
+    // Copy children list since removal modifies it
+    std::vector<Actor*> children = actor->GetChildren();
+    for (Actor* child : children) {
+        RemoveActor(child);
+    }
+
+    // Unsubscribe from component changes
+    auto it = ComponentChangeHandles.find(actor);
+    if (it != ComponentChangeHandles.end()) {
+        actor->OnComponentsChanged.Unsubscribe(it->second);
+        ComponentChangeHandles.erase(it);
+    }
+
+    RemoveSet.insert(actor);
+    CachesDirty = true;
 }
 
 void ActorService::FlushAddQueue()

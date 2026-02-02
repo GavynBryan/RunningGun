@@ -104,7 +104,3 @@ Actor* ActorService::GetFirstActorWithComponent()
     const auto& actors = GetActorsWithComponent<Comp>();
     return actors.empty() ? nullptr : actors.front();
 }
-{
-    auto actors = GetActorsWithComponent<Comp>();
-    return actors.empty() ? nullptr : actors.front();
-}

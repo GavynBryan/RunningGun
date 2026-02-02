@@ -38,13 +38,44 @@ protected:
 	// Required component - every entity has exactly one transform
 	TransformComponent* Transform = nullptr;
 
+	// Actor hierarchy (non-owning pointers - ActorService owns all actors)
+	Actor* Parent = nullptr;
+	std::vector<Actor*> Children;
+
 public:
 	Actor();
 	virtual ~Actor();
 
 	typedef std::unique_ptr<Actor> Ptr;
 
-	// Component management
+	// ========== Hierarchy Management ==========
+
+	// Set parent actor. Pass nullptr to detach.
+	// Updates both Actor hierarchy and underlying Transform hierarchy.
+	// preserveWorldPosition: if true, adjusts local position to maintain world position
+	void SetParent(Actor* newParent, bool preserveWorldPosition = true);
+	Actor* GetParent() const { return Parent; }
+	bool HasParent() const { return Parent != nullptr; }
+
+	// Child access (read-only, children managed via SetParent)
+	const std::vector<Actor*>& GetChildren() const { return Children; }
+	size_t GetChildCount() const { return Children.size(); }
+	bool HasChildren() const { return !Children.empty(); }
+
+	// Detach all children (children become root actors, preserving world positions)
+	void DetachAllChildren();
+
+	// Check if this actor is a descendant of another
+	bool IsDescendantOf(const Actor* ancestor) const;
+
+	// Recursively enable/disable actor and all descendants
+	void SetEnabledRecursive(bool enabled);
+
+	// Event fired when hierarchy changes (parent set, child added/removed)
+	MulticastDelegate<> OnHierarchyChanged;
+
+	// ========== Component Management ==========
+
 	void AttachComponent(std::unique_ptr<ActorComponent> comp);
 
 	// Remove a specific component by reference
@@ -86,13 +117,19 @@ public:
 	bool IsEnabled() const { return Activated; }
 
 	// Transform access - guaranteed to exist after construction
-	Transform* GetTransform() { return Transform; }
-	const Transform* GetTransform() const { return Transform; }
+	TransformComponent* GetTransform() { return Transform; }
+	const TransformComponent* GetTransform() const { return Transform; }
 
 	// Convenience position/direction accessors that delegate to Transform
+	// World position (absolute position in scene)
 	void SetPosition(const Vec2& pos);
 	void SetPosition(float x, float y);
 	Vec2 GetPosition() const;
+
+	// Local position (relative to parent, or world if no parent)
+	void SetLocalPosition(const Vec2& pos);
+	void SetLocalPosition(float x, float y);
+	Vec2 GetLocalPosition() const;
 
 	void SetDirection(const Vec2& dir);
 	void SetDirection(float x, float y);
@@ -115,6 +152,8 @@ public:
 
 private:
 	void EnsureTransform();
+	void AddChild(Actor* child);
+	void RemoveChild(Actor* child);
 };
 
 template<typename Comp>

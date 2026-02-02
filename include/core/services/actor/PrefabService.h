@@ -36,6 +36,14 @@ struct PrefabDefinition
 	float Height = 0.0f;
 	Vec2 Position = Vec2(0, 0);
 	ENTITY_TAG Tag = player;
+
+	// Hierarchy support
+	std::string ParentId;           // ID of parent prefab (empty = root actor)
+	Vec2 LocalPosition = Vec2(0, 0); // Position offset relative to parent
+	bool UseLocalPosition = false;   // If true, use LocalPosition instead of Position
+
+	// Child prefabs - inline child definitions
+	std::vector<PrefabDefinition> Children;
 	
 	// Animation configuration - use ONE of these approaches:
 	// 1. Reference a shared animation set by name (preferred for reuse)
@@ -68,6 +76,16 @@ public:
 	std::unique_ptr<Actor> Instantiate(std::string_view id) const;
 	std::unique_ptr<Actor> Instantiate(const PrefabDefinition& definition) const;
 
+	// Create an entity with its child hierarchy
+	// Returns the root actor; children are attached via SetParent
+	// outChildren: optional vector to receive all instantiated child actors
+	std::unique_ptr<Actor> InstantiateWithChildren(
+		std::string_view id,
+		std::vector<std::unique_ptr<Actor>>* outChildren = nullptr) const;
+	std::unique_ptr<Actor> InstantiateWithChildren(
+		const PrefabDefinition& definition,
+		std::vector<std::unique_ptr<Actor>>* outChildren = nullptr) const;
+
 	// Get all texture paths referenced by loaded prefabs
 	std::vector<std::string> GetTexturePaths() const;
 
@@ -81,5 +99,11 @@ public:
 	void Clear();
 
 private:
+	PrefabDefinition ParsePrefabDefinition(simdjson::dom::element prefab) const;
+	void InstantiateChildrenRecursive(
+		Actor* parent,
+		const std::vector<PrefabDefinition>& children,
+		std::vector<std::unique_ptr<Actor>>* outChildren) const;
+
 	std::unordered_map<std::string, PrefabDefinition> Definitions;
 };
