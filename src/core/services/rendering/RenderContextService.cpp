@@ -2,7 +2,6 @@
 #include <core/rendering/IGraphicsAPI.h>
 #include <core/rendering/IRenderMode.h>
 #include <core/rendering/TextureService.h>
-#include <core/rendering/RenderableRegistry.h>
 #include <string>
 
 RenderContextService::RenderContextService(LoggingService& logging)
@@ -167,7 +166,7 @@ size_t RenderContextService::GetContextCount() const
 	return count;
 }
 
-void RenderContextService::RenderAllContexts(RenderableRegistry& registry)
+void RenderContextService::RenderAllContexts(BatchArray<IRenderable>& renderables)
 {
 	for (auto& [id, context] : Contexts)
 	{
@@ -189,7 +188,7 @@ void RenderContextService::RenderAllContexts(RenderableRegistry& registry)
 		// Render using context's render mode (if set)
 		if (context->RenderMode)
 		{
-			context->RenderMode->RenderScene(graphics, registry, camera);
+			context->RenderMode->RenderScene(graphics, renderables, camera);
 		}
 
 		// End frame and present

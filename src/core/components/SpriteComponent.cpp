@@ -4,8 +4,8 @@
 SpriteComponent::SpriteComponent(Actor& entity, GameServiceHost& services)
 	: ActorComponent(entity, services)
 {
-	// Register with the IRenderable registry (auto-unregisters on destruction)
-	Registry = TryRegisterToInstanceRegistry<IRenderable>(services);
+	// Register with the IRenderable batch array (auto-removes on destruction)
+	BatchArray = TryRegisterToBatchArray<IRenderable>(services);
 }
 
 void SpriteComponent::SetSourceRect(const Recti& rect)
@@ -25,9 +25,9 @@ void SpriteComponent::SetRenderLayer(int layer)
 	if (RenderLayer != layer)
 	{
 		RenderLayer = layer;
-		if (Registry)
+		if (BatchArray)
 		{
-			Registry->MarkDirty();
+			BatchArray->MarkDirty();
 		}
 	}
 }

@@ -1,18 +1,19 @@
 #include <core/engine/rendering/modes/RenderMode2D.h>
 #include <core/engine/rendering/IGraphicsAPI.h>
 #include <core/engine/rendering/Camera.h>
-#include <core/services/rendering/RenderableRegistry.h>
 #include <core/rendering/IRenderable.h>
 
-void RenderMode2D::RenderScene(IGraphicsAPI& graphics, RenderableRegistry& registry, Camera& camera)
+void RenderMode2D::RenderScene(IGraphicsAPI& graphics, BatchArray<IRenderable>& renderables, Camera& camera)
 {
 	// Set camera for view transformation
 	graphics.SetCamera(camera.GetCameraData());
 
-	// Get all renderables sorted by layer
-	const auto& renderables = registry.GetRenderables();
+	// Sort by layer if needed
+	renderables.SortIfDirty([](IRenderable* a, IRenderable* b) {
+		return a->GetRenderLayer() < b->GetRenderLayer();
+	});
 
-	for (const auto* renderable : renderables) {
+	for (auto* renderable : renderables) {
 		if (!renderable || !renderable->IsVisible()) {
 			continue;
 		}

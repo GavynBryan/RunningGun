@@ -1,6 +1,6 @@
 #pragma once
 
-#include <core/services/component/IComponentInstanceRegistry.h>
+#include <core/containers/BatchArray.h>
 #include <core/services/framework/GameServiceHost.h>
 #include <simdjson.h>
 #include <vector>
@@ -16,41 +16,41 @@ class ActorComponent
 {
 private:
 	Actor& Owner;
-	std::vector<RegistryHandle> RegistryHandles;  // Auto-unregister on destruction
+	std::vector<BatchArrayHandle> BatchArrayHandles;  // Auto-remove on destruction
 
 protected:
 	LoggingService* Log = nullptr;
 	bool Active = true;
 
 	//=========================================================================
-	// Instance Registry Registration
+	// BatchArray Registration
 	// 
-	// Derived components call TryRegisterToInstanceRegistry<T>() in their
-	// constructor to opt-in to component instance registries.
+	// Derived components call TryRegisterToBatchArray<T>() in their
+	// constructor to opt-in to batch arrays for contiguous iteration.
 	// 
-	// The registry is looked up by the component/interface type T (e.g.,
-	// IRenderable, RigidBody2DComponent), not the registry class name.
+	// The array is looked up by the component/interface type T (e.g.,
+	// IRenderable, RigidBody2DComponent), not the BatchArray class name.
 	// 
-	// The RegistryHandle constructor calls RegisterComponent() on the registry.
-	// Unregistration is AUTOMATIC: when the component is destroyed, each
-	// handle's destructor calls UnregisterComponent() on its registry.
+	// The BatchArrayHandle constructor calls Add() on the array.
+	// Removal is AUTOMATIC: when the component is destroyed, each
+	// handle's destructor calls Remove() on its array.
 	// 
 	// Usage:
-	//     TryRegisterToInstanceRegistry<IRenderable>(services);
-	//     TryRegisterToInstanceRegistry<RigidBody2DComponent>(services);
+	//     TryRegisterToBatchArray<IRenderable>(services);
+	//     TryRegisterToBatchArray<RigidBody2DComponent>(services);
 	//=========================================================================
 
-	// Register with the instance registry for component type T
-	// Returns the registry pointer (for caching), or nullptr if not found
+	// Register with the batch array for type T
+	// Returns the array pointer (for caching), or nullptr if not found
 	template<typename T>
-	IContiguousPool* TryRegisterToInstanceRegistry(GameServiceHost& services)
+	IBatchArray* TryRegisterToBatchArray(GameServiceHost& services)
 	{
-		auto* registry = services.TryGetRegistry<T>();
-		if (registry)
+		auto* batchArray = services.TryGetBatchArray<T>();
+		if (batchArray)
 		{
-			RegistryHandles.emplace_back(registry, this);
+			BatchArrayHandles.emplace_back(batchArray, this);
 		}
-		return registry;
+		return batchArray;
 	}
 
 public:
