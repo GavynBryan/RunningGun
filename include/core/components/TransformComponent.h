@@ -2,6 +2,7 @@
 
 #include <core/entity/Component.h>
 #include <core/math/Vec2.h>
+#include <core/math/Transform2D.h>
 #include <vector>
 #include <algorithm>
 
@@ -99,6 +100,12 @@ public:
 	
 	// Transform a point from world space to local space
 	Vec2 WorldToLocal(const Vec2& worldPoint) const;
+
+	// Get transform data as a Transform2D struct (for rendering/ECS interop)
+	Transform2D GetTransform2D() const
+	{
+		return Transform2D(GetPosition(), GetScale(), GetRotation());
+	}
 
 private:
 	void AddChild(TransformComponent* child);

@@ -25,7 +25,7 @@ TEST_F(ActorTest, GetTransformReturnsTransformComponent) {
     Actor actor;
     
     // Actor should auto-create a transform
-    auto* transform = actor.GetTransform();
+    auto* transform = actor.GetTransformComponent();
     EXPECT_NE(transform, nullptr);
 }
 

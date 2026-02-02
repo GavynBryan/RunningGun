@@ -1,5 +1,5 @@
 #include <core/entity/PrefabService.h>
-#include <core/services/component/ComponentRegistry.h>
+#include <core/services/component/ComponentFactory.h>
 #include <core/base/ActorComponent.h>
 #include <core/animation/AnimationClip.h>
 #include <core/animation/AnimationClipLibrary.h>
@@ -289,22 +289,22 @@ std::unique_ptr<Entity> PrefabService::Instantiate(const PrefabDefinition& defin
 		entity->AttachComponent(std::move(animatorComp));
 	}
 
-	// Add user-defined components from prefab using self-registering ComponentRegistry
-	auto& registry = ComponentRegistry::Instance();
+	// Add user-defined components from prefab using self-registering ComponentFactory
+	auto& factory = ComponentFactory::Instance();
 	for (const auto& component : definition.Components) {
 		std::unique_ptr<ActorComponent> comp;
 		
 		if (component.ParamsJson.empty()) {
 			// No parameters - just create with defaults
-			comp = registry.Create(component.Type, *entity, services);
+			comp = factory.Create(component.Type, *entity, services);
 		} else {
 			// Parse params and deserialize
 			auto parseResult = Json::Parse(component.ParamsJson);
 			if (!parseResult.error()) {
-				comp = registry.CreateFromJson(component.Type, *entity, services, parseResult.value());
+				comp = factory.CreateFromJson(component.Type, *entity, services, parseResult.value());
 			} else {
 				// Parse failed, create with defaults
-				comp = registry.Create(component.Type, *entity, services);
+				comp = factory.Create(component.Type, *entity, services);
 			}
 		}
 		

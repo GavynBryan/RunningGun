@@ -240,6 +240,15 @@ Vec2 Actor::GetPosition() const
 	return Vec2(0.0f, 0.0f);
 }
 
+Transform2D Actor::GetTransform() const
+{
+	const_cast<Actor*>(this)->EnsureTransform();
+	if (Transform) {
+		return Transform->GetTransform2D();
+	}
+	return Transform2D();
+}
+
 void Actor::SetLocalPosition(const Vec2& pos)
 {
 	EnsureTransform();

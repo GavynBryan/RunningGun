@@ -1,69 +1,75 @@
 #pragma once
 
 #include <core/entity/Component.h>
-#include <core/rendering/TextureHandle.h>
-#include <core/math/Rect.h>
-#include <core/math/Vec2.h>
+#include <core/rendering/IRenderable.h>
 
 class TransformComponent;
-class RenderableRegistry;
+class IComponentInstanceRegistry;
 
-// Core component for 2D sprite rendering
-// Uses TextureHandle (backend-agnostic) instead of SDL_Texture*
-// Registers with RenderableRegistry on construction
-class SpriteComponent : public ActorComponent
+//=============================================================================
+// SpriteComponent
+// 
+// Core component for 2D sprite rendering. Implements IRenderable interface.
+// Uses TextureHandle (backend-agnostic) instead of SDL_Texture*.
+// Registers with RenderableRegistry on construction (auto-unregisters via RAII).
+//=============================================================================
+class SpriteComponent : public ActorComponent, public IRenderable
 {
 public:
 	SpriteComponent(Actor& entity, GameServiceHost& services);
-	~SpriteComponent() override;
+	~SpriteComponent() override = default;
 
 	const char* GetName() const override { return "SpriteComponent"; }
 
-	// Texture
+	//=========================================================================
+	// IRenderable interface
+	//=========================================================================
+	Transform2D GetTransform() const override;
+	TextureHandle GetTexture() const override { return Texture; }
+	const Recti& GetSourceRect() const override { return SourceRect; }
+	bool HasSourceRect() const override { return HasSrcRect; }
+	const Vec2& GetSize() const override { return Size; }
+	bool GetFlipX() const override { return FlipX; }
+	bool GetFlipY() const override { return FlipY; }
+	int GetRenderLayer() const override { return RenderLayer; }
+	bool IsVisible() const override { return Visible; }
+	const Vec2& GetOrigin() const override { return Origin; }
+
+	//=========================================================================
+	// Setters (not part of IRenderable)
+	//=========================================================================
 	void SetTexture(TextureHandle texture) { Texture = texture; }
-	TextureHandle GetTexture() const { return Texture; }
 
 	// Source rectangle (for sprite sheets/animation)
 	void SetSourceRect(const Recti& rect);
 	void SetSourceRect(int x, int y, int width, int height);
-	const Recti& GetSourceRect() const { return SourceRect; }
-	bool HasSourceRect() const { return HasSrcRect; }
 	void ClearSourceRect() { HasSrcRect = false; }
 
 	// Size (destination dimensions)
 	void SetSize(const Vec2& size) { Size = size; }
 	void SetSize(float width, float height) { Size.x = width; Size.y = height; }
-	const Vec2& GetSize() const { return Size; }
 	float GetWidth() const { return Size.x; }
 	float GetHeight() const { return Size.y; }
 
 	// Flip
 	void SetFlipX(bool flip) { FlipX = flip; }
 	void SetFlipY(bool flip) { FlipY = flip; }
-	bool GetFlipX() const { return FlipX; }
-	bool GetFlipY() const { return FlipY; }
 
 	// Render layer (for draw ordering)
-	void SetRenderLayer(int layer) { RenderLayer = layer; }
-	int GetRenderLayer() const { return RenderLayer; }
+	void SetRenderLayer(int layer);
 
 	// Visibility
 	void SetVisible(bool visible) { Visible = visible; }
-	bool IsVisible() const { return Visible; }
 
 	// Origin/pivot point (relative to sprite, 0-1 range)
 	void SetOrigin(const Vec2& origin) { Origin = origin; }
 	void SetOrigin(float x, float y) { Origin.x = x; Origin.y = y; }
-	const Vec2& GetOrigin() const { return Origin; }
 
 	// Get bounds in world space (needs position from TransformComponent)
 	Rectf GetLocalBounds() const;
 
-	// Access to paired transform (cached on Start)
-	TransformComponent* GetTransform() const { return PairedTransform; }
-
 private:
-	RenderableRegistry* Registry = nullptr;
+	IComponentInstanceRegistry* Registry = nullptr;  // For MarkDirty() calls
 	TransformComponent* PairedTransform = nullptr;
 	TextureHandle Texture;
 	Recti SourceRect = Recti(0, 0, 0, 0);

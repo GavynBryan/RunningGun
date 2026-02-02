@@ -9,7 +9,7 @@
 #include <core/world/ObjectPoolService.h>
 #include <core/timing/TimeService.h>
 #include <core/math/MathUtils.h>
-#include <core/services/component/ComponentRegistry.h>
+#include <core/services/component/ComponentFactory.h>
 #include <game/input/PlayerInputConfigService.h>
 
 //=============================================================================

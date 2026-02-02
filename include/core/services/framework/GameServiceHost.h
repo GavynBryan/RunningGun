@@ -9,6 +9,8 @@
 #include <memory>
 #include <utility>
 
+class IComponentInstanceRegistry;
+
 class GameServiceHost
 {
 public:
@@ -24,9 +26,35 @@ public:
 	template <typename T>
 	bool Has() const;
 
+	//=========================================================================
+	// Component Instance Registry Management
+	// 
+	// Registries can be registered by the component/interface type they track.
+	// This allows components to find their registry without knowing the
+	// concrete registry class name.
+	// 
+	// Usage:
+	//     // Setup: register RenderableRegistry as the registry for IRenderable
+	//     services.AddService<RenderableRegistry>();
+	//     services.RegisterInstanceRegistry<IRenderable>(services.Get<RenderableRegistry>());
+	//     
+	//     // Component lookup:
+	//     auto* registry = services.TryGetRegistry<IRenderable>();
+	//=========================================================================
+
+	template <typename TComponent>
+	void RegisterInstanceRegistry(IComponentInstanceRegistry& registry);
+
+	template <typename TComponent>
+	IComponentInstanceRegistry* TryGetRegistry() const;
+
+	template <typename TComponent>
+	bool HasRegistry() const;
+
 private:
 	std::vector<std::unique_ptr<IService>> Services;
 	std::unordered_map<std::type_index, IService*> Registry;
+	std::unordered_map<std::type_index, IComponentInstanceRegistry*> InstanceRegistries;
 };
 
 template <typename T, typename... Args>
@@ -73,4 +101,28 @@ bool GameServiceHost::Has() const
 {
 	static_assert(std::is_base_of<IService, T>::value, "T must derive from IService");
 	return Registry.find(std::type_index(typeid(T))) != Registry.end();
+}
+
+template <typename TComponent>
+void GameServiceHost::RegisterInstanceRegistry(IComponentInstanceRegistry& registry)
+{
+	auto typeIndex = std::type_index(typeid(TComponent));
+	assert(InstanceRegistries.find(typeIndex) == InstanceRegistries.end());
+	InstanceRegistries.emplace(typeIndex, &registry);
+}
+
+template <typename TComponent>
+IComponentInstanceRegistry* GameServiceHost::TryGetRegistry() const
+{
+	auto iter = InstanceRegistries.find(std::type_index(typeid(TComponent)));
+	if (iter == InstanceRegistries.end()) {
+		return nullptr;
+	}
+	return iter->second;
+}
+
+template <typename TComponent>
+bool GameServiceHost::HasRegistry() const
+{
+	return InstanceRegistries.find(std::type_index(typeid(TComponent))) != InstanceRegistries.end();
 }

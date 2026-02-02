@@ -1,39 +1,77 @@
 #include <core/rendering/RenderableRegistry.h>
-#include <core/components/SpriteComponent.h>
+#include <core/rendering/IRenderable.h>
 #include <algorithm>
 
-void RenderableRegistry::Register(TransformComponent* transform, SpriteComponent* sprite)
+void RenderableRegistry::RegisterComponent(ActorComponent* component)
 {
-	// O(1) duplicate check
-	if (!RegisteredSprites.insert(sprite).second) {
+	Register(dynamic_cast<IRenderable*>(component));
+}
+
+void RenderableRegistry::UnregisterComponent(ActorComponent* component)
+{
+	Unregister(dynamic_cast<IRenderable*>(component));
+}
+
+void RenderableRegistry::Register(IRenderable* renderable)
+{
+	if (!renderable)
+	{
+		return;
+	}
+
+	// O(1) duplicate check via index map
+	if (IndexMap.find(renderable) != IndexMap.end())
+	{
 		return; // Already registered
 	}
 
-	Renderables.push_back({ transform, sprite });
+	size_t index = Renderables.size();
+	Renderables.push_back(renderable);
+	IndexMap[renderable] = index;
 	IsDirty = true;
 }
 
-void RenderableRegistry::Unregister(SpriteComponent* sprite)
+void RenderableRegistry::Unregister(IRenderable* renderable)
 {
-	if (RegisteredSprites.erase(sprite) == 0) {
+	if (!renderable)
+	{
+		return;
+	}
+
+	auto it = IndexMap.find(renderable);
+	if (it == IndexMap.end())
+	{
 		return; // Wasn't registered
 	}
 
-	Renderables.erase(
-		std::remove_if(Renderables.begin(), Renderables.end(),
-			[sprite](const Renderable& r) { return r.Sprite == sprite; }),
-		Renderables.end()
-	);
+	size_t indexToRemove = it->second;
+	size_t lastIndex = Renderables.size() - 1;
+
+	// Swap with last element if not already last (swap-and-pop for O(1) removal)
+	if (indexToRemove != lastIndex)
+	{
+		Renderables[indexToRemove] = Renderables[lastIndex];
+		IndexMap[Renderables[indexToRemove]] = indexToRemove;
+	}
+
+	Renderables.pop_back();
+	IndexMap.erase(it);
+	IsDirty = true;  // Order may have changed
+}
+
+bool RenderableRegistry::Contains(IRenderable* renderable) const
+{
+	return IndexMap.find(renderable) != IndexMap.end();
 }
 
 void RenderableRegistry::Clear()
 {
 	Renderables.clear();
-	RegisteredSprites.clear();
+	IndexMap.clear();
 	IsDirty = false;
 }
 
-const std::vector<Renderable>& RenderableRegistry::GetRenderables()
+const std::vector<IRenderable*>& RenderableRegistry::GetRenderables()
 {
 	SortIfNeeded();
 	return Renderables;
@@ -41,16 +79,23 @@ const std::vector<Renderable>& RenderableRegistry::GetRenderables()
 
 void RenderableRegistry::SortIfNeeded()
 {
-	if (!IsDirty) {
+	if (!IsDirty)
+	{
 		return;
 	}
 
 	std::sort(Renderables.begin(), Renderables.end(),
-		[](const Renderable& a, const Renderable& b) {
-			int layerA = a.Sprite ? a.Sprite->GetRenderLayer() : 0;
-			int layerB = b.Sprite ? b.Sprite->GetRenderLayer() : 0;
+		[](const IRenderable* a, const IRenderable* b) {
+			int layerA = a ? a->GetRenderLayer() : 0;
+			int layerB = b ? b->GetRenderLayer() : 0;
 			return layerA < layerB;
 		});
+
+	// Rebuild index map after sort
+	for (size_t i = 0; i < Renderables.size(); ++i)
+	{
+		IndexMap[Renderables[i]] = i;
+	}
 
 	IsDirty = false;
 }

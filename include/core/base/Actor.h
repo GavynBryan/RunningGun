@@ -6,6 +6,7 @@
 #include <typeindex>
 #include <unordered_map>
 #include <core/math/Vec2.h>
+#include <core/math/Transform2D.h>
 #include <core/entity/Component.h>
 #include <core/events/MulticastDelegate.h>
 
@@ -117,8 +118,11 @@ public:
 	bool IsEnabled() const { return Activated; }
 
 	// Transform access - guaranteed to exist after construction
-	TransformComponent* GetTransform() { return Transform; }
-	const TransformComponent* GetTransform() const { return Transform; }
+	TransformComponent* GetTransformComponent() { return Transform; }
+	const TransformComponent* GetTransformComponent() const { return Transform; }
+
+	// Get transform data as value type (for rendering/ECS interop)
+	Transform2D GetTransform() const;
 
 	// Convenience position/direction accessors that delegate to Transform
 	// World position (absolute position in scene)

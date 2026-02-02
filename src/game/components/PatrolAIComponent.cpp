@@ -4,7 +4,7 @@
 #include <core/timing/TimeService.h>
 #include <core/components/AnimatorComponent.h>
 #include <core/components/RigidBody2D.h>
-#include <core/services/component/ComponentRegistry.h>
+#include <core/services/component/ComponentFactory.h>
 
 //=============================================================================
 // Property Registration

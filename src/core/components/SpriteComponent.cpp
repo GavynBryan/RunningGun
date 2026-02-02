@@ -1,25 +1,12 @@
 #include <core/components/SpriteComponent.h>
 #include <core/components/TransformComponent.h>
-#include <core/entity/Entity.h>
-#include <core/framework/GameServiceHost.h>
-#include <core/rendering/RenderableRegistry.h>
 
 SpriteComponent::SpriteComponent(Actor& entity, GameServiceHost& services)
 	: ActorComponent(entity, services)
+	, PairedTransform(entity.GetTransformComponent())
 {
-	Registry = services.TryGet<RenderableRegistry>();
-	PairedTransform = entity.GetTransform();
-	
-	if (Registry && PairedTransform) {
-		Registry->Register(PairedTransform, this);
-	}
-}
-
-SpriteComponent::~SpriteComponent()
-{
-	if (Registry) {
-		Registry->Unregister(this);
-	}
+	// Register with the IRenderable registry (auto-unregisters on destruction)
+	Registry = TryRegisterToInstanceRegistry<IRenderable>(services);
 }
 
 void SpriteComponent::SetSourceRect(const Recti& rect)
@@ -32,6 +19,27 @@ void SpriteComponent::SetSourceRect(int x, int y, int width, int height)
 {
 	SourceRect = Recti(x, y, width, height);
 	HasSrcRect = true;
+}
+
+void SpriteComponent::SetRenderLayer(int layer)
+{
+	if (RenderLayer != layer)
+	{
+		RenderLayer = layer;
+		if (Registry)
+		{
+			Registry->MarkDirty();
+		}
+	}
+}
+
+Transform2D SpriteComponent::GetTransform() const
+{
+	if (PairedTransform)
+	{
+		return PairedTransform->GetTransform2D();
+	}
+	return Transform2D();
 }
 
 Rectf SpriteComponent::GetLocalBounds() const
