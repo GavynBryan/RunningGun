@@ -3,7 +3,7 @@
 #include <core/entity/Component.h>
 #include <core/rendering/IRenderable.h>
 
-class IComponentInstanceRegistry;
+class IContiguousPool;
 
 //=============================================================================
 // SpriteComponent
@@ -68,7 +68,7 @@ public:
 	Rectf GetLocalBounds() const;
 
 private:
-	IComponentInstanceRegistry* Registry = nullptr;  // For MarkDirty() calls
+	IContiguousPool* Registry = nullptr;  // For MarkDirty() calls
 	TextureHandle Texture;
 	Recti SourceRect = Recti(0, 0, 0, 0);
 	Vec2 Size = Vec2(0.0f, 0.0f);

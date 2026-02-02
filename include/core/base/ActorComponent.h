@@ -43,7 +43,7 @@ protected:
 	// Register with the instance registry for component type T
 	// Returns the registry pointer (for caching), or nullptr if not found
 	template<typename T>
-	IComponentInstanceRegistry* TryRegisterToInstanceRegistry(GameServiceHost& services)
+	IContiguousPool* TryRegisterToInstanceRegistry(GameServiceHost& services)
 	{
 		auto* registry = services.TryGetRegistry<T>();
 		if (registry)

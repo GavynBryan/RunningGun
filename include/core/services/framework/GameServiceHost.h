@@ -9,7 +9,7 @@
 #include <memory>
 #include <utility>
 
-class IComponentInstanceRegistry;
+class IContiguousPool;
 
 class GameServiceHost
 {
@@ -43,10 +43,10 @@ public:
 	//=========================================================================
 
 	template <typename TComponent>
-	void RegisterInstanceRegistry(IComponentInstanceRegistry& registry);
+	void RegisterInstanceRegistry(IContiguousPool& registry);
 
 	template <typename TComponent>
-	IComponentInstanceRegistry* TryGetRegistry() const;
+	IContiguousPool* TryGetRegistry() const;
 
 	template <typename TComponent>
 	bool HasRegistry() const;
@@ -54,7 +54,7 @@ public:
 private:
 	std::vector<std::unique_ptr<IService>> Services;
 	std::unordered_map<std::type_index, IService*> Registry;
-	std::unordered_map<std::type_index, IComponentInstanceRegistry*> InstanceRegistries;
+	std::unordered_map<std::type_index, IContiguousPool*> InstanceRegistries;
 };
 
 template <typename T, typename... Args>
@@ -104,7 +104,7 @@ bool GameServiceHost::Has() const
 }
 
 template <typename TComponent>
-void GameServiceHost::RegisterInstanceRegistry(IComponentInstanceRegistry& registry)
+void GameServiceHost::RegisterInstanceRegistry(IContiguousPool& registry)
 {
 	auto typeIndex = std::type_index(typeid(TComponent));
 	assert(InstanceRegistries.find(typeIndex) == InstanceRegistries.end());
@@ -112,7 +112,7 @@ void GameServiceHost::RegisterInstanceRegistry(IComponentInstanceRegistry& regis
 }
 
 template <typename TComponent>
-IComponentInstanceRegistry* GameServiceHost::TryGetRegistry() const
+IContiguousPool* GameServiceHost::TryGetRegistry() const
 {
 	auto iter = InstanceRegistries.find(std::type_index(typeid(TComponent)));
 	if (iter == InstanceRegistries.end()) {

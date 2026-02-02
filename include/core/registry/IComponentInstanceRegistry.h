@@ -10,7 +10,7 @@
 class ActorComponent;
 
 //=============================================================================
-// IComponentInstanceRegistry
+// IContiguousPool
 // 
 // Interface for component instance registries. Enables type-erased
 // registration/unregistration so ActorComponent can hold handles without
@@ -18,10 +18,10 @@ class ActorComponent;
 // 
 // Implementations that want to be services should also inherit from IService.
 //=============================================================================
-class IComponentInstanceRegistry
+class IContiguousPool
 {
 public:
-	virtual ~IComponentInstanceRegistry() = default;
+	virtual ~IContiguousPool() = default;
 	virtual void RegisterComponent(ActorComponent* component) = 0;
 	virtual void UnregisterComponent(ActorComponent* component) = 0;
 	
@@ -43,7 +43,7 @@ public:
 	RegistryHandle() = default;
 	
 	// Registers the component and takes ownership of unregistration
-	RegistryHandle(IComponentInstanceRegistry* registry, ActorComponent* component)
+	RegistryHandle(IContiguousPool* registry, ActorComponent* component)
 		: Registry(registry)
 		, Component(component)
 	{
@@ -99,10 +99,10 @@ public:
 	explicit operator bool() const { return IsValid(); }
 
 	// Access the registry (for advanced use cases)
-	IComponentInstanceRegistry* GetRegistry() const { return Registry; }
+	IContiguousPool* GetRegistry() const { return Registry; }
 
 private:
-	IComponentInstanceRegistry* Registry = nullptr;
+	IContiguousPool* Registry = nullptr;
 	ActorComponent* Component = nullptr;
 };
 
@@ -132,7 +132,7 @@ private:
 //       ApplyGravity(rb);
 //=============================================================================
 template<typename T>
-class ComponentInstanceRegistry : public IComponentInstanceRegistry, public IService
+class ContiguousPool : public IContiguousPool, public IService
 {
 	static_assert(std::is_base_of_v<ActorComponent, T>, 
 		"ComponentInstanceRegistry<T> requires T to derive from ActorComponent");
