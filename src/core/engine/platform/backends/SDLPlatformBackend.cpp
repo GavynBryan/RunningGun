@@ -229,6 +229,7 @@ void SDLPlatformBackend::ProcessWindowEvent(const SDL_Event& event)
 		case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
 			handle->IsOpen = false;
 			OnWindowClosed.Broadcast(windowId);
+			DestroyWindow(windowId);
 			break;
 
 		case SDL_EVENT_WINDOW_RESIZED:
