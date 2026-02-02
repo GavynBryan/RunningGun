@@ -1,7 +1,6 @@
 #include <core/entity/Component.h>
 #include <core/framework/GameServiceHost.h>
 #include <core/logging/LoggingService.h>
-#include <core/util/Json.h>
 
 ActorComponent::ActorComponent(Actor& owner, GameServiceHost& services)
 	: Owner(owner)
@@ -23,14 +22,14 @@ void ActorComponent::OnCollide(Actor& other)
 {
 }
 
-void ActorComponent::SerializeProperties(Json::Writer& writer) const
+void ActorComponent::Serialize(ISerializer& serializer) const
 {
 	// Default implementation - no properties to serialize
-	// Overridden by COMPONENT macro in derived classes
+	// Overridden by SERIALIZABLE_COMPONENT macro in derived classes
 }
 
-void ActorComponent::DeserializeProperties(const simdjson::dom::element& json)
+void ActorComponent::Deserialize(const IDeserializer& deserializer)
 {
 	// Default implementation - no properties to deserialize
-	// Overridden by COMPONENT macro in derived classes
+	// Overridden by SERIALIZABLE_COMPONENT macro in derived classes
 }

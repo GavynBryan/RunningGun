@@ -1,6 +1,6 @@
 #pragma once
 #include <core/base/ActorComponent.h>
-#include <core/base/ComponentMacros.h>
+#include <core/serialization/Serializable.h>
 
 class RigidBody2DComponent;
 class TimeService;
@@ -8,7 +8,7 @@ class TimeService;
 class ProjectileComponent
 	:public ActorComponent
 {
-	COMPONENT(ProjectileComponent, "projectile")
+	SERIALIZABLE_COMPONENT(ProjectileComponent, "projectile")
 
 public:
 	const char* GetName() const override { return "ProjectileComponent"; }

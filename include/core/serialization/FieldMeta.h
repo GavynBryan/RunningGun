@@ -6,14 +6,9 @@
 #include <cstdint>
 #include <type_traits>
 
-// Forward declarations
-namespace simdjson::dom {
-	class element;
-}
-
-namespace Json {
-	class Writer;
-}
+// Forward declarations for abstract interfaces
+class ISerializer;
+class IDeserializer;
 
 //=============================================================================
 // FieldType
@@ -35,11 +30,12 @@ enum class FieldType : uint8_t
 // FieldMeta
 //
 // Metadata for a single serializable field in any class.
-// Supports both primitive types and custom serialization callbacks.
+// Uses abstract ISerializer/IDeserializer interfaces for format-agnostic
+// serialization (JSON, binary, debug output, etc.)
 //=============================================================================
 struct FieldMeta
 {
-	std::string_view Name;           // Field name (matches JSON key)
+	std::string_view Name;           // Field name (used as key)
 	std::string_view DisplayName;    // Human-readable name for editor
 	std::string_view Tooltip;        // Editor tooltip/description
 	FieldType Type = FieldType::Float;
@@ -48,10 +44,10 @@ struct FieldMeta
 	float Min = -FLT_MAX;
 	float Max = FLT_MAX;
 
-	// Type-erased serialization callbacks
+	// Type-erased serialization callbacks using abstract interfaces
 	// obj pointer is the address of the containing object
-	std::function<void(void* obj, const simdjson::dom::element& json)> Deserialize;
-	std::function<void(const void* obj, Json::Writer& writer)> Serialize;
+	std::function<void(void* obj, const IDeserializer& source)> Deserialize;
+	std::function<void(const void* obj, ISerializer& dest)> Serialize;
 };
 
 //=============================================================================

@@ -1,45 +1,50 @@
 #pragma once
 
 #include "TypeMeta.h"
-#include "Serializable.h"
+#include "ISerializer.h"
+#include "IDeserializer.h"
+#include <core/services/framework/IService.h>
 #include <string>
 #include <string_view>
 #include <unordered_map>
 #include <vector>
-#include <memory>
-#include <functional>
 
 //=============================================================================
-// TypeRegistry
+// TypeRegistryService
 //
-// Generic singleton registry for serializable type metadata.
+// Service for registering and looking up serializable type metadata.
 // Works with any class that uses SERIALIZABLE macros.
-// Unlike ComponentFactory, this doesn't assume any base class.
 //
-// Types self-register via TypeAutoRegister<T> at static init time.
-// The registry can be queried to:
-//   - Look up type metadata by name
-//   - Enumerate all registered types
-//   - Create instances via default factory
-//   - Serialize/deserialize objects by type name
+// Unlike singleton registries, this is a proper hosted service that must be
+// explicitly added to the GameServiceHost and types must be explicitly
+// registered.
+//
+// Usage:
+//   // Setup
+//   auto& registry = services.AddService<TypeRegistryService>();
+//   registry.Register<PlayerConfig>();
+//   registry.Register<EnemyConfig>();
+//
+//   // Lookup and use
+//   auto& registry = services.Get<TypeRegistryService>();
+//   const auto* meta = registry.Find("player_config");
 //=============================================================================
-class TypeRegistry
+class TypeRegistryService : public IService
 {
 public:
-	// Get the singleton instance (lazy-initialized)
-	static TypeRegistry& Instance() {
-		static TypeRegistry instance;
-		return instance;
+	TypeRegistryService() = default;
+
+	// Register a type by its class (calls T::GetTypeMeta())
+	template<typename T>
+	void Register() {
+		const auto& meta = T::GetTypeMeta();
+		m_Registry[std::string(meta.TypeName)] = &meta;
+		m_AllTypesDirty = true;
 	}
 
-	// Non-copyable, non-movable
-	TypeRegistry(const TypeRegistry&) = delete;
-	TypeRegistry& operator=(const TypeRegistry&) = delete;
-
-	// Register a type with its metadata
+	// Register a type with explicit metadata
 	void Register(const TypeMeta& meta) {
-		auto name = std::string(meta.TypeName);
-		m_Registry[name] = &meta;
+		m_Registry[std::string(meta.TypeName)] = &meta;
 		m_AllTypesDirty = true;
 	}
 
@@ -78,31 +83,31 @@ public:
 		return static_cast<T*>(meta->DefaultFactory());
 	}
 
-	// Create and deserialize from JSON
+	// Create and deserialize from any source
 	template<typename T = void>
-	T* CreateFromJson(std::string_view typeName, const simdjson::dom::element& json) const {
+	T* CreateAndDeserialize(std::string_view typeName, const IDeserializer& deserializer) const {
 		const auto* meta = Find(typeName);
 		if (!meta || !meta->DefaultFactory) {
 			return nullptr;
 		}
 		T* obj = static_cast<T*>(meta->DefaultFactory());
-		meta->Deserialize(obj, json);
+		meta->Deserialize(obj, deserializer);
 		return obj;
 	}
 
-	// Serialize an object to JSON
-	void Serialize(std::string_view typeName, const void* obj, Json::Writer& writer) const {
+	// Serialize an object using its type name
+	void Serialize(std::string_view typeName, const void* obj, ISerializer& serializer) const {
 		const auto* meta = Find(typeName);
 		if (meta) {
-			meta->Serialize(obj, writer);
+			meta->Serialize(obj, serializer);
 		}
 	}
 
-	// Deserialize JSON into an existing object
-	void Deserialize(std::string_view typeName, void* obj, const simdjson::dom::element& json) const {
+	// Deserialize into an existing object
+	void Deserialize(std::string_view typeName, void* obj, const IDeserializer& deserializer) const {
 		const auto* meta = Find(typeName);
 		if (meta) {
-			meta->Deserialize(obj, json);
+			meta->Deserialize(obj, deserializer);
 		}
 	}
 
@@ -115,21 +120,8 @@ public:
 	}
 
 private:
-	TypeRegistry() = default;
-
 	std::unordered_map<std::string, const TypeMeta*> m_Registry;
 	mutable std::vector<const TypeMeta*> m_AllTypes;
 	mutable bool m_AllTypesDirty = true;
 };
-
-//=============================================================================
-// TypeAutoRegister<T> implementation
-//
-// Registers the type with TypeRegistry at static initialization.
-//=============================================================================
-template<typename T>
-TypeAutoRegister<T>::TypeAutoRegister()
-{
-	TypeRegistry::Instance().Register(T::GetTypeMeta());
-}
 

@@ -12,7 +12,7 @@
 //=============================================================================
 // Property Registration
 //=============================================================================
-BEGIN_PROPERTIES(RigidBody2DComponent)
+SERIALIZE_COMPONENT(RigidBody2DComponent,
 	PROPERTY(float, Gravity, 980.0f,
 		.DisplayName = "Gravity",
 		.Tooltip = "Gravity acceleration in pixels/sec²",
@@ -41,7 +41,7 @@ BEGIN_PROPERTIES(RigidBody2DComponent)
 		.DisplayName = "Collision Size",
 		.Tooltip = "Width and height of collision bounds",
 	)
-END_PROPERTIES(RigidBody2DComponent)
+)
 
 //=============================================================================
 // Constructors

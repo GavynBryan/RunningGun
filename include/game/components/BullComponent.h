@@ -1,7 +1,7 @@
 #pragma once
 #include <map>
 #include <core/base/ActorComponent.h>
-#include <core/base/ComponentMacros.h>
+#include <core/serialization/Serializable.h>
 #include <core/math/Vec2.h>
 #include <core/events/MulticastDelegate.h>
 
@@ -16,7 +16,7 @@ class AnimatorComponent;
 class BullComponent :
 	public ActorComponent
 {
-	COMPONENT(BullComponent, "bull")
+	SERIALIZABLE_COMPONENT(BullComponent, "bull")
 
 public:
 	const char* GetName() const override { return "BullComponent"; }

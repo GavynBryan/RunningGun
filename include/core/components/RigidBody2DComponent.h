@@ -1,7 +1,7 @@
 #pragma once
 
 #include <core/base/ActorComponent.h>
-#include <core/base/ComponentMacros.h>
+#include <core/serialization/Serializable.h>
 #include <core/collision/QuadTreeProxy.h>
 #include <core/math/Rect.h>
 #include <core/math/Vec2.h>
@@ -18,7 +18,7 @@ class WorldService;
 // Handles velocity, acceleration, and gravity simulation.
 class RigidBody2DComponent : public ActorComponent
 {
-	COMPONENT(RigidBody2DComponent, "rigidbody2d")
+	SERIALIZABLE_COMPONENT(RigidBody2DComponent, "rigidbody2d")
 
 public:
 	using CollisionEvent = MulticastDelegate<RigidBody2DComponent&, RigidBody2DComponent&>;

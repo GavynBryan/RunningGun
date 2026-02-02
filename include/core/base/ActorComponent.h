@@ -2,15 +2,12 @@
 
 #include <core/services/component/IComponentInstanceRegistry.h>
 #include <core/services/framework/GameServiceHost.h>
-#include <simdjson.h>
 #include <vector>
 
 class Actor;
 class LoggingService;
-
-namespace Json {
-	class Writer;
-}
+class ISerializer;
+class IDeserializer;
 
 class ActorComponent
 {
@@ -76,7 +73,7 @@ public:
 	void SetActive(bool active) { Active = active; }
 	bool IsActive() const { return Active; }
 
-	// Serialization - overridden by COMPONENT macro
-	virtual void SerializeProperties(Json::Writer& writer) const;
-	virtual void DeserializeProperties(const simdjson::dom::element& json);
+	// Serialization - overridden by SERIALIZABLE_COMPONENT macro
+	virtual void Serialize(ISerializer& serializer) const;
+	virtual void Deserialize(const IDeserializer& deserializer);
 };

@@ -11,14 +11,14 @@
 //=============================================================================
 // Property Registration
 //=============================================================================
-BEGIN_PROPERTIES(BullComponent)
+SERIALIZE_COMPONENT(BullComponent,
 	PROPERTY(int, Lives, 45,
 		.DisplayName = "Lives",
 		.Tooltip = "Boss health / hits to kill",
 		.Min = 1,
 		.Max = 999,
 	)
-END_PROPERTIES(BullComponent)
+)
 
 //=============================================================================
 // Constructor

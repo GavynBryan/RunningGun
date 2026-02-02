@@ -9,7 +9,7 @@
 //=============================================================================
 // Property Registration
 //=============================================================================
-BEGIN_PROPERTIES(PatrolAIComponent)
+SERIALIZE_COMPONENT(PatrolAIComponent,
 	PROPERTY(float, MoveSpeed, 150.0f,
 		.DisplayName = "Move Speed",
 		.Tooltip = "Patrol movement speed in pixels/sec",
@@ -28,7 +28,7 @@ BEGIN_PROPERTIES(PatrolAIComponent)
 		.Min = 1,
 		.Max = 10,
 	)
-END_PROPERTIES(PatrolAIComponent)
+)
 
 //=============================================================================
 // Constructor

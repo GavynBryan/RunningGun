@@ -15,7 +15,7 @@
 //=============================================================================
 // Property Registration
 //=============================================================================
-BEGIN_PROPERTIES(PlayerComponent)
+SERIALIZE_COMPONENT(PlayerComponent,
 	PROPERTY(int, Lives, 5,
 		.DisplayName = "Starting Lives",
 		.Tooltip = "Number of lives the player starts with",
@@ -40,7 +40,7 @@ BEGIN_PROPERTIES(PlayerComponent)
 		.Min = 0.0f,
 		.Max = 10000.0f,
 	)
-END_PROPERTIES(PlayerComponent)
+)
 
 //=============================================================================
 // Constructor

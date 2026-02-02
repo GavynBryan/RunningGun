@@ -8,7 +8,7 @@
 //=============================================================================
 // Property Registration
 //=============================================================================
-BEGIN_PROPERTIES(ProjectileComponent)
+SERIALIZE_COMPONENT(ProjectileComponent,
 	PROPERTY(float, Speed, 400.0f,
 		.DisplayName = "Speed",
 		.Tooltip = "Projectile travel speed in pixels/sec",
@@ -21,7 +21,7 @@ BEGIN_PROPERTIES(ProjectileComponent)
 		.Min = 0.1f,
 		.Max = 30.0f,
 	)
-END_PROPERTIES(ProjectileComponent)
+)
 
 //=============================================================================
 // Constructor

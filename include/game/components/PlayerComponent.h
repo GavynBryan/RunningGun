@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 #include <core/base/ActorComponent.h>
-#include <core/base/ComponentMacros.h>
+#include <core/serialization/Serializable.h>
 #include <core/math/Vec2.h>
 #include <core/events/MulticastDelegate.h>
 
@@ -21,7 +21,7 @@ class PlayerInputConfig;
 class PlayerComponent :
 	public ActorComponent
 {
-	COMPONENT(PlayerComponent, "player")
+	SERIALIZABLE_COMPONENT(PlayerComponent, "player")
 
 public:
 	const char* GetName() const override { return "PlayerComponent"; }

@@ -6,20 +6,20 @@
 #include <memory>
 #include <functional>
 
-namespace simdjson::dom {
-	class element;
-}
-
-namespace Json {
-	class Writer;
-}
+// Forward declarations for abstract interfaces
+class ISerializer;
+class IDeserializer;
 
 //=============================================================================
 // TypeMeta
 //
 // Generic metadata for any serializable type.
-// Unlike ComponentMeta, this does not assume any base class or factory pattern.
-// Can be used for plain structs, game objects, configuration, etc.
+// Uses abstract ISerializer/IDeserializer interfaces for format-agnostic
+// serialization (JSON, binary for networking, debug output, etc.)
+//
+// Unlike component-specific metadata, this does not assume any base class
+// or factory pattern. Can be used for plain structs, game objects,
+// configuration, network packets, etc.
 //=============================================================================
 struct TypeMeta
 {
@@ -33,20 +33,20 @@ struct TypeMeta
 	// Optional destructor for cleaning up factory-created instances
 	std::function<void(void*)> Destructor;
 
-	// Serialize all fields to JSON
-	void Serialize(const void* obj, Json::Writer& writer) const {
+	// Serialize all fields using the abstract interface
+	void Serialize(const void* obj, ISerializer& serializer) const {
 		for (const auto& field : Fields) {
 			if (field.Serialize) {
-				field.Serialize(obj, writer);
+				field.Serialize(obj, serializer);
 			}
 		}
 	}
 
-	// Deserialize all fields from JSON
-	void Deserialize(void* obj, const simdjson::dom::element& json) const {
+	// Deserialize all fields using the abstract interface
+	void Deserialize(void* obj, const IDeserializer& deserializer) const {
 		for (const auto& field : Fields) {
 			if (field.Deserialize) {
-				field.Deserialize(obj, json);
+				field.Deserialize(obj, deserializer);
 			}
 		}
 	}
@@ -60,7 +60,9 @@ struct TypeMeta
 //=============================================================================
 template<typename T>
 struct TypeMetaOf {
-	static const TypeMeta& Get();
+	static const TypeMeta& Get() {
+		return T::GetTypeMeta();
+	}
 };
 
 //=============================================================================
