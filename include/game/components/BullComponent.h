@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
-#include <core/entity/Component.h>
+#include <core/base/ActorComponent.h>
+#include <core/base/ComponentMacros.h>
 #include <core/math/Vec2.h>
 #include <core/events/MulticastDelegate.h>
 
@@ -15,6 +16,8 @@ class AnimatorComponent;
 class BullComponent :
 	public ActorComponent
 {
+	COMPONENT(BullComponent, "bull")
+
 public:
 	const char* GetName() const override { return "BullComponent"; }
 
@@ -25,12 +28,15 @@ private:
 	AnimatorComponent*					Animator;
 	BullState*						CurrentState;
 
-	uint8_t							Lives;
-
 	Vec2							Offset1;
 	Vec2							Offset2;
-
 	Vec2							ProjectileOffset;
+
+	// Serialized properties
+	int m_Lives;
+
+	// Runtime state (no serialization needed)
+
 public:
 									BullComponent(Actor& _entity, GameServiceHost& _context);
 									~BullComponent();

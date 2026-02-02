@@ -2,11 +2,10 @@
 #include <core/engine/Engine.h>
 #include <core/input/InputManager.h>
 #include <core/rendering/TextureService.h>
-#include <core/entity/ComponentRegistryService.h>
 #include <core/entity/PrefabService.h>
 #include <game/RunningGunGameMode.h>
-#include <game/components/ComponentRegistration.h>
 #include <game/input/PlayerInputConfig.h>
+#include <game/input/PlayerInputConfigService.h>
 #include <cstdlib>
 #include <memory>
 #include <unordered_map>
@@ -22,7 +21,11 @@ int RunningGunApp::Run()
 	}
 
 	auto& services = _engine.GetServices();
-	RegisterDefaultComponents(services.Get<ComponentRegistryService>(), _inputConfig);
+	
+	// Register input config as a service so components can access it
+	services.Register<PlayerInputConfigService>(std::move(_inputConfig));
+	
+	// Components now self-register via COMPONENT macro - no manual registration needed
 	services.Get<PrefabService>().LoadFromFile("config/prefabs.json", services.Get<TextureService>());
 
 	_engine.SetGameMode(std::make_unique<RunningGunGameMode>(services));

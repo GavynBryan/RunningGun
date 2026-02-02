@@ -1,9 +1,9 @@
 #pragma once
 #include <memory>
-#include <core/entity/Component.h>
+#include <core/base/ActorComponent.h>
+#include <core/base/ComponentMacros.h>
 #include <core/math/Vec2.h>
 #include <core/events/MulticastDelegate.h>
-#include <game/input/PlayerInputConfig.h>
 
 constexpr auto BulletCoolDown = .3f;
 constexpr auto InvulnerabilityDuration = 1.0f;
@@ -16,10 +16,13 @@ class TimeService;
 class InputService;
 class ObjectPoolService;
 class AnimatorComponent;
+class PlayerInputConfig;
 
 class PlayerComponent :
 	public ActorComponent
 {
+	COMPONENT(PlayerComponent, "player")
+
 public:
 	const char* GetName() const override { return "PlayerComponent"; }
 
@@ -27,32 +30,33 @@ private:
 	TimeService& Time;
 	InputService& Input;
 	ObjectPoolService& ObjectPool;
-
-	uint8_t Lives;
-	float PlayerSpeed;
-	float GroundAcceleration;
-	float GroundDeceleration;
+	const PlayerInputConfig& InputConfig;
 
 	AnimatorComponent*					Animator;
-	RigidBody2DComponent*						PhysicsHandle;
+	RigidBody2DComponent*				PhysicsHandle;
 
-	Vec2							BulletOffset;
-	float							LastShotTime;
-	Vec2							MovementIntent;
+	std::unique_ptr<PlayerAction>		MoveLeftActionHandle;
+	std::unique_ptr<PlayerAction>		MoveRightActionHandle;
+	std::unique_ptr<PlayerAction>		JumpActionHandle;
+	std::unique_ptr<PlayerAction>		ShootActionHandle;
 
-	// Event-based flags and timers
-	bool							IsInvulnerable;
-	float							InvulnerabilityEndTime;
-	bool							IsInputEnabled;
+	Vec2								BulletOffset;
+	Vec2								MovementIntent;
 
-	std::unique_ptr<PlayerAction>	MoveLeftActionHandle;
-	std::unique_ptr<PlayerAction>	MoveRightActionHandle;
-	std::unique_ptr<PlayerAction>	JumpActionHandle;
-	std::unique_ptr<PlayerAction>	ShootActionHandle;
-	const PlayerInputConfig&		InputConfig;
+	// Serialized properties (via PROPERTY macros)
+	int m_Lives;
+	float m_PlayerSpeed;
+	float m_GroundAcceleration;
+	float m_GroundDeceleration;
+
+	// Runtime state (not serialized)
+	float								LastShotTime;
+	bool								IsInvulnerable;
+	float								InvulnerabilityEndTime;
+	bool								IsInputEnabled;
 
 public:
-									PlayerComponent(Actor& _entity, GameServiceHost& _context, const PlayerInputConfig& _inputConfig);
+									PlayerComponent(Actor& _entity, GameServiceHost& _context);
 									~PlayerComponent();
 
 
@@ -62,10 +66,8 @@ public:
 	void							HandleAnimations();
 
 	void							ShootBullet();
-	int								GetHealth() const { return Lives; }
-	float							GetPlayerSpeed() const { return PlayerSpeed; }
-	void							SetGroundAcceleration(float acceleration) { GroundAcceleration = acceleration; }
-	void							SetGroundDeceleration(float deceleration) { GroundDeceleration = deceleration; }
+	int								GetHealth() const { return m_Lives; }
+	float							GetPlayerSpeed() const { return m_PlayerSpeed; }
 	bool							IsGrounded() const;
 	void							SetMovementIntentX(float x);
 	void							RequestJump(float jumpSpeed);

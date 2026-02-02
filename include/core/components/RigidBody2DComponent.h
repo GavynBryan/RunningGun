@@ -1,6 +1,7 @@
 #pragma once
 
-#include <core/entity/Component.h>
+#include <core/base/ActorComponent.h>
+#include <core/base/ComponentMacros.h>
 #include <core/collision/QuadTreeProxy.h>
 #include <core/math/Rect.h>
 #include <core/math/Vec2.h>
@@ -17,10 +18,17 @@ class WorldService;
 // Handles velocity, acceleration, and gravity simulation.
 class RigidBody2DComponent : public ActorComponent
 {
+	COMPONENT(RigidBody2DComponent, "rigidbody2d")
+
 public:
 	using CollisionEvent = MulticastDelegate<RigidBody2DComponent&, RigidBody2DComponent&>;
 
+	// Default constructor for serialization - uses entity dimensions
+	RigidBody2DComponent(Actor& entity, GameServiceHost& context);
+	
+	// Explicit size constructor for programmatic creation
 	RigidBody2DComponent(Actor& entity, GameServiceHost& context, const Vec2& size);
+	
 	~RigidBody2DComponent();
 
 	const char* GetName() const override { return "RigidBody2DComponent"; }
@@ -35,7 +43,7 @@ public:
 
 	// Bounds configuration
 	void SetSize(const Vec2& size);
-	Vec2 GetSize() const { return Size; }
+	Vec2 GetSize() const { return m_Size; }
 	void SetOffset(const Vec2& offset);
 	Vec2 GetOffset() const { return Offset; }
 	Rectf GetBounds() const;
@@ -68,16 +76,16 @@ public:
 	void ClearAcceleration() { AccumulatedAcceleration = Vec2(0.0f, 0.0f); }
 
 	// Gravity
-	void SetGravity(float gravity) { Gravity = gravity; }
-	float GetGravity() const { return Gravity; }
-	void SetGravityScale(float scale) { GravityScale = scale; }
-	float GetGravityScale() const { return GravityScale; }
-	void SetTerminalVelocity(float velocity) { TerminalVelocity = velocity; }
-	float GetTerminalVelocity() const { return TerminalVelocity; }
+	void SetGravity(float gravity) { m_Gravity = gravity; }
+	float GetGravity() const { return m_Gravity; }
+	void SetGravityScale(float scale) { m_GravityScale = scale; }
+	float GetGravityScale() const { return m_GravityScale; }
+	void SetTerminalVelocity(float velocity) { m_TerminalVelocity = velocity; }
+	float GetTerminalVelocity() const { return m_TerminalVelocity; }
 
 	// Ground check
-	void SetGroundLevel(float level) { GroundLevel = level; }
-	float GetGroundLevel() const { return GroundLevel; }
+	void SetGroundLevel(float level) { m_GroundLevel = level; }
+	float GetGroundLevel() const { return m_GroundLevel; }
 	bool IsGrounded() const;
 
 	// Collision events - dispatched by CollisionResponseSystem
@@ -91,6 +99,7 @@ public:
 	CollisionEvent OnTriggerExit;
 
 private:
+	void InitializeProxy(const Vec2& size);
 	void UpdateProxyBounds();
 	void ApplyPhysics(float deltaTime);
 	void ClampToWorldBounds();
@@ -100,14 +109,16 @@ private:
 	TimeService& Time;
 	WorldService& World;
 	ProxyHandle ProxyId = InvalidProxyHandle;
-	Vec2 Size;
 	Vec2 Offset;
 
-	// Kinematics
+	// Serialized properties (via PROPERTY macros)
+	float m_Gravity;
+	float m_GravityScale;
+	float m_TerminalVelocity;
+	float m_GroundLevel;
+	Vec2 m_Size;
+
+	// Runtime state (not serialized)
 	Vec2 Velocity = Vec2(0.0f, 0.0f);
 	Vec2 AccumulatedAcceleration = Vec2(0.0f, 0.0f);
-	float Gravity = 980.0f;       // Default gravity in pixels/s^2
-	float GravityScale = 1.0f;
-	float TerminalVelocity = 800.0f;
-	float GroundLevel = 550.0f;   // Default ground level
 };

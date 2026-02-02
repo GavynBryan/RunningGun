@@ -15,7 +15,7 @@
       ],
       "components": [
         {"type": "player", "params": {}},
-        {"type": "physics", "params": {}}
+        {"type": "rigidbody2d", "params": {}}
       ]
     },
     {
@@ -47,8 +47,8 @@
         {"name": "damage", "index": 3, "frameSize": [64, 64], "frames": 0, "loop": false, "priority": false}
       ],
       "components": [
-        {"type": "patrol_ai", "params": {"speed": 150}},
-        {"type": "physics", "params": {}}
+        {"type": "patrol_ai", "params": {"MoveSpeed": 150}},
+        {"type": "rigidbody2d", "params": {}}
       ]
     },
     {
@@ -59,8 +59,8 @@
       "position": [0, 0],
       "tag": "bullet",
       "components": [
-        {"type": "projectile", "params": {"speed": 400, "lifeSpan": 3.0}},
-        {"type": "physics", "params": {"gravityScale": 0.0}}
+        {"type": "projectile", "params": {"Speed": 400, "LifeSpan": 3.0}},
+        {"type": "rigidbody2d", "params": {"GravityScale": 0.0}}
       ]
     },
     {
@@ -71,8 +71,8 @@
       "position": [0, 0],
       "tag": "enemy_bullet",
       "components": [
-        {"type": "projectile", "params": {"speed": 400, "lifeSpan": 3.0}},
-        {"type": "physics", "params": {"gravityScale": 0.0}}
+        {"type": "projectile", "params": {"Speed": 400, "LifeSpan": 3.0}},
+        {"type": "rigidbody2d", "params": {"GravityScale": 0.0}}
       ]
     }
   ]

@@ -9,32 +9,68 @@
 #include <core/world/ObjectPoolService.h>
 #include <core/timing/TimeService.h>
 #include <core/math/MathUtils.h>
+#include <core/services/component/ComponentRegistry.h>
+#include <game/input/PlayerInputConfigService.h>
 
-PlayerComponent::PlayerComponent(Actor& _entity, GameServiceHost& _context, const PlayerInputConfig& _inputConfig)
+//=============================================================================
+// Property Registration
+//=============================================================================
+BEGIN_PROPERTIES(PlayerComponent)
+	PROPERTY(int, Lives, 5,
+		.DisplayName = "Starting Lives",
+		.Tooltip = "Number of lives the player starts with",
+		.Min = 1,
+		.Max = 99,
+	)
+	PROPERTY(float, PlayerSpeed, 350.0f,
+		.DisplayName = "Player Speed",
+		.Tooltip = "Maximum horizontal movement speed in pixels/sec",
+		.Min = 0.0f,
+		.Max = 1000.0f,
+	)
+	PROPERTY(float, GroundAcceleration, 2000.0f,
+		.DisplayName = "Ground Acceleration",
+		.Tooltip = "How quickly the player accelerates on ground (pixels/sec²)",
+		.Min = 0.0f,
+		.Max = 10000.0f,
+	)
+	PROPERTY(float, GroundDeceleration, 3500.0f,
+		.DisplayName = "Ground Deceleration",
+		.Tooltip = "How quickly the player decelerates when not moving (pixels/sec²)",
+		.Min = 0.0f,
+		.Max = 10000.0f,
+	)
+END_PROPERTIES(PlayerComponent)
+
+//=============================================================================
+// Constructor
+//=============================================================================
+PlayerComponent::PlayerComponent(Actor& _entity, GameServiceHost& _context)
 	: ActorComponent(_entity, _context)
 	, Time(_context.Get<TimeService>())
 	, Input(_context.Get<InputService>())
 	, ObjectPool(_context.Get<ObjectPoolService>())
-	, Lives(5)
-	, PlayerSpeed(350)
-	, GroundAcceleration(2000.0f)
-	, GroundDeceleration(3500.0f)
+	, InputConfig(_context.Get<PlayerInputConfigService>().GetConfig())
 	, Animator(nullptr)
 	, PhysicsHandle(nullptr)
-	, BulletOffset(32, 18)
-	, LastShotTime(0)
-	, MovementIntent(0.0f, 0.0f)
-	, IsInvulnerable(false)
-	, InvulnerabilityEndTime(0)
-	, IsInputEnabled(true)
 	, MoveLeftActionHandle(std::make_unique<MoveLeftAction>())
 	, MoveRightActionHandle(std::make_unique<MoveRightAction>())
 	, JumpActionHandle(std::make_unique<JumpAction>())
 	, ShootActionHandle(std::make_unique<ShootAction>())
-	, InputConfig(_inputConfig)
+	, BulletOffset(32, 18)
+	, MovementIntent(0.0f, 0.0f)
+	, m_Lives(5)
+	, m_PlayerSpeed(350.0f)
+	, m_GroundAcceleration(2000.0f)
+	, m_GroundDeceleration(3500.0f)
+	, LastShotTime(0)
+	, IsInvulnerable(false)
+	, InvulnerabilityEndTime(0)
+	, IsInputEnabled(true)
 {
 	//set initial direction (right)
-	Owner.SetDirection(1, 0);
+	Actor* owner = GetOwner();
+	owner->SetDirection(1, 0);
 }
 
 
@@ -48,8 +84,9 @@ void PlayerComponent::Start()
 	IsInvulnerable = false;
 	IsInputEnabled = true;
 
-	Animator = Owner.GetComponent<AnimatorComponent>();
-	PhysicsHandle = Owner.GetComponent<RigidBody2DComponent>();
+	Actor* owner = GetOwner();
+	Animator = owner->GetComponent<AnimatorComponent>();
+	PhysicsHandle = owner->GetComponent<RigidBody2DComponent>();
 }
 
 void PlayerComponent::Update()
@@ -72,7 +109,8 @@ void PlayerComponent::Update()
 
 void PlayerComponent::HandleAnimations()
 {
-	Owner.SetFlipX(Owner.GetDirection().x < 0);
+	Actor* owner = GetOwner();
+	owner->SetFlipX(owner->GetDirection().x < 0);
 	Vec2 _velocity = PhysicsHandle ? PhysicsHandle->GetVelocity() : Vec2(0.0f, 0.0f);
 
 	if (_velocity.x != 0) {
@@ -92,19 +130,20 @@ void PlayerComponent::ShootBullet()
 		//borrow bullet from object pool
 		auto* _bullet = ObjectPool.FetchPrefab("bullet");
 
+		Actor* owner = GetOwner();
 		//set position based off of player's direction
-		auto _position = Owner.GetPosition();
-		float _xOrigin = _position.x + (Owner.GetWidth() / 2);
-		_position.x = _xOrigin + (Owner.GetDirection().x * BulletOffset.x);
+		auto _position = owner->GetPosition();
+		float _xOrigin = _position.x + (owner->GetWidth() / 2);
+		_position.x = _xOrigin + (owner->GetDirection().x * BulletOffset.x);
 		_position.y += BulletOffset.y;
 		if (_bullet != nullptr) {
 			if (auto* _projectileComponent = _bullet->GetComponent<ProjectileComponent>()) {
-				_projectileComponent->Activate(&Owner);
+				_projectileComponent->Activate(owner);
 			}
 			_bullet->SetPosition(_position);
 		}
 		if (!PhysicsHandle || PhysicsHandle->GetVelocity().x == 0) {
-			Owner.SetFlipX(Owner.GetDirection().x < 0);
+			owner->SetFlipX(owner->GetDirection().x < 0);
 			Animator->PlayAnimation("shoot");
 		}
 	}
@@ -116,7 +155,7 @@ void PlayerComponent::OrientDirection()
 	if (PhysicsHandle && PhysicsHandle->GetVelocity().x != 0) {
 		Vec2 _direction = PhysicsHandle->GetVelocity();
 		_direction.y = 0;
-		Owner.SetDirection(VectorMath::Normalize(_direction));
+		GetOwner()->SetDirection(VectorMath::Normalize(_direction));
 	}
 }
 
@@ -146,11 +185,11 @@ void PlayerComponent::ApplyMovementIntent()
 	if (_deltaTime <= 0.0f) {
 		return;
 	}
-	const float _targetVelocity = MovementIntent.x * PlayerSpeed;
+	const float _targetVelocity = MovementIntent.x * m_PlayerSpeed;
 	const float _currentVelocity = PhysicsHandle->GetVelocityX();
 	const float _accel = (std::abs(_targetVelocity) > std::abs(_currentVelocity))
-		? GroundAcceleration
-		: GroundDeceleration;
+		? m_GroundAcceleration
+		: m_GroundDeceleration;
 	const float _newVelocity = MathUtils::MoveToward(_currentVelocity, _targetVelocity, _accel * _deltaTime);
 	PhysicsHandle->SetVelocityX(_newVelocity);
 	MovementIntent.x = 0.0f;
@@ -213,13 +252,14 @@ void PlayerComponent::OnDamage()
 		return;
 	}
 
-	Lives--;
+	m_Lives--;
 
 	// Play damage animation
-	Owner.SetFlipX(Owner.GetDirection().x < 0);
+	Actor* owner = GetOwner();
+	owner->SetFlipX(owner->GetDirection().x < 0);
 	Animator->PlayAnimation("damage");
 
-	if (Lives <= 0) {
+	if (m_Lives <= 0) {
 		OnDeath();
 	} else {
 		IsInvulnerable = true;
@@ -233,7 +273,7 @@ void PlayerComponent::OnDeath()
 	Freeze();
 
 	// Broadcast through component's own delegate
-	OnDied.Broadcast(&Owner);
+	OnDied.Broadcast(GetOwner());
 }
 
 void PlayerComponent::OnVictory()

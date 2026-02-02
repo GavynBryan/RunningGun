@@ -25,7 +25,6 @@
 #include <core/world/WorldSystem.h>
 #include <core/actor/ActorSystem.h>
 #include <core/engine/framework/SystemOrder.h>
-#include <core/entity/ComponentRegistryService.h>
 #include <core/entity/PrefabService.h>
 #include <core/math/Vec2.h>
 
@@ -59,7 +58,7 @@ Engine::Engine()
 	Services.AddService<TextureService>();
 	Services.AddService<RenderContextService>(Services.Get<LoggingService>());
 	Services.AddService<WorldService>();
-	Services.AddService<ComponentRegistryService>();
+	// Note: Components now self-register via ComponentRegistry singleton - no service needed
 	Services.AddService<PrefabService>();
 	Services.AddService<ObjectPoolService>();
 	Services.AddService<GameModeService>();
