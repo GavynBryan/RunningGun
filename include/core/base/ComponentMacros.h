@@ -2,10 +2,13 @@
 
 //=============================================================================
 // ComponentMacros.h
-// 
+//
 // Provides macros for self-registering components with automatic serialization.
 // Components use these macros to declare serializable properties with metadata
 // for editor UI (display names, tooltips, min/max constraints).
+//
+// NOTE: For serializing non-component classes, see Serializable.h which
+// provides a more generic and ergonomic approach.
 //
 // Usage:
 //   // In header (.h):
@@ -37,6 +40,7 @@
 //   }
 //=============================================================================
 
+#include <core/serialization/FieldMeta.h>
 #include <core/serialization/PropertyMeta.h>
 #include <core/serialization/ComponentMeta.h>
 #include <core/util/Json.h>
@@ -160,12 +164,11 @@ struct ComponentAutoRegister
 
 //-----------------------------------------------------------------------------
 // PropertyTypeFor<T>()
-// 
+//
 // Maps C++ types to PropertyType enum for editor type identification.
+// Now delegates to the generic FieldTypeFor<T>() function.
 //-----------------------------------------------------------------------------
-template<typename T> constexpr PropertyType PropertyTypeFor();
-template<> constexpr PropertyType PropertyTypeFor<float>()       { return PropertyType::Float; }
-template<> constexpr PropertyType PropertyTypeFor<int>()         { return PropertyType::Int; }
-template<> constexpr PropertyType PropertyTypeFor<bool>()        { return PropertyType::Bool; }
-template<> constexpr PropertyType PropertyTypeFor<std::string>() { return PropertyType::String; }
-template<> constexpr PropertyType PropertyTypeFor<Vec2>()        { return PropertyType::Vec2; }
+template<typename T>
+constexpr PropertyType PropertyTypeFor() {
+	return FieldTypeFor<T>();
+}
