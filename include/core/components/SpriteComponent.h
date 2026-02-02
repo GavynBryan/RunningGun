@@ -3,7 +3,6 @@
 #include <core/entity/Component.h>
 #include <core/rendering/IRenderable.h>
 
-class TransformComponent;
 class IComponentInstanceRegistry;
 
 //=============================================================================
@@ -65,12 +64,11 @@ public:
 	void SetOrigin(const Vec2& origin) { Origin = origin; }
 	void SetOrigin(float x, float y) { Origin.x = x; Origin.y = y; }
 
-	// Get bounds in world space (needs position from TransformComponent)
+	// Get bounds in local space
 	Rectf GetLocalBounds() const;
 
 private:
 	IComponentInstanceRegistry* Registry = nullptr;  // For MarkDirty() calls
-	TransformComponent* PairedTransform = nullptr;
 	TextureHandle Texture;
 	Recti SourceRect = Recti(0, 0, 0, 0);
 	Vec2 Size = Vec2(0.0f, 0.0f);

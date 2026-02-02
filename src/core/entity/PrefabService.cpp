@@ -7,7 +7,6 @@
 #include <core/framework/GameServiceHost.h>
 #include <core/util/Json.h>
 #include <core/rendering/TextureService.h>
-#include <core/components/TransformComponent.h>
 #include <core/components/SpriteComponent.h>
 #include <cassert>
 
@@ -228,7 +227,7 @@ std::unique_ptr<Entity> PrefabService::Instantiate(const PrefabDefinition& defin
 {
 	GameServiceHost& services = GetHost();
 
-	// Create entity (automatically gets TransformComponent)
+	// Create entity (Actor has embedded transform)
 	auto entity = std::make_unique<Actor>(services);
 
 	// Create SpriteComponent if we have a texture

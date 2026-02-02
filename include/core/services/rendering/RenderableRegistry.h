@@ -5,7 +5,6 @@
 #include <unordered_map>
 
 class IRenderable;
-class TransformComponent;
 
 //=============================================================================
 // RenderableRegistry

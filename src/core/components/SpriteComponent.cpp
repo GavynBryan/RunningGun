@@ -1,9 +1,8 @@
 #include <core/components/SpriteComponent.h>
-#include <core/components/TransformComponent.h>
+#include <core/base/Actor.h>
 
 SpriteComponent::SpriteComponent(Actor& entity, GameServiceHost& services)
 	: ActorComponent(entity, services)
-	, PairedTransform(entity.GetTransformComponent())
 {
 	// Register with the IRenderable registry (auto-unregisters on destruction)
 	Registry = TryRegisterToInstanceRegistry<IRenderable>(services);
@@ -35,11 +34,8 @@ void SpriteComponent::SetRenderLayer(int layer)
 
 Transform2D SpriteComponent::GetTransform() const
 {
-	if (PairedTransform)
-	{
-		return PairedTransform->GetTransform2D();
-	}
-	return Transform2D();
+	// Get transform directly from owning Actor
+	return GetOwner()->GetTransform();
 }
 
 Rectf SpriteComponent::GetLocalBounds() const

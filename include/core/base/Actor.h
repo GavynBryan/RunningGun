@@ -6,11 +6,10 @@
 #include <typeindex>
 #include <unordered_map>
 #include <core/math/Vec2.h>
-#include <core/math/Transform2D.h>
+#include <core/data/Transform2D.h>
 #include <core/entity/Component.h>
 #include <core/events/MulticastDelegate.h>
 
-class TransformComponent;
 class SpriteComponent;
 
 enum ACTOR_TAG {
@@ -24,6 +23,16 @@ enum ACTOR_TAG {
 // Type alias for component storage
 using ComponentList = std::vector<std::unique_ptr<ActorComponent>>;
 
+//=============================================================================
+// Actor
+// 
+// Base class for all game objects in the scene. Acts as a scene node with
+// embedded transform data for spatial hierarchy. Components add behavior.
+// 
+// Transform data is stored directly (not as a component) because every Actor
+// must exist in world space. This simplifies the architecture and enables
+// future ECS hybrid approaches where Transform2D can be shared.
+//=============================================================================
 class Actor
 {
 protected:
@@ -33,13 +42,19 @@ protected:
 	// Flat list for iteration order (Start/Update) - raw pointers, not owning
 	std::vector<ActorComponent*> AllComponents;
 
-	ACTOR_TAG			Tag = player;
-	bool				Activated = true;
+	ACTOR_TAG Tag = player;
+	bool Activated = true;
 
-	// Required component - every entity has exactly one transform
-	TransformComponent* Transform = nullptr;
+	// ========== Embedded Transform Data ==========
+	// Local transform (relative to parent, or world if no parent)
+	Transform2D LocalTransform;
+	Vec2 Direction = Vec2(1.0f, 0.0f);  // Normalized facing direction
 
-	// Actor hierarchy (non-owning pointers - ActorService owns all actors)
+	// Cached world transform for non-const accessors
+	mutable Vec2 CachedWorldPosition;
+	mutable Transform2D CachedWorldTransform;
+
+	// Scene hierarchy (non-owning pointers - ActorService owns all actors)
 	Actor* Parent = nullptr;
 	std::vector<Actor*> Children;
 
@@ -52,8 +67,7 @@ public:
 	// ========== Hierarchy Management ==========
 
 	// Set parent actor. Pass nullptr to detach.
-	// Updates both Actor hierarchy and underlying Transform hierarchy.
-	// preserveWorldPosition: if true, adjusts local position to maintain world position
+	// preserveWorldPosition: if true, adjusts local transform to maintain world position
 	void SetParent(Actor* newParent, bool preserveWorldPosition = true);
 	Actor* GetParent() const { return Parent; }
 	bool HasParent() const { return Parent != nullptr; }
@@ -117,27 +131,62 @@ public:
 	void Disable() { Activated = false; }
 	bool IsEnabled() const { return Activated; }
 
-	// Transform access - guaranteed to exist after construction
-	TransformComponent* GetTransformComponent() { return Transform; }
-	const TransformComponent* GetTransformComponent() const { return Transform; }
+	// ========== Transform - Local (relative to parent) ==========
 
-	// Get transform data as value type (for rendering/ECS interop)
-	Transform2D GetTransform() const;
+	void SetLocalPosition(const Vec2& position) { LocalTransform.Position = position; }
+	void SetLocalPosition(float x, float y) { LocalTransform.Position.x = x; LocalTransform.Position.y = y; }
+	const Vec2& GetLocalPosition() const { return LocalTransform.Position; }
 
-	// Convenience position/direction accessors that delegate to Transform
-	// World position (absolute position in scene)
-	void SetPosition(const Vec2& pos);
+	void SetLocalScale(const Vec2& scale) { LocalTransform.Scale = scale; }
+	void SetLocalScale(float uniformScale) { LocalTransform.Scale.x = uniformScale; LocalTransform.Scale.y = uniformScale; }
+	void SetLocalScale(float x, float y) { LocalTransform.Scale.x = x; LocalTransform.Scale.y = y; }
+	const Vec2& GetLocalScale() const { return LocalTransform.Scale; }
+
+	void SetLocalRotation(float degrees) { LocalTransform.Rotation = degrees; }
+	float GetLocalRotation() const { return LocalTransform.Rotation; }
+
+	// Direct access to local transform struct
+	const Transform2D& GetLocalTransform() const { return LocalTransform; }
+	void SetLocalTransform(const Transform2D& transform) { LocalTransform = transform; }
+
+	// ========== Transform - World (absolute) ==========
+
+	// Set world position - automatically adjusts local offset if parented
+	void SetPosition(const Vec2& position);
 	void SetPosition(float x, float y);
 	Vec2 GetPosition() const;
+	Vec2& GetPosition();  // Non-const accessor (uses cached value)
 
-	// Local position (relative to parent, or world if no parent)
-	void SetLocalPosition(const Vec2& pos);
-	void SetLocalPosition(float x, float y);
-	Vec2 GetLocalPosition() const;
+	// Computed world scale (accumulates parent scales)
+	Vec2 GetScale() const;
 
-	void SetDirection(const Vec2& dir);
-	void SetDirection(float x, float y);
-	Vec2 GetDirection() const;
+	// Computed world rotation (accumulates parent rotations)
+	float GetRotation() const;
+
+	// Get world transform (computed from hierarchy)
+	Transform2D GetTransform() const;
+	Transform2D& GetTransform();  // Non-const accessor (uses cached value)
+
+	// ========== Direction ==========
+
+	void SetDirection(const Vec2& direction) { Direction = direction; }
+	void SetDirection(float x, float y) { Direction.x = x; Direction.y = y; }
+	const Vec2& GetDirection() const { return Direction; }
+	Vec2& GetDirection() { return Direction; }
+
+	// ========== Transform Utilities ==========
+
+	void Translate(const Vec2& offset) { LocalTransform.Position += offset; }
+	void Translate(float x, float y) { LocalTransform.Position.x += x; LocalTransform.Position.y += y; }
+	void Rotate(float degrees) { LocalTransform.Rotation += degrees; }
+
+	// Transform a point from local space to world space
+	Vec2 LocalToWorld(const Vec2& localPoint) const;
+
+	// Transform a point from world space to local space
+	Vec2 WorldToLocal(const Vec2& worldPoint) const;
+
+	// ========== Sprite Convenience ==========
 
 	// Sprite access (optional - returns nullptr if no SpriteComponent)
 	SpriteComponent* GetSprite() { return GetComponent<SpriteComponent>(); }
@@ -155,7 +204,6 @@ public:
 	void OnCollide(Actor& other);
 
 private:
-	void EnsureTransform();
 	void AddChild(Actor* child);
 	void RemoveChild(Actor* child);
 };
@@ -221,11 +269,6 @@ size_t Actor::RemoveComponents() {
 			std::remove(AllComponents.begin(), AllComponents.end(), rawPtr),
 			AllComponents.end()
 		);
-
-		// Invalidate Transform cache if needed
-		if (rawPtr == Transform) {
-			Transform = nullptr;
-		}
 	}
 
 	// Remove the entire type bucket

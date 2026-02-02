@@ -2,8 +2,7 @@
 #include <core/engine/rendering/IGraphicsAPI.h>
 #include <core/engine/rendering/Camera.h>
 #include <core/services/rendering/RenderableRegistry.h>
-#include <core/components/SpriteComponent.h>
-#include <core/components/TransformComponent.h>
+#include <core/rendering/IRenderable.h>
 
 void RenderMode2D::RenderScene(IGraphicsAPI& graphics, RenderableRegistry& registry, Camera& camera)
 {
@@ -13,32 +12,40 @@ void RenderMode2D::RenderScene(IGraphicsAPI& graphics, RenderableRegistry& regis
 	// Get all renderables sorted by layer
 	const auto& renderables = registry.GetRenderables();
 
-	for (const auto& renderable : renderables) {
-		if (!renderable.IsValid()) {
+	for (const auto* renderable : renderables) {
+		if (!renderable || !renderable->IsVisible()) {
 			continue;
 		}
 
-		SpriteComponent* sprite = renderable.Sprite;
-		TransformComponent* transform = renderable.Transform;
-
-		if (!sprite->IsVisible()) {
-			continue;
-		}
+		Transform2D transform = renderable->GetTransform();
 
 		// Build render params
 		SpriteRenderParams params;
-		params.SourceRect = sprite->GetSourceRect();
 		
-		Vec2 pos = transform->GetPosition();
-		Vec2 size = sprite->GetSize();
-		params.DestRect = Rectf(pos.x, pos.y, size.x, size.y);
+		if (renderable->HasSourceRect()) {
+			const auto& src = renderable->GetSourceRect();
+			params.SourceRect = Rectf(
+				static_cast<float>(src.x),
+				static_cast<float>(src.y),
+				static_cast<float>(src.width),
+				static_cast<float>(src.height)
+			);
+		}
 		
-		params.FlipX = sprite->GetFlipX();
-		params.FlipY = sprite->GetFlipY();
-		params.Rotation = transform->GetRotation();
-		params.Tint = sprite->GetTint();
+		const Vec2& size = renderable->GetSize();
+		params.DestRect = Rectf(
+			transform.Position.x,
+			transform.Position.y,
+			size.x * transform.Scale.x,
+			size.y * transform.Scale.y
+		);
+		
+		params.FlipX = renderable->GetFlipX();
+		params.FlipY = renderable->GetFlipY();
+		params.Rotation = transform.Rotation;
+		params.Origin = renderable->GetOrigin();
 
-		graphics.DrawSprite(sprite->GetTexture(), params);
+		graphics.DrawSprite(renderable->GetTexture(), params);
 	}
 
 	// Reset camera after rendering
